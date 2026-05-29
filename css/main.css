@@ -1822,7 +1822,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #f4c1ff;
+  background: #ffe225;
 }
 .links-of-blogroll {
   font-size: 13px;
@@ -2659,4 +2659,102 @@ embed {
 }
 .links-of-blogroll-inline .links-of-blogroll-item {
   display: inline-block;
+}
+.category-posts .collection-title.category-collection-title {
+  margin-bottom: 2em;
+  text-align: center;
+}
+.category-posts .post {
+  margin-bottom: 2.5em;
+}
+.category-posts .post-eof {
+  margin: 1.5em auto;
+}
+.page-category .post-block.category {
+  padding-top: 1em;
+}
+.page-welcome .welcome-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-top: 1.5em;
+}
+.page-welcome .welcome-hero {
+  text-align: center;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.page-welcome .welcome-intro {
+  font-size: 1em;
+  color: #bbb;
+  margin: 0;
+}
+.page-welcome .welcome-body {
+  padding-top: 0;
+}
+.welcome-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25em;
+  justify-content: center;
+  margin: 0 0 1.5em;
+}
+.welcome-card {
+  flex: 1 1 240px;
+  max-width: 320px;
+  display: block;
+  padding: 1.75em 1.5em;
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.6);
+  transition: all 0.25s ease;
+  text-decoration: none !important;
+  color: inherit !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.welcome-card:hover {
+  border-color: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  -webkit-transform: translateY(-3px);
+  -moz-transform: translateY(-3px);
+  -ms-transform: translateY(-3px);
+  -o-transform: translateY(-3px);
+  transform: translateY(-3px);
+}
+.welcome-card-icon {
+  display: block;
+  margin-bottom: 0.75em;
+}
+.welcome-card-icon .fa {
+  font-size: 2.4em;
+  color: #fff;
+}
+.welcome-card-title {
+  display: block;
+  font-size: 1.25em;
+  font-weight: 600;
+  margin-bottom: 0.4em;
+  color: #222;
+}
+.welcome-card-desc {
+  display: block;
+  font-size: 0.92em;
+  line-height: 1.5;
+  color: #999;
+}
+.welcome-hint {
+  text-align: center;
+  font-size: 0.9em;
+  color: #bbb;
+  margin: 0;
+}
+@media (max-width: 767px) {
+  .welcome-cards {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .welcome-card {
+    max-width: none;
+  }
 }
