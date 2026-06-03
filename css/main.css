@@ -1221,7 +1221,7 @@ pre code {
   vertical-align: middle;
 }
 .links-of-author a::before {
-  background: #52c4a8;
+  background: #e737d0;
   display: inline-block;
   margin-right: 3px;
   transform: translateY(-2px);
@@ -2509,6 +2509,96 @@ header.header {
     left: 320px;
   }
 }
+body {
+  background-color: #f7f7f7;
+}
+.main-inner.posts-expand:not(.page-welcome) .post-block:not(.category) {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease;
+  padding: 1.25em 2.75em;
+  margin: 0 auto 1.25em;
+  width: calc(100% - 2em);
+  max-width: 1100px;
+}
+.main-inner.posts-expand:not(.page-welcome) .post-block:not(.category):hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.main-inner.category-posts {
+  width: calc(100% - 2em);
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: 2.5em;
+  box-sizing: border-box;
+}
+.category-posts .post-block.category {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding-top: 1em;
+  margin-bottom: 1em;
+}
+.category-posts .collection-title.category-collection-title {
+  margin-bottom: 2em;
+  text-align: center;
+}
+.main-inner.posts-expand:not(.page-welcome) .post-eof {
+  display: none;
+}
+.main-inner.post.posts-expand .post-block {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease;
+  padding: 2em 2.75em;
+  margin: 0 auto 2em;
+  width: calc(100% - 2em);
+  max-width: 1100px;
+}
+.main-inner.page.posts-expand:not(.page-welcome) .post-block {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease;
+  padding: 2em 2.5em;
+  margin: 0 auto 2em;
+  width: calc(100% - 2em);
+  max-width: 1100px;
+}
+.main-inner.posts-collapse .post-block {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease;
+  padding: 2em 2.5em;
+  margin: 0 auto 2em;
+  width: calc(100% - 2em);
+  max-width: 1100px;
+}
+.main-inner.page-welcome {
+  width: calc(100% - 2em);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 2.5em;
+  box-sizing: border-box;
+}
+.main-inner.page-welcome .post-block {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  margin-left: auto;
+  margin-right: auto;
+}
 .page-welcome .welcome-page {
   max-width: 720px;
   margin: 0 auto;
@@ -2522,15 +2612,11 @@ header.header {
 }
 .page-welcome .welcome-intro {
   font-size: 1em;
-  color: #bbb;
+  color: #999;
   margin: 0;
 }
 .page-welcome .welcome-body {
   padding-top: 0;
-}
-.page-welcome .post-block {
-  margin-left: auto;
-  margin-right: auto;
 }
 .welcome-cards {
   display: grid;
@@ -2541,20 +2627,22 @@ header.header {
   margin: 0 auto 2em;
 }
 .welcome-card {
-  width: 100%;
-  max-width: none;
-  padding: 2em 1.5em;
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 8px;
   background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease;
+  width: 100%;
+  padding: 2em 1.5em;
   text-align: center;
   text-decoration: none;
   color: inherit;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-  box-sizing: border-box;
 }
 .welcome-card:hover {
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.welcome-card:hover {
   transform: translateY(-2px);
   color: inherit;
 }
@@ -2573,46 +2661,8 @@ header.header {
 .welcome-footer {
   text-align: center;
   font-size: 0.95em;
-  color: #bbb;
+  color: #999;
   margin: 0;
-}
-.main-inner.category-posts {
-  background-color: #f7f7f7;
-  padding-bottom: 2.5em;
-  width: calc(100% - 2em);
-  max-width: 1100px;
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box;
-}
-.category-posts .collection-title.category-collection-title {
-  margin-bottom: 2em;
-  text-align: center;
-}
-.category-posts .post-block.category {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding-top: 1em;
-  margin-bottom: 1em;
-}
-.category-posts .post-block:not(.category) {
-  background: #fff;
-  border: 1px solid rgba(0,0,0,0.06);
-  border-radius: 16px;
-  padding: 1.25em 2.75em;
-  margin: 0 auto 1.25em;
-  max-width: none;
-  width: calc(100% - 2em);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  box-sizing: border-box;
-  transition: box-shadow 0.2s ease;
-}
-.category-posts .post-block:not(.category):hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-}
-.category-posts .post-eof {
-  display: none;
 }
 .category-posts.posts-expand .post-header,
 .category-posts .post-header {
@@ -2621,6 +2671,21 @@ header.header {
 .category-posts .post-button {
   margin-top: 0.75em;
   text-align: center;
+}
+.category-posts .post-button .btn {
+  background: #fff;
+  color: #222;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 6px;
+  padding: 0.4em 1.2em;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.category-posts .post-button .btn:hover {
+  background: #fff;
+  color: #222;
+  border-color: rgba(0,0,0,0.12);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 .category-posts .post-body {
   margin-top: 0.5em;
@@ -2648,11 +2713,15 @@ header.header {
     grid-template-columns: 1fr;
     max-width: 340px;
   }
-  .category-posts .post-block:not(.category) {
+  .main-inner.posts-expand:not(.page-welcome) .post-block:not(.category),
+  .main-inner.post.posts-expand .post-block,
+  .main-inner.page.posts-expand:not(.page-welcome) .post-block,
+  .main-inner.posts-collapse .post-block {
     padding: 1em 1.25em;
     width: calc(100% - 1em);
-    margin-left: auto;
-    margin-right: auto;
+    border-radius: 12px;
+  }
+  .welcome-card {
     border-radius: 12px;
   }
 }
