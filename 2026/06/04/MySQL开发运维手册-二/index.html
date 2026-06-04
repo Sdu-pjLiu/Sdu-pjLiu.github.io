@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="MySQL 开发运维手册 · 系列导航：（一）架构与核心概念 · （二）命令手册 · （三）CRUD 性能与事务 · （四）权限与备份 · （五）监控与参数 · （六）客户端与技巧 · （七）进阶运维 · （八）查漏与索引">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL开发运维手册(二) — 命令手册（连接至 DELETE）">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="MySQL 开发运维手册 · 系列导航：（一）架构与核心概念 · （二）命令手册 · （三）CRUD 性能与事务 · （四）权限与备份 · （五）监控与参数 · （六）客户端与技巧 · （七）进阶运维 · （八）查漏与索引">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-04T08:20:00.000Z">
+<meta property="article:modified_time" content="2026-06-04T09:07:12.854Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/","path":"/2026/06/04/MySQL开发运维手册-二/","title":"MySQL开发运维手册(二) — 命令手册（连接至 DELETE）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>MySQL开发运维手册(二) — 命令手册（连接至 DELETE） | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%BF%9E%E6%8E%A5-MySQL"><span class="nav-number">1.</span> <span class="nav-text">二、连接 MySQL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%9C%AC%E5%9C%B0%E7%99%BB%E5%BD%95"><span class="nav-number">1.1.</span> <span class="nav-text">2.1 本地登录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95"><span class="nav-number">1.2.</span> <span class="nav-text">2.2 远程登录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%B8%B8%E7%94%A8%E8%BF%9E%E6%8E%A5%E5%8F%82%E6%95%B0"><span class="nav-number">1.3.</span> <span class="nav-text">2.3 常用连接参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E9%80%89%E6%8B%A9%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%8E%E6%9F%A5%E7%9C%8B%E5%AF%B9%E8%B1%A1"><span class="nav-number">2.</span> <span class="nav-text">三、选择数据库与查看对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.1.</span> <span class="nav-text">3.1 列出所有数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E9%80%89%E6%8B%A9%EF%BC%88%E5%88%87%E6%8D%A2%EF%BC%89%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.2.</span> <span class="nav-text">3.2 选择（切换）数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E4%BD%BF%E7%94%A8%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.3.</span> <span class="nav-text">3.3 查看当前使用的数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E5%BA%93%E4%B8%AD%E6%89%80%E6%9C%89%E8%A1%A8"><span class="nav-number">2.4.</span> <span class="nav-text">3.4 查看当前库中所有表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-%E6%9F%A5%E7%9C%8B%E8%A1%A8%E7%BB%93%E6%9E%84"><span class="nav-number">2.5.</span> <span class="nav-text">3.5 查看表结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-%E6%9F%A5%E7%9C%8B%E8%A1%A8%E6%95%B0%E6%8D%AE"><span class="nav-number">2.6.</span> <span class="nav-text">3.6 查看表数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-%E6%9F%A5%E7%9C%8B%E7%B4%A2%E5%BC%95"><span class="nav-number">2.7.</span> <span class="nav-text">3.7 查看索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-8-%E6%9F%A5%E7%9C%8B%E8%A1%A8%E7%8A%B6%E6%80%81%E4%B8%8E%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.8.</span> <span class="nav-text">3.8 查看表状态与大小</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%EF%BC%88Linux-systemd%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">四、服务管理（Linux systemd）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%88%9B%E5%BB%BA%E4%B8%8E%E7%AE%A1%E7%90%86%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">五、创建与管理数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">4.1.</span> <span class="nav-text">5.1 创建数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">4.2.</span> <span class="nav-text">5.2 删除数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E4%BF%AE%E6%94%B9%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">4.3.</span> <span class="nav-text">5.3 修改数据库字符集</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%88%9B%E5%BB%BA%E4%B8%8E%E7%AE%A1%E7%90%86%E8%A1%A8"><span class="nav-number">5.</span> <span class="nav-text">六、创建与管理表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E5%88%9B%E5%BB%BA%E8%A1%A8"><span class="nav-number">5.1.</span> <span class="nav-text">6.1 创建表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E8%8B%A5%E4%B8%8D%E5%AD%98%E5%9C%A8%E5%88%99%E5%88%9B%E5%BB%BA"><span class="nav-number">5.2.</span> <span class="nav-text">6.2 若不存在则创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E4%BF%AE%E6%94%B9%E8%A1%A8%E7%BB%93%E6%9E%84"><span class="nav-number">5.3.</span> <span class="nav-text">6.3 修改表结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-%E5%88%A0%E9%99%A4%E8%A1%A8"><span class="nav-number">5.4.</span> <span class="nav-text">6.4 删除表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-%E5%91%BD%E5%90%8D%E4%B8%8E%E8%A1%A8%E8%AE%BE%E8%AE%A1%E8%A7%84%E8%8C%83%E3%80%90%E8%A7%84%E8%8C%83%E3%80%91"><span class="nav-number">5.5.</span> <span class="nav-text">6.5 命名与表设计规范【规范】</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81SQL-%E6%9F%A5%E8%AF%A2%EF%BC%88SELECT%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">七、SQL 查询（SELECT）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2"><span class="nav-number">6.1.</span> <span class="nav-text">7.1 基础查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-%E6%9D%A1%E4%BB%B6%E8%BF%87%E6%BB%A4"><span class="nav-number">6.2.</span> <span class="nav-text">7.2 条件过滤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%88%86%E9%A1%B5"><span class="nav-number">6.3.</span> <span class="nav-text">7.3 排序与分页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-%E8%81%9A%E5%90%88%E7%BB%9F%E8%AE%A1"><span class="nav-number">6.4.</span> <span class="nav-text">7.4 聚合统计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-5-%E5%A4%9A%E8%A1%A8%E5%85%B3%E8%81%94"><span class="nav-number">6.5.</span> <span class="nav-text">7.5 多表关联</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-6-%E5%AD%90%E6%9F%A5%E8%AF%A2"><span class="nav-number">6.6.</span> <span class="nav-text">7.6 子查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-7-%E6%80%A7%E8%83%BD%E8%A6%81%E7%82%B9%EF%BC%88%E8%AF%A6%E8%A7%81-%E7%AC%AC%E5%8D%81%E4%B8%80%E8%8A%82%EF%BC%89"><span class="nav-number">6.7.</span> <span class="nav-text">7.7 性能要点（详见 第十一节）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-8-MySQL-8-0%EF%BC%9ACTE-%E4%B8%8E%E7%AA%97%E5%8F%A3%E5%87%BD%E6%95%B0%EF%BC%88%E8%A1%A5%E5%85%85%EF%BC%89"><span class="nav-number">6.8.</span> <span class="nav-text">7.8 MySQL 8.0：CTE 与窗口函数（补充）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE%EF%BC%88INSERT%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">八、插入数据（INSERT）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E6%8F%92%E5%85%A5%E5%8D%95%E8%A1%8C"><span class="nav-number">7.1.</span> <span class="nav-text">8.1 插入单行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-%E6%8F%92%E5%85%A5%E5%A4%9A%E8%A1%8C"><span class="nav-number">7.2.</span> <span class="nav-text">8.2 插入多行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-3-%E5%AD%98%E5%9C%A8%E5%88%99%E5%BF%BD%E7%95%A5"><span class="nav-number">7.3.</span> <span class="nav-text">8.3 存在则忽略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-4-%E5%86%B2%E7%AA%81%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%88Upsert%EF%BC%89"><span class="nav-number">7.4.</span> <span class="nav-text">8.4 冲突时更新（Upsert）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-5-%E4%BB%8E%E6%9F%A5%E8%AF%A2%E7%BB%93%E6%9E%9C%E6%8F%92%E5%85%A5"><span class="nav-number">7.5.</span> <span class="nav-text">8.5 从查询结果插入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-6-%E6%80%A7%E8%83%BD%E8%A6%81%E7%82%B9%EF%BC%88%E8%AF%A6%E8%A7%81-%E7%AC%AC%E5%8D%81%E4%B8%80%E8%8A%82%EF%BC%89"><span class="nav-number">7.6.</span> <span class="nav-text">8.6 性能要点（详见 第十一节）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-7-REPLACE-INTO%EF%BC%88%E6%8C%89%E4%B8%BB%E9%94%AE-%E5%94%AF%E4%B8%80%E9%94%AE%E8%A6%86%E7%9B%96%EF%BC%89"><span class="nav-number">7.7.</span> <span class="nav-text">8.7 REPLACE INTO（按主键&#x2F;唯一键覆盖）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%EF%BC%88UPDATE%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">九、更新数据（UPDATE）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#9-1-%E6%8C%89%E6%9D%A1%E4%BB%B6%E6%9B%B4%E6%96%B0"><span class="nav-number">8.1.</span> <span class="nav-text">9.1 按条件更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-2-%E6%89%B9%E9%87%8F%E6%9B%B4%E6%96%B0"><span class="nav-number">8.2.</span> <span class="nav-text">9.2 批量更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-3-%E5%A4%9A%E5%88%97%E6%9B%B4%E6%96%B0"><span class="nav-number">8.3.</span> <span class="nav-text">9.3 多列更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-4-%E6%80%A7%E8%83%BD%E8%A6%81%E7%82%B9%EF%BC%88%E8%AF%A6%E8%A7%81-%E7%AC%AC%E5%8D%81%E4%B8%80%E8%8A%82%EF%BC%89"><span class="nav-number">8.4.</span> <span class="nav-text">9.4 性能要点（详见 第十一节）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E3%80%81%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%EF%BC%88DELETE%EF%BC%89"><span class="nav-number">9.</span> <span class="nav-text">十、删除数据（DELETE）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#10-1-%E6%8C%89%E6%9D%A1%E4%BB%B6%E5%88%A0%E9%99%A4"><span class="nav-number">9.1.</span> <span class="nav-text">10.1 按条件删除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-2-%E6%89%B9%E9%87%8F%E5%88%A0%E9%99%A4"><span class="nav-number">9.2.</span> <span class="nav-text">10.2 批量删除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-3-%E6%B8%85%E7%A9%BA%E5%85%A8%E8%A1%A8"><span class="nav-number">9.3.</span> <span class="nav-text">10.3 清空全表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-4-%E6%80%A7%E8%83%BD%E8%A6%81%E7%82%B9%EF%BC%88%E8%AF%A6%E8%A7%81-%E7%AC%AC%E5%8D%81%E4%B8%80%E8%8A%82%EF%BC%89"><span class="nav-number">9.4.</span> <span class="nav-text">10.4 性能要点（详见 第十一节）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-5-%E4%BA%8B%E5%8A%A1%E6%8E%A7%E5%88%B6%EF%BC%88%E4%B8%8E%E7%AC%AC%E5%8D%81%E4%BA%8C%E8%8A%82%E9%85%8D%E5%90%88%EF%BC%89"><span class="nav-number">9.5.</span> <span class="nav-text">10.5 事务控制（与第十二节配合）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="MySQL开发运维手册(二) — 命令手册（连接至 DELETE） | 我的记录小站">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL开发运维手册(二) — 命令手册（连接至 DELETE）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-06-04 16:20:00 / 修改时间：17:07:12" itemprop="dateCreated datePublished" datetime="2026-06-04T16:20:00+08:00">2026-06-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p><strong>MySQL 开发运维手册 · 系列导航</strong>：<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/">（一）架构与核心概念</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/">（二）命令手册</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/">（三）CRUD 性能与事务</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%9B%9B/">（四）权限与备份</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/">（五）监控与参数</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AD/">（六）客户端与技巧</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%83/">（七）进阶运维</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AB/">（八）查漏与索引</a></p>
+</blockquote>
+<span id="more"></span>
+
+<p>本篇覆盖 <strong>第二～十节</strong>：连接、查看对象、服务管理、库表 DDL、SELECT &#x2F; INSERT &#x2F; UPDATE &#x2F; DELETE。原理见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/">（一）</a>；性能优化见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/">（三）</a>。</p>
+<h2 id="二、连接-MySQL"><a href="#二、连接-MySQL" class="headerlink" title="二、连接 MySQL"></a>二、连接 MySQL</h2><h3 id="2-1-本地登录"><a href="#2-1-本地登录" class="headerlink" title="2.1 本地登录"></a>2.1 本地登录</h3><p>交互式输入密码（推荐，密码不会出现在命令历史中）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p</span><br></pre></td></tr></table></figure>
+
+<p>指定主机与端口（本机默认端口 3306）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h 127.0.0.1 -P 3306 -u your_username -p</span><br></pre></td></tr></table></figure>
+
+<p>使用指定数据库直接进入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h 127.0.0.1 -P 3306 -u your_username -p your_database</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-远程登录"><a href="#2-2-远程登录" class="headerlink" title="2.2 远程登录"></a>2.2 远程登录</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mysql -h db.example.com \</span><br><span class="line">      -P 3306 \</span><br><span class="line">      -u your_username \</span><br><span class="line">      -p</span><br></pre></td></tr></table></figure>
+
+<p>一行写法：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h db.example.com -P 3306 -u your_username -p</span><br></pre></td></tr></table></figure>
+
+<p>通过环境变量传递密码（脚本场景，注意 shell 历史与权限）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MYSQL_PWD=<span class="string">&#x27;your_password&#x27;</span> mysql -h db.example.com -P 3306 -u your_username -e <span class="string">&quot;SHOW DATABASES;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>执行单条 SQL 后退出（适合脚本）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h db.example.com -P 3306 -u your_username -p your_database -e <span class="string">&quot;SELECT COUNT(*) FROM users;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>从文件批量执行 SQL：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h db.example.com -P 3306 -u your_username -p your_database &lt; script.sql</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-常用连接参数"><a href="#2-3-常用连接参数" class="headerlink" title="2.3 常用连接参数"></a>2.3 常用连接参数</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-h</code></td>
+<td>主机地址</td>
+</tr>
+<tr>
+<td><code>-P</code></td>
+<td>端口（大写 P）</td>
+</tr>
+<tr>
+<td><code>-u</code></td>
+<td>用户名</td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td>提示输入密码（<code>-p</code> 与密码之间不要有空格，或单独使用 <code>-p</code> 交互输入）</td>
+</tr>
+<tr>
+<td><code>-D</code></td>
+<td>指定默认数据库</td>
+</tr>
+<tr>
+<td><code>-e</code></td>
+<td>执行 SQL 后退出</td>
+</tr>
+<tr>
+<td><code>--default-character-set=utf8mb4</code></td>
+<td>指定字符集</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、选择数据库与查看对象"><a href="#三、选择数据库与查看对象" class="headerlink" title="三、选择数据库与查看对象"></a>三、选择数据库与查看对象</h2><p>进入 <code>mysql</code> 客户端后，使用 SQL 命令操作。</p>
+<h3 id="3-1-列出所有数据库"><a href="#3-1-列出所有数据库" class="headerlink" title="3.1 列出所有数据库"></a>3.1 列出所有数据库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> DATABASES;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-选择（切换）数据库"><a href="#3-2-选择（切换）数据库" class="headerlink" title="3.2 选择（切换）数据库"></a>3.2 选择（切换）数据库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">USE your_database_name;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-查看当前使用的数据库"><a href="#3-3-查看当前使用的数据库" class="headerlink" title="3.3 查看当前使用的数据库"></a>3.3 查看当前使用的数据库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> DATABASE();</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-查看当前库中所有表"><a href="#3-4-查看当前库中所有表" class="headerlink" title="3.4 查看当前库中所有表"></a>3.4 查看当前库中所有表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> TABLES;</span><br></pre></td></tr></table></figure>
+
+<p>按前缀过滤：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> TABLES <span class="keyword">LIKE</span> <span class="string">&#x27;user%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-查看表结构"><a href="#3-5-查看表结构" class="headerlink" title="3.5 查看表结构"></a>3.5 查看表结构</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DESC</span> table_name;</span><br></pre></td></tr></table></figure>
+
+<p>等价写法：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DESCRIBE</span> table_name;</span><br><span class="line"><span class="keyword">SHOW</span> COLUMNS <span class="keyword">FROM</span> table_name;</span><br><span class="line"><span class="keyword">SHOW</span> <span class="keyword">CREATE TABLE</span> table_name;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-6-查看表数据"><a href="#3-6-查看表数据" class="headerlink" title="3.6 查看表数据"></a>3.6 查看表数据</h3><p>查看前 10 行：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> table_name LIMIT <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+
+<p>按条件查询：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id, name, email <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> status <span class="operator">=</span> <span class="number">1</span> LIMIT <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
+
+<p>统计行数：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> table_name;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-7-查看索引"><a href="#3-7-查看索引" class="headerlink" title="3.7 查看索引"></a>3.7 查看索引</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> INDEX <span class="keyword">FROM</span> table_name;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-8-查看表状态与大小"><a href="#3-8-查看表状态与大小" class="headerlink" title="3.8 查看表状态与大小"></a>3.8 查看表状态与大小</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> <span class="keyword">TABLE</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;table_name&#x27;</span>\G</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、服务管理（Linux-systemd）"><a href="#四、服务管理（Linux-systemd）" class="headerlink" title="四、服务管理（Linux systemd）"></a>四、服务管理（Linux systemd）</h2><p>适用于通过 <code>systemd</code> 管理的 MySQL &#x2F; MariaDB 服务。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看状态</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl status mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl start mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 停止</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl stop mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重启</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl restart mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开机自启</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl <span class="built_in">enable</span> mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消开机自启</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl <span class="built_in">disable</span> mysql</span><br></pre></td></tr></table></figure>
+
+<p>MariaDB 部分发行版服务名为 <code>mariadb</code>，将上述命令中的 <code>mysql</code> 替换为 <code>mariadb</code> 即可。</p>
+<p>查看 MySQL 进程与端口：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -tlnp | grep 3306</span><br></pre></td></tr></table></figure>
+
+<p>查看服务日志（排障启停失败、崩溃）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> journalctl -u mysql -n 100 --no-pager</span><br><span class="line"><span class="built_in">sudo</span> journalctl -u mysql -f    <span class="comment"># 实时跟踪</span></span><br><span class="line"><span class="comment"># 错误日志路径亦可在实例内查：SELECT @@log_error;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、创建与管理数据库"><a href="#五、创建与管理数据库" class="headerlink" title="五、创建与管理数据库"></a>五、创建与管理数据库</h2><h3 id="5-1-创建数据库"><a href="#5-1-创建数据库" class="headerlink" title="5.1 创建数据库"></a>5.1 创建数据库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> DATABASE your_database_name</span><br><span class="line">  <span class="keyword">DEFAULT</span> <span class="keyword">CHARACTER SET</span> utf8mb4</span><br><span class="line">  <span class="keyword">DEFAULT</span> <span class="keyword">COLLATE</span> utf8mb4_unicode_ci;</span><br></pre></td></tr></table></figure>
+
+<p>若已存在则跳过：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> DATABASE IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> your_database_name</span><br><span class="line">  <span class="keyword">DEFAULT</span> <span class="keyword">CHARACTER SET</span> utf8mb4</span><br><span class="line">  <span class="keyword">DEFAULT</span> <span class="keyword">COLLATE</span> utf8mb4_unicode_ci;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-删除数据库"><a href="#5-2-删除数据库" class="headerlink" title="5.2 删除数据库"></a>5.2 删除数据库</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> DATABASE IF <span class="keyword">EXISTS</span> your_database_name;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-修改数据库字符集"><a href="#5-3-修改数据库字符集" class="headerlink" title="5.3 修改数据库字符集"></a>5.3 修改数据库字符集</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> DATABASE your_database_name</span><br><span class="line">  <span class="keyword">CHARACTER SET</span> utf8mb4</span><br><span class="line">  <span class="keyword">COLLATE</span> utf8mb4_unicode_ci;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、创建与管理表"><a href="#六、创建与管理表" class="headerlink" title="六、创建与管理表"></a>六、创建与管理表</h2><h3 id="6-1-创建表"><a href="#6-1-创建表" class="headerlink" title="6.1 创建表"></a>6.1 创建表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> users (</span><br><span class="line">  id          <span class="type">BIGINT</span> UNSIGNED <span class="keyword">NOT NULL</span> AUTO_INCREMENT,</span><br><span class="line">  username    <span class="type">VARCHAR</span>(<span class="number">64</span>)     <span class="keyword">NOT NULL</span>,</span><br><span class="line">  email       <span class="type">VARCHAR</span>(<span class="number">255</span>)    <span class="keyword">NOT NULL</span>,</span><br><span class="line">  status      TINYINT         <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> <span class="number">1</span> COMMENT <span class="string">&#x27;1=启用 0=禁用&#x27;</span>,</span><br><span class="line">  created_at  DATETIME        <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">  updated_at  DATETIME        <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span> <span class="keyword">ON</span> <span class="keyword">UPDATE</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">  <span class="keyword">PRIMARY KEY</span> (id),</span><br><span class="line">  <span class="keyword">UNIQUE</span> KEY uk_users_username (username),</span><br><span class="line">  <span class="keyword">UNIQUE</span> KEY uk_users_email (email),</span><br><span class="line">  KEY idx_users_status (status)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb4 <span class="keyword">COLLATE</span><span class="operator">=</span>utf8mb4_unicode_ci;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-若不存在则创建"><a href="#6-2-若不存在则创建" class="headerlink" title="6.2 若不存在则创建"></a>6.2 若不存在则创建</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> IF <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> users (</span><br><span class="line">  id <span class="type">BIGINT</span> UNSIGNED <span class="keyword">NOT NULL</span> AUTO_INCREMENT <span class="keyword">PRIMARY KEY</span>,</span><br><span class="line">  username <span class="type">VARCHAR</span>(<span class="number">64</span>) <span class="keyword">NOT NULL</span></span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb4;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-修改表结构"><a href="#6-3-修改表结构" class="headerlink" title="6.3 修改表结构"></a>6.3 修改表结构</h3><p>添加列：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER TABLE</span> users <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> phone <span class="type">VARCHAR</span>(<span class="number">20</span>) <span class="keyword">NULL</span> AFTER email;</span><br></pre></td></tr></table></figure>
+
+<p>修改列：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER TABLE</span> users MODIFY <span class="keyword">COLUMN</span> phone <span class="type">VARCHAR</span>(<span class="number">32</span>) <span class="keyword">NULL</span>;</span><br></pre></td></tr></table></figure>
+
+<p>删除列：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER TABLE</span> users <span class="keyword">DROP</span> <span class="keyword">COLUMN</span> phone;</span><br></pre></td></tr></table></figure>
+
+<p>重命名表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RENAME <span class="keyword">TABLE</span> old_table <span class="keyword">TO</span> new_table;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-删除表"><a href="#6-4-删除表" class="headerlink" title="6.4 删除表"></a>6.4 删除表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> <span class="keyword">TABLE</span> IF <span class="keyword">EXISTS</span> table_name;</span><br></pre></td></tr></table></figure>
+
+<p>清空表数据（保留结构，自增 ID 重置）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">TRUNCATE</span> <span class="keyword">TABLE</span> table_name;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-5-命名与表设计规范【规范】"><a href="#6-5-命名与表设计规范【规范】" class="headerlink" title="6.5 命名与表设计规范【规范】"></a>6.5 命名与表设计规范【规范】</h3><p>参考 <a target="_blank" rel="noopener" href="https://javaguide.cn/database/mysql/mysql-high-performance-optimization-specification-recommendations.html">JavaGuide · 高性能优化规范</a>：</p>
+<p><strong>命名</strong>：</p>
+<ul>
+<li>库、表、字段 <strong>小写 + 下划线</strong>；见名知义，不宜超过 32 字符。  </li>
+<li>避开 MySQL <strong>保留字</strong>；临时表 <code>tmp_YYYYMMDD</code>，备份表 <code>bak_</code> + 时间戳。  </li>
+<li>禁止 <strong>预留字段</strong>；禁止开发&#x2F;测试 <strong>直连生产</strong>；禁止在线对生产 <strong>压测</strong>。</li>
+</ul>
+<p><strong>表设计</strong>：</p>
+<ul>
+<li>统一 <strong>InnoDB + utf8mb4</strong>；所有表和字段 <strong>COMMENT</strong>。  </li>
+<li>单表数据量建议 <strong>≤ 500 万</strong>；更大用归档、分库分表；<strong>谨慎分区表</strong>，大数据优先物理分表。  </li>
+<li>适度 <strong>反范式</strong> 冗余换查询，需保证一致性。  </li>
+<li>经常一起用的列可放同表，减少 JOIN（权衡范式设计）。</li>
+</ul>
+<hr>
+<h2 id="七、SQL-查询（SELECT）"><a href="#七、SQL-查询（SELECT）" class="headerlink" title="七、SQL 查询（SELECT）"></a>七、SQL 查询（SELECT）</h2><h3 id="7-1-基础查询"><a href="#7-1-基础查询" class="headerlink" title="7.1 基础查询"></a>7.1 基础查询</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users;</span><br><span class="line"><span class="keyword">SELECT</span> id, username, email <span class="keyword">FROM</span> users;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">DISTINCT</span> status <span class="keyword">FROM</span> users;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-条件过滤"><a href="#7-2-条件过滤" class="headerlink" title="7.2 条件过滤"></a>7.2 条件过滤</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> status <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> username <span class="keyword">LIKE</span> <span class="string">&#x27;admin%&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> id <span class="keyword">IN</span> (<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> created_at <span class="operator">&gt;=</span> <span class="string">&#x27;2026-01-01&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> email <span class="keyword">IS</span> <span class="keyword">NOT NULL</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-3-排序与分页"><a href="#7-3-排序与分页" class="headerlink" title="7.3 排序与分页"></a>7.3 排序与分页</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">ORDER</span> <span class="keyword">BY</span> created_at <span class="keyword">DESC</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">ORDER</span> <span class="keyword">BY</span> id <span class="keyword">ASC</span> LIMIT <span class="number">10</span> <span class="keyword">OFFSET</span> <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
+
+<p>MySQL 分页简写（<code>LIMIT offset, count</code>）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">ORDER</span> <span class="keyword">BY</span> id LIMIT <span class="number">20</span>, <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-4-聚合统计"><a href="#7-4-聚合统计" class="headerlink" title="7.4 聚合统计"></a>7.4 聚合统计</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> total <span class="keyword">FROM</span> users;</span><br><span class="line"><span class="keyword">SELECT</span> status, <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> cnt <span class="keyword">FROM</span> users <span class="keyword">GROUP</span> <span class="keyword">BY</span> status;</span><br><span class="line"><span class="keyword">SELECT</span> status, <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> cnt <span class="keyword">FROM</span> users <span class="keyword">GROUP</span> <span class="keyword">BY</span> status <span class="keyword">HAVING</span> cnt <span class="operator">&gt;</span> <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-5-多表关联"><a href="#7-5-多表关联" class="headerlink" title="7.5 多表关联"></a>7.5 多表关联</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> u.id, u.username, o.order_no, o.amount</span><br><span class="line"><span class="keyword">FROM</span> users u</span><br><span class="line"><span class="keyword">INNER</span> <span class="keyword">JOIN</span> orders o <span class="keyword">ON</span> o.user_id <span class="operator">=</span> u.id</span><br><span class="line"><span class="keyword">WHERE</span> u.status <span class="operator">=</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>左连接：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> u.id, u.username, o.order_no</span><br><span class="line"><span class="keyword">FROM</span> users u</span><br><span class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> orders o <span class="keyword">ON</span> o.user_id <span class="operator">=</span> u.id;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-6-子查询"><a href="#7-6-子查询" class="headerlink" title="7.6 子查询"></a>7.6 子查询</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users</span><br><span class="line"><span class="keyword">WHERE</span> id <span class="keyword">IN</span> (<span class="keyword">SELECT</span> user_id <span class="keyword">FROM</span> orders <span class="keyword">WHERE</span> amount <span class="operator">&gt;</span> <span class="number">100</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-7-性能要点（详见-第十一节）"><a href="#7-7-性能要点（详见-第十一节）" class="headerlink" title="7.7 性能要点（详见 第十一节）"></a>7.7 性能要点（详见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%B8%80%E3%80%81CRUD-%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5">第十一节</a>）</h3><table>
+<thead>
+<tr>
+<th>写法</th>
+<th>开销</th>
+<th>更高效替代</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SELECT *</code></td>
+<td>多读列、网络与内存浪费</td>
+<td>只查需要的列</td>
+</tr>
+<tr>
+<td><code>LIKE &#39;%词&#39;</code></td>
+<td>无法用 B+ 树索引，易全表扫描</td>
+<td>全文索引、<code>LIKE &#39;词%&#39;</code>、ES</td>
+</tr>
+<tr>
+<td>深分页 <code>OFFSET 100000</code></td>
+<td>扫描并丢弃大量行</td>
+<td>游标&#x2F;keyset 分页（见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#11-2-SELECT%EF%BC%88%E8%AF%BB%EF%BC%89%E2%80%94%E2%80%94%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96">11.2</a>）</td>
+</tr>
+<tr>
+<td>无索引 <code>WHERE</code></td>
+<td>全表扫描</td>
+<td>为过滤&#x2F;排序列建索引</td>
+</tr>
+<tr>
+<td>大表 <code>COUNT(*)</code></td>
+<td>InnoDB 无索引时需扫大量行</td>
+<td>缓存计数、汇总表、近似值</td>
+</tr>
+</tbody></table>
+<h3 id="7-8-MySQL-8-0：CTE-与窗口函数（补充）"><a href="#7-8-MySQL-8-0：CTE-与窗口函数（补充）" class="headerlink" title="7.8 MySQL 8.0：CTE 与窗口函数（补充）"></a>7.8 MySQL 8.0：CTE 与窗口函数（补充）</h3><p><strong>公用表表达式（CTE）</strong>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">WITH</span> recent_orders <span class="keyword">AS</span> (</span><br><span class="line">  <span class="keyword">SELECT</span> id, user_id, amount, created_at</span><br><span class="line">  <span class="keyword">FROM</span> orders</span><br><span class="line">  <span class="keyword">WHERE</span> created_at <span class="operator">&gt;=</span> <span class="string">&#x27;2026-01-01&#x27;</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">SELECT</span> u.username, r.amount</span><br><span class="line"><span class="keyword">FROM</span> recent_orders r</span><br><span class="line"><span class="keyword">INNER</span> <span class="keyword">JOIN</span> users u <span class="keyword">ON</span> u.id <span class="operator">=</span> r.user_id;</span><br></pre></td></tr></table></figure>
+
+<p><strong>窗口函数</strong>（排序、TopN、去重统计；无法被普通索引直接替代，需注意数据量）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id, user_id, amount,</span><br><span class="line">       <span class="built_in">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">PARTITION</span> <span class="keyword">BY</span> user_id <span class="keyword">ORDER</span> <span class="keyword">BY</span> created_at <span class="keyword">DESC</span>) <span class="keyword">AS</span> rn</span><br><span class="line"><span class="keyword">FROM</span> orders;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 取每个用户最近一笔订单（MySQL 8.0）</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> (</span><br><span class="line">  <span class="keyword">SELECT</span> id, user_id, amount,</span><br><span class="line">         <span class="built_in">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">PARTITION</span> <span class="keyword">BY</span> user_id <span class="keyword">ORDER</span> <span class="keyword">BY</span> created_at <span class="keyword">DESC</span>) <span class="keyword">AS</span> rn</span><br><span class="line">  <span class="keyword">FROM</span> orders</span><br><span class="line">) t <span class="keyword">WHERE</span> rn <span class="operator">=</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、插入数据（INSERT）"><a href="#八、插入数据（INSERT）" class="headerlink" title="八、插入数据（INSERT）"></a>八、插入数据（INSERT）</h2><h3 id="8-1-插入单行"><a href="#8-1-插入单行" class="headerlink" title="8.1 插入单行"></a>8.1 插入单行</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT INTO</span> users (username, email, status)</span><br><span class="line"><span class="keyword">VALUES</span> (<span class="string">&#x27;alice&#x27;</span>, <span class="string">&#x27;alice@example.com&#x27;</span>, <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-插入多行"><a href="#8-2-插入多行" class="headerlink" title="8.2 插入多行"></a>8.2 插入多行</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT INTO</span> users (username, email, status) <span class="keyword">VALUES</span></span><br><span class="line">  (<span class="string">&#x27;bob&#x27;</span>, <span class="string">&#x27;bob@example.com&#x27;</span>, <span class="number">1</span>),</span><br><span class="line">  (<span class="string">&#x27;carol&#x27;</span>, <span class="string">&#x27;carol@example.com&#x27;</span>, <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-3-存在则忽略"><a href="#8-3-存在则忽略" class="headerlink" title="8.3 存在则忽略"></a>8.3 存在则忽略</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> IGNORE <span class="keyword">INTO</span> users (username, email, status)</span><br><span class="line"><span class="keyword">VALUES</span> (<span class="string">&#x27;alice&#x27;</span>, <span class="string">&#x27;alice@example.com&#x27;</span>, <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-4-冲突时更新（Upsert）"><a href="#8-4-冲突时更新（Upsert）" class="headerlink" title="8.4 冲突时更新（Upsert）"></a>8.4 冲突时更新（Upsert）</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- MySQL 8.0.19+ 推荐行别名（VALUES() 在 8.0.20+ 已弃用）</span></span><br><span class="line"><span class="keyword">INSERT INTO</span> users (username, email, status)</span><br><span class="line"><span class="keyword">VALUES</span> (<span class="string">&#x27;alice&#x27;</span>, <span class="string">&#x27;alice@example.com&#x27;</span>, <span class="number">1</span>) <span class="keyword">AS</span> new_row</span><br><span class="line"><span class="keyword">ON</span> DUPLICATE KEY <span class="keyword">UPDATE</span></span><br><span class="line">  email <span class="operator">=</span> new_row.email,</span><br><span class="line">  status <span class="operator">=</span> new_row.status,</span><br><span class="line">  updated_at <span class="operator">=</span> <span class="built_in">CURRENT_TIMESTAMP</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 5.7 / 旧写法（8.0 仍可用但建议迁移）</span></span><br><span class="line"><span class="comment">-- INSERT ... ON DUPLICATE KEY UPDATE email = VALUES(email), ...</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="8-5-从查询结果插入"><a href="#8-5-从查询结果插入" class="headerlink" title="8.5 从查询结果插入"></a>8.5 从查询结果插入</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT INTO</span> users_backup (id, username, email)</span><br><span class="line"><span class="keyword">SELECT</span> id, username, email <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> status <span class="operator">=</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<p>获取最后插入的自增 ID：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> LAST_INSERT_ID();</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-6-性能要点（详见-第十一节）"><a href="#8-6-性能要点（详见-第十一节）" class="headerlink" title="8.6 性能要点（详见 第十一节）"></a>8.6 性能要点（详见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%B8%80%E3%80%81CRUD-%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5">第十一节</a>）</h3><table>
+<thead>
+<tr>
+<th>写法</th>
+<th>开销</th>
+<th>更高效替代</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>循环单行 <code>INSERT</code></td>
+<td>每条一次解析、日志、索引维护</td>
+<td>多行批量 <code>INSERT</code>（8.2）</td>
+</tr>
+<tr>
+<td>大批量导入</td>
+<td>事务与 redo 压力大</td>
+<td><code>LOAD DATA INFILE</code>、分批提交</td>
+</tr>
+<tr>
+<td><code>ON DUPLICATE KEY UPDATE</code></td>
+<td>唯一键冲突检测 + 可能 UPDATE</td>
+<td>明确场景再用；纯插入用普通 INSERT</td>
+</tr>
+<tr>
+<td><code>INSERT ... SELECT</code></td>
+<td>锁源表、占 undo&#x2F;redo</td>
+<td>低峰执行、控制批次、源表加合适索引</td>
+</tr>
+</tbody></table>
+<h3 id="8-7-REPLACE-INTO（按主键-唯一键覆盖）"><a href="#8-7-REPLACE-INTO（按主键-唯一键覆盖）" class="headerlink" title="8.7 REPLACE INTO（按主键&#x2F;唯一键覆盖）"></a>8.7 <code>REPLACE INTO</code>（按主键&#x2F;唯一键覆盖）</h3><p>存在则 <strong>DELETE + INSERT</strong>（会删后插，二级索引、触发器副作用与 UPDATE 不同），不存在则插入：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">REPLACE <span class="keyword">INTO</span> users (id, username, email)</span><br><span class="line"><span class="keyword">VALUES</span> (<span class="number">1001</span>, <span class="string">&#x27;alice&#x27;</span>, <span class="string">&#x27;alice@example.com&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>高并发下更推荐显式 <code>INSERT ... ON DUPLICATE KEY UPDATE</code>，语义更清晰。</p>
+<hr>
+<h2 id="九、更新数据（UPDATE）"><a href="#九、更新数据（UPDATE）" class="headerlink" title="九、更新数据（UPDATE）"></a>九、更新数据（UPDATE）</h2><h3 id="9-1-按条件更新"><a href="#9-1-按条件更新" class="headerlink" title="9.1 按条件更新"></a>9.1 按条件更新</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> users</span><br><span class="line"><span class="keyword">SET</span> status <span class="operator">=</span> <span class="number">0</span>, updated_at <span class="operator">=</span> NOW()</span><br><span class="line"><span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1001</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-批量更新"><a href="#9-2-批量更新" class="headerlink" title="9.2 批量更新"></a>9.2 批量更新</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> users</span><br><span class="line"><span class="keyword">SET</span> status <span class="operator">=</span> <span class="number">1</span></span><br><span class="line"><span class="keyword">WHERE</span> email <span class="keyword">LIKE</span> <span class="string">&#x27;%@example.com&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-3-多列更新"><a href="#9-3-多列更新" class="headerlink" title="9.3 多列更新"></a>9.3 多列更新</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> users</span><br><span class="line"><span class="keyword">SET</span> username <span class="operator">=</span> <span class="string">&#x27;new_name&#x27;</span>,</span><br><span class="line">    email <span class="operator">=</span> <span class="string">&#x27;new@example.com&#x27;</span></span><br><span class="line"><span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1001</span>;</span><br></pre></td></tr></table></figure>
+
+<p>更新前建议先用 SELECT 确认影响范围：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1001</span>;</span><br><span class="line"><span class="comment">-- 确认无误后再 UPDATE</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="9-4-性能要点（详见-第十一节）"><a href="#9-4-性能要点（详见-第十一节）" class="headerlink" title="9.4 性能要点（详见 第十一节）"></a>9.4 性能要点（详见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%B8%80%E3%80%81CRUD-%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5">第十一节</a>）</h3><table>
+<thead>
+<tr>
+<th>写法</th>
+<th>开销</th>
+<th>更高效替代</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>WHERE</code> 无索引</td>
+<td>全表扫描 + 逐行加锁</td>
+<td>主键&#x2F;索引定位</td>
+</tr>
+<tr>
+<td>一次更新百万行</td>
+<td>长事务、大 undo、主从延迟</td>
+<td><code>LIMIT</code> 分批 + 短事务</td>
+</tr>
+<tr>
+<td>更新索引列</td>
+<td>所有相关二级索引都要改</td>
+<td>少改索引列；冗余列权衡</td>
+</tr>
+<tr>
+<td><code>WHERE col LIKE &#39;%x%&#39;</code></td>
+<td>同 SELECT 全表扫描</td>
+<td>改写条件或走索引列</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十、删除数据（DELETE）"><a href="#十、删除数据（DELETE）" class="headerlink" title="十、删除数据（DELETE）"></a>十、删除数据（DELETE）</h2><h3 id="10-1-按条件删除"><a href="#10-1-按条件删除" class="headerlink" title="10.1 按条件删除"></a>10.1 按条件删除</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1001</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-批量删除"><a href="#10-2-批量删除" class="headerlink" title="10.2 批量删除"></a>10.2 批量删除</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> status <span class="operator">=</span> <span class="number">0</span> <span class="keyword">AND</span> created_at <span class="operator">&lt;</span> <span class="string">&#x27;2025-01-01&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-3-清空全表"><a href="#10-3-清空全表" class="headerlink" title="10.3 清空全表"></a>10.3 清空全表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> users;</span><br><span class="line"><span class="comment">-- 或（更快，且重置自增）</span></span><br><span class="line"><span class="keyword">TRUNCATE</span> <span class="keyword">TABLE</span> users;</span><br></pre></td></tr></table></figure>
+
+<p>删除前务必确认 WHERE 条件，必要时先 <code>SELECT</code> 预览。</p>
+<h3 id="10-4-性能要点（详见-第十一节）"><a href="#10-4-性能要点（详见-第十一节）" class="headerlink" title="10.4 性能要点（详见 第十一节）"></a>10.4 性能要点（详见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%B8%80%E3%80%81CRUD-%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5">第十一节</a>）</h3><table>
+<thead>
+<tr>
+<th>写法</th>
+<th>开销</th>
+<th>更高效替代</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>大批量 <code>DELETE</code></td>
+<td>长锁、undo 膨胀、空间不立刻释放</td>
+<td>分批 <code>DELETE ... LIMIT</code></td>
+</tr>
+<tr>
+<td>清空全表 <code>DELETE</code></td>
+<td>逐行删，最慢</td>
+<td><code>TRUNCATE TABLE</code>（无 WHERE 时）</td>
+</tr>
+<tr>
+<td>按时间删历史</td>
+<td>扫大量行</td>
+<td>分区表 <code>DROP PARTITION</code>、归档后删</td>
+</tr>
+<tr>
+<td>无 <code>WHERE</code></td>
+<td>误删全表</td>
+<td>必须带条件；先 <code>SELECT COUNT(*)</code></td>
+</tr>
+</tbody></table>
+<h3 id="10-5-事务控制（与第十二节配合）"><a href="#10-5-事务控制（与第十二节配合）" class="headerlink" title="10.5 事务控制（与第十二节配合）"></a>10.5 事务控制（与第十二节配合）</h3><p>多步写操作应放在同一事务中（详见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%BA%8C%E3%80%81%E4%BA%8B%E5%8A%A1%E4%B8%8E%E9%94%81">（三）第十二节</a>）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line"><span class="comment">-- UPDATE / DELETE / INSERT ...</span></span><br><span class="line"><span class="keyword">COMMIT</span>;   <span class="comment">-- 或 ROLLBACK;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>autocommit=1</code>（默认）时，单条 SQL 自动提交；批量脚本可 <code>SET autocommit=0</code> 后统一提交。</p>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"># 数据库</a>
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/" rel="prev" title="MySQL开发运维手册(一) — 架构、存储引擎与核心概念">
+                  <i class="fa fa-angle-left"></i> MySQL开发运维手册(一) — 架构、存储引擎与核心概念
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/" rel="next" title="MySQL开发运维手册(三) — CRUD 性能与事务、锁">
+                  MySQL开发运维手册(三) — CRUD 性能与事务、锁 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

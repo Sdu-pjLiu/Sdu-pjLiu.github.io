@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="MySQL 开发运维手册 · 系列导航：（一）架构与核心概念 · （二）命令手册 · （三）CRUD 性能与事务 · （四）权限与备份 · （五）监控与参数 · （六）客户端与技巧 · （七）进阶运维 · （八）查漏与索引">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL开发运维手册(五) — 监控与参数查看">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="MySQL 开发运维手册 · 系列导航：（一）架构与核心概念 · （二）命令手册 · （三）CRUD 性能与事务 · （四）权限与备份 · （五）监控与参数 · （六）客户端与技巧 · （七）进阶运维 · （八）查漏与索引">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-04T08:35:00.000Z">
+<meta property="article:modified_time" content="2026-06-04T09:07:12.854Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/","path":"/2026/06/04/MySQL开发运维手册-五/","title":"MySQL开发运维手册(五) — 监控与参数查看"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>MySQL开发运维手册(五) — 监控与参数查看 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%8F%82%E6%95%B0%E6%9F%A5%E7%9C%8B"><span class="nav-number">1.</span> <span class="nav-text">十五、监控与参数查看</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#15-1-%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E6%AD%A3%E5%9C%A8%E8%BF%90%E8%A1%8C%E7%9A%84-SQL"><span class="nav-number">1.1.</span> <span class="nav-text">15.1 查看当前正在运行的 SQL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-2-%E6%9F%A5%E7%9C%8B%E8%BF%9E%E6%8E%A5%E6%95%B0%E4%B8%8E%E6%9C%80%E5%A4%A7%E8%BF%9E%E6%8E%A5%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">15.2 查看连接数与最大连接数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-3-%E6%9F%A5%E7%9C%8B%E6%9C%80%E4%B9%85%E7%9A%84%E6%8C%81%E7%BB%AD%E6%9F%A5%E8%AF%A2%E6%97%B6%E9%97%B4"><span class="nav-number">1.3.</span> <span class="nav-text">15.3 查看最久的持续查询时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-4-%E7%BB%88%E6%AD%A2%E9%95%BF%E6%97%B6%E9%97%B4%E8%BF%90%E8%A1%8C%E7%9A%84-SQL"><span class="nav-number">1.4.</span> <span class="nav-text">15.4 终止长时间运行的 SQL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-5-%E6%9F%A5%E7%9C%8B%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8F%82%E6%95%B0%EF%BC%88%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">15.5 查看数据库参数（全局配置）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-6-%E6%9F%A5%E7%9C%8B%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81%E6%8C%87%E6%A0%87%EF%BC%88STATUS%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">15.6 查看运行状态指标（STATUS）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-7-%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0%E9%80%9F%E6%9F%A5"><span class="nav-number">1.7.</span> <span class="nav-text">15.7 常用参数速查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-8-%E4%B8%B4%E6%97%B6%E8%B0%83%E6%95%B4%E5%8F%82%E6%95%B0%EF%BC%88%E9%87%8D%E5%90%AF%E5%90%8E%E5%A4%B1%E6%95%88%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">15.8 临时调整参数（重启后失效）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-9-%E7%A3%81%E7%9B%98%E4%B8%8E%E8%A1%A8%E7%A9%BA%E9%97%B4%E5%B7%A1%E6%A3%80"><span class="nav-number">1.9.</span> <span class="nav-text">15.9 磁盘与表空间巡检</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="MySQL开发运维手册(五) — 监控与参数查看 | 我的记录小站">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL开发运维手册(五) — 监控与参数查看
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-06-04 16:35:00 / 修改时间：17:07:12" itemprop="dateCreated datePublished" datetime="2026-06-04T16:35:00+08:00">2026-06-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p><strong>MySQL 开发运维手册 · 系列导航</strong>：<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/">（一）架构与核心概念</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/">（二）命令手册</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/">（三）CRUD 性能与事务</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%9B%9B/">（四）权限与备份</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/">（五）监控与参数</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AD/">（六）客户端与技巧</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%83/">（七）进阶运维</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AB/">（八）查漏与索引</a></p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="十五、监控与参数查看"><a href="#十五、监控与参数查看" class="headerlink" title="十五、监控与参数查看"></a>十五、监控与参数查看</h2><p>本节用于排查慢查询、连接数打满、会话堆积等问题。</p>
+<h3 id="15-1-查看当前正在运行的-SQL"><a href="#15-1-查看当前正在运行的-SQL" class="headerlink" title="15.1 查看当前正在运行的 SQL"></a>15.1 查看当前正在运行的 SQL</h3><p>最常用命令：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> <span class="keyword">FULL</span> PROCESSLIST;</span><br></pre></td></tr></table></figure>
+
+<p>按执行时间从长到短排序（便于找慢查询）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  id,</span><br><span class="line">  <span class="keyword">user</span>,</span><br><span class="line">  host,</span><br><span class="line">  db,</span><br><span class="line">  command,</span><br><span class="line">  <span class="type">time</span> <span class="keyword">AS</span> duration_sec,</span><br><span class="line">  state,</span><br><span class="line">  info <span class="keyword">AS</span> running_sql</span><br><span class="line"><span class="keyword">FROM</span> information_schema.PROCESSLIST</span><br><span class="line"><span class="keyword">WHERE</span> command <span class="operator">!=</span> <span class="string">&#x27;Sleep&#x27;</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="type">time</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+
+<p>仅看非空闲连接：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> information_schema.PROCESSLIST <span class="keyword">WHERE</span> command <span class="operator">!=</span> <span class="string">&#x27;Sleep&#x27;</span>\G</span><br></pre></td></tr></table></figure>
+
+<p>MySQL 8.0 可用 <code>performance_schema</code>（需已启用）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  t.PROCESSLIST_ID   <span class="keyword">AS</span> id,</span><br><span class="line">  t.PROCESSLIST_USER <span class="keyword">AS</span> <span class="keyword">user</span>,</span><br><span class="line">  t.PROCESSLIST_HOST <span class="keyword">AS</span> host,</span><br><span class="line">  t.PROCESSLIST_DB   <span class="keyword">AS</span> db,</span><br><span class="line">  t.PROCESSLIST_TIME <span class="keyword">AS</span> duration_sec,</span><br><span class="line">  t.PROCESSLIST_STATE <span class="keyword">AS</span> state,</span><br><span class="line">  s.SQL_TEXT         <span class="keyword">AS</span> running_sql</span><br><span class="line"><span class="keyword">FROM</span> performance_schema.threads t</span><br><span class="line"><span class="keyword">LEFT</span> <span class="keyword">JOIN</span> performance_schema.events_statements_current s</span><br><span class="line">  <span class="keyword">ON</span> t.THREAD_ID <span class="operator">=</span> s.THREAD_ID</span><br><span class="line"><span class="keyword">WHERE</span> t.PROCESSLIST_COMMAND <span class="operator">!=</span> <span class="string">&#x27;Sleep&#x27;</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> t.PROCESSLIST_TIME <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-2-查看连接数与最大连接数"><a href="#15-2-查看连接数与最大连接数" class="headerlink" title="15.2 查看连接数与最大连接数"></a>15.2 查看连接数与最大连接数</h3><p>当前已建立连接数：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Threads_connected&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>历史峰值连接数：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Max_used_connections&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>最大允许连接数（配置上限）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;max_connections&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>一次性查看连接相关核心指标：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> STATUS <span class="keyword">WHERE</span> Variable_name <span class="keyword">IN</span> (</span><br><span class="line">  <span class="string">&#x27;Threads_connected&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Threads_running&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Max_used_connections&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Connections&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Aborted_connects&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Aborted_clients&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>连接使用率参考查询：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  (<span class="keyword">SELECT</span> VARIABLE_VALUE <span class="keyword">FROM</span> performance_schema.global_status</span><br><span class="line">   <span class="keyword">WHERE</span> VARIABLE_NAME <span class="operator">=</span> <span class="string">&#x27;Threads_connected&#x27;</span>) <span class="keyword">AS</span> current_connections,</span><br><span class="line">  (<span class="keyword">SELECT</span> VARIABLE_VALUE <span class="keyword">FROM</span> performance_schema.global_status</span><br><span class="line">   <span class="keyword">WHERE</span> VARIABLE_NAME <span class="operator">=</span> <span class="string">&#x27;Max_used_connections&#x27;</span>) <span class="keyword">AS</span> max_used_connections,</span><br><span class="line">  @<span class="variable">@max_connections</span> <span class="keyword">AS</span> max_connections_limit,</span><br><span class="line">  ROUND(</span><br><span class="line">    (<span class="keyword">SELECT</span> VARIABLE_VALUE <span class="keyword">FROM</span> performance_schema.global_status</span><br><span class="line">     <span class="keyword">WHERE</span> VARIABLE_NAME <span class="operator">=</span> <span class="string">&#x27;Threads_connected&#x27;</span>) <span class="operator">/</span> @<span class="variable">@max_connections</span> <span class="operator">*</span> <span class="number">100</span>,</span><br><span class="line">    <span class="number">2</span></span><br><span class="line">  ) <span class="keyword">AS</span> usage_percent;</span><br></pre></td></tr></table></figure>
+
+<p>若 <code>performance_schema</code> 未启用，可用：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> <span class="keyword">GLOBAL</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Threads_connected&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> <span class="keyword">GLOBAL</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Max_used_connections&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;max_connections&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-3-查看最久的持续查询时间"><a href="#15-3-查看最久的持续查询时间" class="headerlink" title="15.3 查看最久的持续查询时间"></a>15.3 查看最久的持续查询时间</h3><p>从会话列表中找运行最久的 SQL：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">  id,</span><br><span class="line">  <span class="keyword">user</span>,</span><br><span class="line">  host,</span><br><span class="line">  db,</span><br><span class="line">  <span class="type">time</span> <span class="keyword">AS</span> duration_sec,</span><br><span class="line">  state,</span><br><span class="line">  <span class="keyword">LEFT</span>(info, <span class="number">500</span>) <span class="keyword">AS</span> running_sql</span><br><span class="line"><span class="keyword">FROM</span> information_schema.PROCESSLIST</span><br><span class="line"><span class="keyword">WHERE</span> command <span class="operator">!=</span> <span class="string">&#x27;Sleep&#x27;</span></span><br><span class="line">  <span class="keyword">AND</span> info <span class="keyword">IS</span> <span class="keyword">NOT NULL</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="type">time</span> <span class="keyword">DESC</span></span><br><span class="line">LIMIT <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
+
+<p>查看慢查询阈值（超过该秒数会记入慢查询日志，若已开启）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;long_query_time&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;slow_query_log&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;slow_query_log_file&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>查看当前会话超时相关参数：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">WHERE</span> Variable_name <span class="keyword">IN</span> (</span><br><span class="line">  <span class="string">&#x27;wait_timeout&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;interactive_timeout&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;net_read_timeout&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;net_write_timeout&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;lock_wait_timeout&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-4-终止长时间运行的-SQL"><a href="#15-4-终止长时间运行的-SQL" class="headerlink" title="15.4 终止长时间运行的 SQL"></a>15.4 终止长时间运行的 SQL</h3><p>先确认 <code>id</code>，再终止：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 仅终止当前正在执行的语句，不断开连接</span></span><br><span class="line">KILL QUERY <span class="number">12345</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 终止整个连接（常用）</span></span><br><span class="line">KILL <span class="number">12345</span>;</span><br></pre></td></tr></table></figure>
+
+<p>MySQL 8.0 等价写法：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">KILL CONNECTION <span class="number">12345</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-5-查看数据库参数（全局配置）"><a href="#15-5-查看数据库参数（全局配置）" class="headerlink" title="15.5 查看数据库参数（全局配置）"></a>15.5 查看数据库参数（全局配置）</h3><p>查看全部配置项：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES;</span><br></pre></td></tr></table></figure>
+
+<p>按关键字过滤：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;innodb%&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;%timeout%&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;%buffer%&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;%log%&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>查看单个参数（两种写法等价）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;max_connections&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> @<span class="variable">@max_connections</span>;</span><br><span class="line"><span class="keyword">SELECT</span> @<span class="variable">@GLOBAL</span>.max_connections;</span><br></pre></td></tr></table></figure>
+
+<p>查看参数来源（MySQL 8.0，便于区分配置文件 &#x2F; 动态修改）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> performance_schema.variables_info</span><br><span class="line"><span class="keyword">WHERE</span> VARIABLE_NAME <span class="operator">=</span> <span class="string">&#x27;max_connections&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-6-查看运行状态指标（STATUS）"><a href="#15-6-查看运行状态指标（STATUS）" class="headerlink" title="15.6 查看运行状态指标（STATUS）"></a>15.6 查看运行状态指标（STATUS）</h3><p>查看全部状态：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> <span class="keyword">GLOBAL</span> STATUS;</span><br></pre></td></tr></table></figure>
+
+<p>常用状态项：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> <span class="keyword">GLOBAL</span> STATUS <span class="keyword">WHERE</span> Variable_name <span class="keyword">IN</span> (</span><br><span class="line">  <span class="string">&#x27;Uptime&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Questions&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Queries&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Slow_queries&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Threads_connected&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Threads_running&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Innodb_rows_read&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Innodb_rows_inserted&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Innodb_rows_updated&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Innodb_rows_deleted&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Created_tmp_tables&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;Created_tmp_disk_tables&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>QPS 粗算（需两次采样取差值）：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> <span class="keyword">GLOBAL</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;Questions&#x27;</span>;</span><br><span class="line"><span class="comment">-- 间隔 N 秒后再次执行，(Questions2 - Questions1) / N 即为近似 QPS</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="15-7-常用参数速查"><a href="#15-7-常用参数速查" class="headerlink" title="15.7 常用参数速查"></a>15.7 常用参数速查</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>查看命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>max_connections</code></td>
+<td>最大连接数上限</td>
+<td><code>SELECT @@max_connections;</code></td>
+</tr>
+<tr>
+<td><code>Threads_connected</code></td>
+<td>当前连接数</td>
+<td><code>SHOW STATUS LIKE &#39;Threads_connected&#39;;</code></td>
+</tr>
+<tr>
+<td><code>Max_used_connections</code></td>
+<td>历史最高连接数</td>
+<td><code>SHOW STATUS LIKE &#39;Max_used_connections&#39;;</code></td>
+</tr>
+<tr>
+<td><code>long_query_time</code></td>
+<td>慢查询阈值（秒）</td>
+<td><code>SELECT @@long_query_time;</code></td>
+</tr>
+<tr>
+<td><code>wait_timeout</code></td>
+<td>非交互连接空闲超时（秒）</td>
+<td><code>SELECT @@wait_timeout;</code></td>
+</tr>
+<tr>
+<td><code>interactive_timeout</code></td>
+<td>交互连接空闲超时（秒）</td>
+<td><code>SELECT @@interactive_timeout;</code></td>
+</tr>
+<tr>
+<td><code>innodb_buffer_pool_size</code></td>
+<td>InnoDB 缓冲池大小</td>
+<td><code>SELECT @@innodb_buffer_pool_size;</code></td>
+</tr>
+<tr>
+<td><code>Slow_queries</code></td>
+<td>累计慢查询次数</td>
+<td><code>SHOW STATUS LIKE &#39;Slow_queries&#39;;</code></td>
+</tr>
+</tbody></table>
+<h3 id="15-8-临时调整参数（重启后失效）"><a href="#15-8-临时调整参数（重启后失效）" class="headerlink" title="15.8 临时调整参数（重启后失效）"></a>15.8 临时调整参数（重启后失效）</h3><p>动态可调参数示例：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> max_connections <span class="operator">=</span> <span class="number">500</span>;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> long_query_time <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> slow_query_log <span class="operator">=</span> <span class="keyword">ON</span>;</span><br></pre></td></tr></table></figure>
+
+<p>查看是否可动态修改：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;max_connections&#x27;</span>;</span><br><span class="line"><span class="comment">-- 结果中 read_only 为 OFF 且属于 dynamic 变量时，可用 SET GLOBAL 修改</span></span><br></pre></td></tr></table></figure>
+
+<p>持久化修改需写入配置文件（如 <code>/etc/mysql/mysql.conf.d/mysqld.cnf</code>）后重启：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[mysqld]</span></span><br><span class="line"><span class="attr">max_connections</span> = <span class="number">500</span></span><br><span class="line"><span class="attr">long_query_time</span> = <span class="number">2</span></span><br><span class="line"><span class="attr">slow_query_log</span> = <span class="number">1</span></span><br><span class="line"><span class="attr">slow_query_log_file</span> = /var/log/mysql/slow.log</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-9-磁盘与表空间巡检"><a href="#15-9-磁盘与表空间巡检" class="headerlink" title="15.9 磁盘与表空间巡检"></a>15.9 磁盘与表空间巡检</h3><p>除连接数、慢 SQL 外，应定期看 <strong>datadir 磁盘</strong> 与 <strong>表膨胀</strong>（与 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%83/#18-1-%E6%9F%A5%E7%9C%8B%E5%BA%93%E8%A1%A8%E5%AE%B9%E9%87%8F%E4%B8%8E%E7%A3%81%E7%9B%98%E5%8D%A0%E7%94%A8">（七）18.1</a> 配合）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">df</span> -h <span class="string">&quot;<span class="subst">$(mysql -N -e <span class="string">&quot;SELECT @@datadir&quot;</span>)</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 库表占用 Top N（估算，非精确行数）</span></span><br><span class="line"><span class="keyword">SELECT</span> table_schema, table_name,</span><br><span class="line">       ROUND((data_length <span class="operator">+</span> index_length) <span class="operator">/</span> <span class="number">1024</span> <span class="operator">/</span> <span class="number">1024</span>, <span class="number">2</span>) <span class="keyword">AS</span> total_mb</span><br><span class="line"><span class="keyword">FROM</span> information_schema.tables</span><br><span class="line"><span class="keyword">WHERE</span> table_schema <span class="keyword">NOT</span> <span class="keyword">IN</span> (<span class="string">&#x27;mysql&#x27;</span>, <span class="string">&#x27;information_schema&#x27;</span>, <span class="string">&#x27;performance_schema&#x27;</span>, <span class="string">&#x27;sys&#x27;</span>)</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> (data_length <span class="operator">+</span> index_length) <span class="keyword">DESC</span></span><br><span class="line">LIMIT <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>信号</th>
+<th>可能原因</th>
+<th>方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>磁盘持续涨</td>
+<td>数据增长、Binlog 未清理、大表 DELETE 不缩文件</td>
+<td>归档、分区、<code>PURGE BINARY LOGS</code>、必要时 <code>OPTIMIZE</code>&#x2F;重建</td>
+</tr>
+<tr>
+<td><code>Threads_running</code> 长期很高</td>
+<td>活跃查询多或锁等待</td>
+<td><code>PROCESSLIST</code>、锁等待（十八节）</td>
+</tr>
+</tbody></table>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"># 数据库</a>
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%9B%9B/" rel="prev" title="MySQL开发运维手册(四) — 用户权限与备份恢复">
+                  <i class="fa fa-angle-left"></i> MySQL开发运维手册(四) — 用户权限与备份恢复
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AD/" rel="next" title="MySQL开发运维手册(六) — 客户端命令与实用技巧">
+                  MySQL开发运维手册(六) — 客户端命令与实用技巧 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

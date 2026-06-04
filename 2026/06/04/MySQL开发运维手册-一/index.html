@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="MySQL 开发运维手册 · 系列导航：（一）架构与核心概念 · （二）命令手册 · （三）CRUD 性能与事务 · （四）权限与备份 · （五）监控与参数 · （六）客户端与技巧 · （七）进阶运维 · （八）查漏与索引">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL开发运维手册(一) — 架构、存储引擎与核心概念">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="MySQL 开发运维手册 · 系列导航：（一）架构与核心概念 · （二）命令手册 · （三）CRUD 性能与事务 · （四）权限与备份 · （五）监控与参数 · （六）客户端与技巧 · （七）进阶运维 · （八）查漏与索引">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-04T08:16:57.000Z">
+<meta property="article:modified_time" content="2026-06-04T09:07:12.854Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/","path":"/2026/06/04/MySQL开发运维手册-一/","title":"MySQL开发运维手册(一) — 架构、存储引擎与核心概念"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>MySQL开发运维手册(一) — 架构、存储引擎与核心概念 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81MySQL-%E6%9E%B6%E6%9E%84%E3%80%81%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">一、MySQL 架构、存储引擎与核心概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-MySQL-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9A%E5%AE%A2%E6%88%B7%E7%AB%AF-%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 MySQL 是什么：客户端 &#x2F; 服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E9%80%BB%E8%BE%91%E4%B8%89%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 逻辑三层架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%B8%80%E6%9D%A1-SQL-%E5%A4%A7%E8%87%B4%E6%80%8E%E4%B9%88%E8%B5%B0"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 一条 SQL 大致怎么走</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E9%80%BB%E8%BE%91%E5%AF%B9%E8%B1%A1%E4%B8%8E%E7%A3%81%E7%9B%98%E6%96%87%E4%BB%B6%EF%BC%88%E8%BF%90%E7%BB%B4%E5%BF%85%E7%9F%A5%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">1.4 逻辑对象与磁盘文件（运维必知）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E6%80%8E%E4%B9%88%E9%80%89"><span class="nav-number">1.5.</span> <span class="nav-text">1.5 存储引擎怎么选</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-6-InnoDB-%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%EF%BC%88%E4%B8%8E%E6%80%A7%E8%83%BD%E3%80%81%E8%BF%90%E7%BB%B4%E7%9B%B4%E6%8E%A5%E7%9B%B8%E5%85%B3%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">1.6 InnoDB 核心组件（与性能、运维直接相关）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-7-%E4%B8%89%E7%A7%8D%E6%97%A5%E5%BF%97%EF%BC%9ARedo%E3%80%81Undo%E3%80%81Binlog"><span class="nav-number">1.7.</span> <span class="nav-text">1.7 三种日志：Redo、Undo、Binlog</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-8-%E7%B4%A2%E5%BC%95%EF%BC%9AB-%E6%A0%91%E4%B8%8E%E8%81%9A%E7%B0%87-%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="nav-number">1.8.</span> <span class="nav-text">1.8 索引：B+ 树与聚簇 &#x2F; 二级索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-9-%E4%BA%8B%E5%8A%A1%E3%80%81ACID-%E4%B8%8E-MVCC"><span class="nav-number">1.9.</span> <span class="nav-text">1.9 事务、ACID 与 MVCC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-10-%E9%94%81%EF%BC%9A%E8%A1%8C%E9%94%81%E3%80%81%E9%97%B4%E9%9A%99%E9%94%81%E4%B8%8E-MDL"><span class="nav-number">1.10.</span> <span class="nav-text">1.10 锁：行锁、间隙锁与 MDL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-11-%E5%A4%8D%E5%88%B6%E4%B8%8E%E9%AB%98%E5%8F%AF%E7%94%A8%EF%BC%88%E6%9E%B6%E6%9E%84%E8%A7%86%E8%A7%92%EF%BC%89"><span class="nav-number">1.11.</span> <span class="nav-text">1.11 复制与高可用（架构视角）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-12-%E6%9E%B6%E6%9E%84-%E2%86%94-%E5%BC%80%E5%8F%91-%E8%BF%90%E7%BB%B4%E5%AF%B9%E7%85%A7"><span class="nav-number">1.12.</span> <span class="nav-text">1.12 架构 ↔ 开发 &#x2F; 运维对照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-13-%E4%B8%8E%E6%9C%AC%E8%8A%82%E7%9B%B8%E5%85%B3%E7%9A%84%E6%9F%A5%E7%9C%8B%E5%91%BD%E4%BB%A4"><span class="nav-number">1.13.</span> <span class="nav-text">1.13 与本节相关的查看命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-14-%E5%BA%93%E8%A1%A8%E8%AE%BE%E8%AE%A1%E5%9F%BA%E7%A1%80%EF%BC%88%E5%BC%80%E5%8F%91%E5%BA%94%E7%9F%A5%EF%BC%89"><span class="nav-number">1.14.</span> <span class="nav-text">1.14 库表设计基础（开发应知）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-15-MySQL-5-7-%E4%B8%8E-8-0-%E5%85%B3%E9%94%AE%E5%B7%AE%E5%BC%82"><span class="nav-number">1.15.</span> <span class="nav-text">1.15 MySQL 5.7 与 8.0 关键差异</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-16-sql-mode-%E4%B8%8E%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F%EF%BC%88%E5%BC%80%E5%8F%91%E5%BF%85%E6%9F%A5%EF%BC%89"><span class="nav-number">1.16.</span> <span class="nav-text">1.16 sql_mode 与严格模式（开发必查）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="MySQL开发运维手册(一) — 架构、存储引擎与核心概念 | 我的记录小站">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL开发运维手册(一) — 架构、存储引擎与核心概念
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-06-04 16:16:57 / 修改时间：17:07:12" itemprop="dateCreated datePublished" datetime="2026-06-04T16:16:57+08:00">2026-06-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p><strong>MySQL 开发运维手册 · 系列导航</strong>：<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/">（一）架构与核心概念</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/">（二）命令手册</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/">（三）CRUD 性能与事务</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%9B%9B/">（四）权限与备份</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/">（五）监控与参数</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AD/">（六）客户端与技巧</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%83/">（七）进阶运维</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AB/">（八）查漏与索引</a></p>
+</blockquote>
+<span id="more"></span>
+
+<p><strong>外部参考（面经来源）</strong></p>
+<p><strong>主参考（面试高频）</strong>：<a target="_blank" rel="noopener" href="https://javaguide.cn/database/mysql/mysql-questions-01.html">MySQL 常见面试题总结 · JavaGuide</a></p>
+<p><strong>规范参考</strong>：<a target="_blank" rel="noopener" href="https://javaguide.cn/database/mysql/mysql-high-performance-optimization-specification-recommendations.html">MySQL 高性能优化规范建议总结 · JavaGuide</a></p>
+<p>正文中来自上述面经&#x2F;规范、且在面试或代码审查中高频的内容，统一以 <strong><code>【面经】</code></strong> 或 <strong><code>【规范】</code></strong> 标出（规范类多出自第二篇链接）。</p>
+<p><strong>写在前面</strong></p>
+<p>平时用 MySQL，我习惯把反复用到的命令记在 Obsidian 里——本地&#x2F;远程登录、<code>SHOW DATABASES</code>、<code>USE</code>、看表结构、翻几行数据，以及 <code>systemctl</code> 启停服务，构成了最初那几页笔记的核心。</p>
+<p>后来整理成文时，让 AI 在原有内容基础上做了扩展：<strong>架构与 InnoDB 原理</strong>、库表设计、CRUD 与事务、性能优化、监控与备份等；并将 <a target="_blank" rel="noopener" href="https://javaguide.cn/database/mysql/mysql-questions-01.html">JavaGuide 面经</a> 中的考点 <strong>并入对应章节</strong>（以 <code>【面经】</code> 标识），避免单独重复成章。</p>
+<p><strong>适用读者</strong>：需要上手 MySQL 的开发者、做日常巡检与故障排查的运维或者正在学习MySQL相关内容的相关人员。</p>
+<p><strong>适用环境</strong>：MySQL 5.7 &#x2F; 8.0（部分命令在 MariaDB 上名称或行为略有差异，文中会标注）。</p>
+<p><strong>阅读建议</strong>：<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/">（一）本篇</a> 建立原理与面经要点 → <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/">（二）～（七）</a> 查命令与运维 → <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AB/">（八）</a> 查漏与快速索引。</p>
+<p><strong>系列目录</strong>：<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%80/">（一）本篇</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/">（二）命令手册</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/">（三）CRUD 性能与事务</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%9B%9B/">（四）权限与备份</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/">（五）监控</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AD/">（六）客户端与技巧</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%83/">（七）进阶运维</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AB/">（八）查漏与索引</a></p>
+<h2 id="一、MySQL-架构、存储引擎与核心概念"><a href="#一、MySQL-架构、存储引擎与核心概念" class="headerlink" title="一、MySQL 架构、存储引擎与核心概念"></a>一、MySQL 架构、存储引擎与核心概念</h2><p>读懂架构，才能理解后文「为什么这条 SQL 慢」「为什么 DELETE 后空间不释放」「主从为什么会延迟」。本节偏原理，命令速查从 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/#%E4%BA%8C%E3%80%81%E8%BF%9E%E6%8E%A5-MySQL">第二节</a> 开始。</p>
+<h3 id="1-1-MySQL-是什么：客户端-服务器"><a href="#1-1-MySQL-是什么：客户端-服务器" class="headerlink" title="1.1 MySQL 是什么：客户端 &#x2F; 服务器"></a>1.1 MySQL 是什么：客户端 &#x2F; 服务器</h3><blockquote>
+<p><strong>【面经】</strong> <strong>关系型数据库（RDBMS）</strong>：数据存放在表中，表与表之间有一对一、一对多、多对多关系；通过 <strong>SQL</strong> 读写，主流引擎支持 <strong>ACID 事务</strong>。常见 RDBMS：MySQL、PostgreSQL、Oracle 等。</p>
+</blockquote>
+<blockquote>
+<p><strong>【面经】</strong> <strong>MySQL 为何流行</strong>：开源生态成熟、InnoDB 事务与主从&#x2F;读写分离方案完善、上手与运维成本相对低；默认端口 <strong>3306</strong>，默认引擎 <strong>InnoDB</strong>（5.5.5 起）。</p>
+</blockquote>
+<p>MySQL 采用 <strong>C&#x2F;S 架构</strong>：应用通过 <code>mysql</code> 客户端、JDBC、Python <code>pymysql</code> 等连接 <strong>mysqld 进程</strong>（服务器）。一个 mysqld 实例通常对应一个 <strong>datadir</strong> 目录，其下可挂载多个 <strong>database（schema）</strong>；库内是 <strong>table</strong>，表里是 <strong>row</strong>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">应用 (App / mysql CLI)</span><br><span class="line">        │ TCP 3306</span><br><span class="line">        ▼</span><br><span class="line">┌───────────────────────────────────────┐</span><br><span class="line">│            mysqld 进程                 │</span><br><span class="line">│  连接层 → Server 层 → 存储引擎层        │</span><br><span class="line">└───────────────────────────────────────┘</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">   datadir/（.ibd、binlog、redo 等文件）</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-逻辑三层架构"><a href="#1-2-逻辑三层架构" class="headerlink" title="1.2 逻辑三层架构"></a>1.2 逻辑三层架构</h3><table>
+<thead>
+<tr>
+<th>层次</th>
+<th>职责</th>
+<th>开发与运维关注点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>连接层</strong></td>
+<td>认证、权限、线程&#x2F;连接管理</td>
+<td><code>max_connections</code>、连接池、短连接 vs 长连接</td>
+</tr>
+<tr>
+<td><strong>Server 层</strong></td>
+<td>解析 SQL、优化器、执行器、缓存、函数、跨引擎能力</td>
+<td><code>EXPLAIN</code>、慢 SQL、权限、<strong>Binlog（在此层）</strong></td>
+</tr>
+<tr>
+<td><strong>存储引擎层</strong></td>
+<td>数据的物理读写、索引、事务、锁</td>
+<td><strong>InnoDB</strong>（默认）、表结构、行锁、Buffer Pool</td>
+</tr>
+</tbody></table>
+<p>MySQL 的 <strong>插件式存储引擎</strong>：<code>CREATE TABLE ... ENGINE=InnoDB</code> 可按表指定引擎；同一实例中不同表可用不同引擎（不推荐混用除非有明确理由）。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> ENGINES;</span><br><span class="line"><span class="keyword">SHOW</span> <span class="keyword">TABLE</span> STATUS <span class="keyword">LIKE</span> <span class="string">&#x27;users&#x27;</span>\G   <span class="comment">-- 查看 Engine 列</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>Server 层内部组件</strong>（一条 SQL 的执行路径）：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>连接器</td>
+<td>鉴权、权限、连接管理</td>
+</tr>
+<tr>
+<td>分析器</td>
+<td>词法 &#x2F; 语法解析</td>
+</tr>
+<tr>
+<td>优化器</td>
+<td>选索引、JOIN 顺序，生成执行计划</td>
+</tr>
+<tr>
+<td>执行器</td>
+<td>调用存储引擎；执行前校验权限</td>
+</tr>
+<tr>
+<td>查询缓存</td>
+<td><strong>MySQL 8.0 已移除</strong>；5.7 亦默认关闭</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>【面经】</strong> 查询缓存在表变更后易失效，写多读少场景弊大于利；8.0 起不要再考虑 <code>query_cache</code>。</p>
+</blockquote>
+<h3 id="1-3-一条-SQL-大致怎么走"><a href="#1-3-一条-SQL-大致怎么走" class="headerlink" title="1.3 一条 SQL 大致怎么走"></a>1.3 一条 SQL 大致怎么走</h3><p>以 <code>SELECT id FROM users WHERE email = &#39;a@b.com&#39;</code> 为例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">客户端 (App / mysql CLI)</span><br><span class="line">        │  发送 SQL</span><br><span class="line">        ▼</span><br><span class="line">┌───────────────────────────────────────┐</span><br><span class="line">│           连接层：鉴权、权限           │</span><br><span class="line">└───────────────────────────────────────┘</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">┌───────────────────────────────────────┐</span><br><span class="line">│     分析器 (Parser)：词法 / 语法解析    │</span><br><span class="line">└───────────────────────────────────────┘</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">┌───────────────────────────────────────┐</span><br><span class="line">│   优化器 (Optimizer)：选索引、JOIN 顺序 │</span><br><span class="line">└───────────────────────────────────────┘</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">┌───────────────────────────────────────┐</span><br><span class="line">│   执行器 (Executor)：调用存储引擎 API   │</span><br><span class="line">└───────────────────────────────────────┘</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">┌───────────────────────────────────────┐</span><br><span class="line">│  InnoDB：Buffer Pool 命中？读盘？返回  │</span><br><span class="line">└───────────────────────────────────────┘</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">   结果集返回客户端</span><br></pre></td></tr></table></figure>
+
+<p><strong>UPDATE &#x2F; DELETE</strong> 在 Server 层同样先 <strong>优化 + 定位行</strong>，引擎层再 <strong>加锁、写 undo&#x2F;redo、改索引</strong>；因此「写」的成本 ≈ 「读定位」+ 「日志与索引维护」（详见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%B8%80%E3%80%81CRUD-%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5">第十一节</a>）。</p>
+<h3 id="1-4-逻辑对象与磁盘文件（运维必知）"><a href="#1-4-逻辑对象与磁盘文件（运维必知）" class="headerlink" title="1.4 逻辑对象与磁盘文件（运维必知）"></a>1.4 逻辑对象与磁盘文件（运维必知）</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;datadir&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>典型目录内容（<code>innodb_file_per_table=ON</code> 时）：</p>
+<table>
+<thead>
+<tr>
+<th>文件 &#x2F; 目录</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>数据库名/</code></td>
+<td>库目录</td>
+</tr>
+<tr>
+<td><code>表名.ibd</code></td>
+<td>InnoDB 表数据与索引（独立表空间）</td>
+</tr>
+<tr>
+<td><code>ibdata1</code></td>
+<td>系统表空间（数据字典、undo 等，视版本而定）</td>
+</tr>
+<tr>
+<td><code>ib_logfile*</code> &#x2F; <code>#innodb_redo</code></td>
+<td>Redo 日志</td>
+</tr>
+<tr>
+<td><code>binlog.00000*</code></td>
+<td>Binlog（逻辑日志，主从 &#x2F;  PITR）</td>
+</tr>
+<tr>
+<td><code>mysql/</code></td>
+<td>用户、权限等系统库</td>
+</tr>
+<tr>
+<td><code>#ib_16384_*</code></td>
+<td>MySQL 8.0 部分元数据文件</td>
+</tr>
+</tbody></table>
+<p><strong>开发启示</strong>：大表 &#x3D; 大 <code>.ibd</code>；删数据不等于缩小文件。</p>
+<h3 id="1-5-存储引擎怎么选"><a href="#1-5-存储引擎怎么选" class="headerlink" title="1.5 存储引擎怎么选"></a>1.5 存储引擎怎么选</h3><table>
+<thead>
+<tr>
+<th>引擎</th>
+<th>事务</th>
+<th>行锁</th>
+<th>典型场景</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>InnoDB</strong></td>
+<td>支持</td>
+<td>支持</td>
+<td><strong>默认首选</strong>，OLTP</td>
+<td>MySQL 8.0 默认</td>
+</tr>
+<tr>
+<td>MyISAM</td>
+<td>不支持</td>
+<td>表锁</td>
+<td>只读归档、特殊遗留</td>
+<td>崩溃恢复弱，不推荐新业务</td>
+</tr>
+<tr>
+<td>MEMORY</td>
+<td>不支持</td>
+<td>表锁</td>
+<td>临时会话数据</td>
+<td>重启丢失</td>
+</tr>
+<tr>
+<td>ARCHIVE</td>
+<td>不支持</td>
+<td>—</td>
+<td>压缩归档</td>
+<td>仅 INSERT&#x2F;SELECT</td>
+</tr>
+</tbody></table>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 建表时显式指定（推荐 InnoDB + utf8mb4）</span></span><br><span class="line"><span class="keyword">CREATE TABLE</span> t (</span><br><span class="line">  id <span class="type">BIGINT</span> <span class="keyword">PRIMARY KEY</span></span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb4;</span><br></pre></td></tr></table></figure>
+
+<p><strong>实际开发</strong>：新业务统一 <strong>InnoDB</strong>；不要用 MyISAM 除非维护遗留系统。</p>
+<blockquote>
+<p><strong>【面经】</strong> MyISAM 与 InnoDB 核心区别：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>MyISAM</th>
+<th>InnoDB</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>事务</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>锁</td>
+<td>表锁</td>
+<td>行锁（默认）</td>
+</tr>
+<tr>
+<td>外键</td>
+<td>不支持</td>
+<td>支持（生产多在应用层约束）</td>
+</tr>
+<tr>
+<td>崩溃恢复</td>
+<td>弱</td>
+<td>依赖 redo</td>
+</tr>
+<tr>
+<td>MVCC</td>
+<td>无</td>
+<td>有</td>
+</tr>
+<tr>
+<td>索引与数据</td>
+<td>分离存储</td>
+<td>聚簇索引即数据</td>
+</tr>
+<tr>
+<td>缓存</td>
+<td>Key Cache（仅索引）</td>
+<td>Buffer Pool（数据+索引）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>【面经】</strong> 勿轻信「MyISAM 读更快」；《高性能 MySQL》指出：多数场景 InnoDB 更优，聚簇索引下尤其明显。5.5.5 起默认引擎为 InnoDB。</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;default_storage_engine&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-6-InnoDB-核心组件（与性能、运维直接相关）"><a href="#1-6-InnoDB-核心组件（与性能、运维直接相关）" class="headerlink" title="1.6 InnoDB 核心组件（与性能、运维直接相关）"></a>1.6 InnoDB 核心组件（与性能、运维直接相关）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">                  读写 SQL</span><br><span class="line">       ┌────────────┼────────────┐</span><br><span class="line">       │            │            │</span><br><span class="line">       ▼            ▼            ▼</span><br><span class="line">┌────────────┐ ┌─────────┐ ┌──────────────┐</span><br><span class="line">│ Buffer Pool│ │ Redo Log│ │    Binlog    │</span><br><span class="line">│  (内存)    │ │ (磁盘)  │ │  (Server 层) │</span><br><span class="line">│ 数据页/索引│ │  重做   │ │   逻辑日志   │</span><br><span class="line">└─────┬──────┘ └─────────┘ └──────────────┘</span><br><span class="line">      │</span><br><span class="line">      │  未命中缓存则读盘</span><br><span class="line">      ▼</span><br><span class="line">┌────────────┐ ┌─────────┐</span><br><span class="line">│  .ibd 等   │ │ Undo Log│</span><br><span class="line">│  表空间    │ │ (磁盘)  │</span><br><span class="line">│  (磁盘)    │ │ 回滚/MVCC│</span><br><span class="line">└────────────┘ └─────────┘</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+<th>运维 &#x2F; 开发关联</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Buffer Pool</strong></td>
+<td>缓存数据页，减少磁盘 I&#x2F;O</td>
+<td><code>innodb_buffer_pool_size</code> 常为内存 50%～70%</td>
+</tr>
+<tr>
+<td><strong>Redo Log</strong></td>
+<td>物理日志，崩溃后 <strong>前滚</strong> 已提交事务</td>
+<td>写多、日志盘慢 → 吞吐下降</td>
+</tr>
+<tr>
+<td><strong>Undo Log</strong></td>
+<td>旧版本、<strong>回滚</strong>、<strong>MVCC 读</strong></td>
+<td>长事务 → undo 堆积 → 空间膨胀</td>
+</tr>
+<tr>
+<td><strong>Binlog</strong></td>
+<td>逻辑 SQL &#x2F; 行变更，<strong>主从、备份</strong></td>
+<td>与 redo <strong>两阶段提交</strong> 保证一致</td>
+</tr>
+<tr>
+<td><strong>Doublewrite</strong></td>
+<td>防止部分页写损坏</td>
+<td>一般无需调，知悉即可</td>
+</tr>
+<tr>
+<td><strong>聚簇索引</strong></td>
+<td>数据按 <strong>主键 B+ 树</strong> 存储</td>
+<td>主键选型影响插入与范围查询</td>
+</tr>
+</tbody></table>
+<h3 id="1-7-三种日志：Redo、Undo、Binlog"><a href="#1-7-三种日志：Redo、Undo、Binlog" class="headerlink" title="1.7 三种日志：Redo、Undo、Binlog"></a>1.7 三种日志：Redo、Undo、Binlog</h3><table>
+<thead>
+<tr>
+<th>日志</th>
+<th>层级</th>
+<th>类型</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Redo</strong></td>
+<td>InnoDB</td>
+<td>物理（页变更）</td>
+<td>崩溃恢复，保证已提交事务持久化</td>
+</tr>
+<tr>
+<td><strong>Undo</strong></td>
+<td>InnoDB</td>
+<td>逻辑（反向）</td>
+<td><code>ROLLBACK</code>、MVCC 读历史版本</td>
+</tr>
+<tr>
+<td><strong>Binlog</strong></td>
+<td>Server</td>
+<td>逻辑（SQL&#x2F;行）</td>
+<td>复制、按时间点恢复</td>
+</tr>
+</tbody></table>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 8.0 查看 Redo 容量；5.7 常用 innodb_log_file_size</span></span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;innodb_redo_log_capacity&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;innodb_log_file_size&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;binlog_format&#x27;</span>;   <span class="comment">-- ROW / STATEMENT / MIXED</span></span><br><span class="line"><span class="keyword">SHOW</span> <span class="type">BINARY</span> LOGS;</span><br></pre></td></tr></table></figure>
+
+<p><strong>开发启示</strong>：任何提交成功的写，通常都会进 <strong>Binlog</strong>（从库要 replay）；长事务未提交则 <strong>Undo</strong> 保留旧版本，阻塞 <strong>purge</strong>。</p>
+<blockquote>
+<p><strong>【面经】</strong> <strong>Redo 与 Binlog 的两阶段提交（2PC）</strong>：开启 Binlog 时，事务提交大致为「InnoDB <strong>prepare</strong>（redo 落盘）→ 写 <strong>Binlog</strong> → InnoDB <strong>commit</strong>」。二者共同保证崩溃恢复后主从、点对点恢复一致；因此主库常设 <code>innodb_flush_log_at_trx_commit=1</code> 与 <code>sync_binlog=1</code>（见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AB/#19-3-%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98%E5%8F%82%E8%80%83">（八）19.3</a>）。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th><code>binlog_format</code></th>
+<th>复制内容</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ROW</strong>（生产推荐）</td>
+<td>行变更</td>
+<td>日志量大，但少歧义、主从一致性好</td>
+</tr>
+<tr>
+<td>STATEMENT</td>
+<td>原始 SQL</td>
+<td>可能因 UDF、非确定性函数导致主从不一致</td>
+</tr>
+<tr>
+<td>MIXED</td>
+<td>混合</td>
+<td>由 Server 按语句选择</td>
+</tr>
+</tbody></table>
+<h3 id="1-8-索引：B-树与聚簇-二级索引"><a href="#1-8-索引：B-树与聚簇-二级索引" class="headerlink" title="1.8 索引：B+ 树与聚簇 &#x2F; 二级索引"></a>1.8 索引：B+ 树与聚簇 &#x2F; 二级索引</h3><p>InnoDB 索引结构为 <strong>B+ 树</strong>（多路平衡树，叶子链表便于范围扫描）：</p>
+<ul>
+<li><strong>聚簇索引（主键）</strong>：叶子节点存 <strong>完整行</strong>；表即索引，必须有主键（无则隐藏 row_id）。</li>
+<li><strong>二级索引</strong>：叶子存 <strong>索引列 + 主键值</strong>；查询常需 <strong>回表</strong>（再查聚簇索引）。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 覆盖索引：索引已含查询列，Extra 可出现 Using index</span></span><br><span class="line"><span class="keyword">CREATE</span> INDEX idx_user_status_email <span class="keyword">ON</span> users (status, email);</span><br><span class="line"><span class="keyword">SELECT</span> email <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> status <span class="operator">=</span> <span class="number">1</span>;   <span class="comment">-- 可能不回表</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>选型建议</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>主键选择</th>
+<th>插入表现</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>BIGINT AUTO_INCREMENT</code></td>
+<td>顺序插入，页分裂少</td>
+<td><strong>推荐</strong></td>
+</tr>
+<tr>
+<td>随机 UUID</td>
+<td>随机插入，页分裂多</td>
+<td>可用有序 UUID（如 UUID v7）</td>
+</tr>
+<tr>
+<td>业务字段</td>
+<td>视情况</td>
+<td>需短、不变、单列</td>
+</tr>
+</tbody></table>
+<p>索引越多，<strong>INSERT&#x2F;UPDATE&#x2F;DELETE 越慢</strong>（每个索引都要维护）。</p>
+<blockquote>
+<p><strong>【面经】</strong> 为什么用 B+ 树而不是 Hash &#x2F; B 树？</p>
+<ul>
+<li>B+ 树「矮胖」，千万行约 3～4 层 I&#x2F;O，且叶子链表便于 <strong>范围查询</strong>。</li>
+<li>Hash 不支持范围、排序、联合索引最左前缀；MEMORY 引擎可用 Hash，InnoDB 通用索引用 B+ 树。</li>
+<li>相对 B 树：B+ 非叶只存键、扇出更大；任意查询路径长度稳定。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p><strong>【面经】</strong> 覆盖索引：索引已含 SELECT 所需全部列 → <code>Extra: Using index</code>，避免回表。</p>
+</blockquote>
+<blockquote>
+<p><strong>【面经】</strong> 联合索引 <code>(a,b,c)</code> 的最左前缀：可用 <code>(a)</code>、<code>(a,b)</code>、<code>(a,b,c)</code>；以下仅 <code>class</code> 条件 <strong>不走</strong> <code>(name,class)</code> 索引：</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> student (</span><br><span class="line">  id <span class="type">BIGINT</span> <span class="keyword">NOT NULL</span> <span class="keyword">PRIMARY KEY</span>,</span><br><span class="line">  name <span class="type">VARCHAR</span>(<span class="number">100</span>), class <span class="type">VARCHAR</span>(<span class="number">100</span>),</span><br><span class="line">  KEY name_class_idx (name, class)</span><br><span class="line">);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> student <span class="keyword">WHERE</span> name <span class="operator">=</span> <span class="string">&#x27;Anne&#x27;</span>;                    <span class="comment">-- 走索引</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> student <span class="keyword">WHERE</span> name <span class="operator">=</span> <span class="string">&#x27;Anne&#x27;</span> <span class="keyword">AND</span> class <span class="operator">=</span> <span class="string">&#x27;x&#x27;</span>;  <span class="comment">-- 走索引</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> student <span class="keyword">WHERE</span> class <span class="operator">=</span> <span class="string">&#x27;x&#x27;</span>;                    <span class="comment">-- 不走联合索引</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>【面经】</strong> <code>a=1 AND c=1</code> 走 <code>(a,b,c)</code> 时只用 <code>a</code> 列，再过滤 <code>c</code>；<code>b=1 AND a=1 AND c=1</code> 优化器可能重排为 <code>a,b,c</code> 顺序。</p>
+</blockquote>
+<p><strong>索引失效常见原因</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>原因</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>违反最左前缀</td>
+<td>见上</td>
+</tr>
+<tr>
+<td>列上函数 &#x2F; 计算</td>
+<td><code>WHERE YEAR(create_time)=2026</code></td>
+</tr>
+<tr>
+<td>隐式类型转换</td>
+<td><code>WHERE id = &#39;123&#39;</code>（id 为整型）</td>
+</tr>
+<tr>
+<td>前导 <code>%</code> LIKE</td>
+<td><code>LIKE &#39;%abc&#39;</code></td>
+</tr>
+<tr>
+<td>OR 一侧无索引</td>
+<td><code>a=1 OR b=2</code> 且 b 无索引</td>
+</tr>
+<tr>
+<td>大 IN &#x2F; 大结果集</td>
+<td>优化器可能改全表扫</td>
+</tr>
+</tbody></table>
+<p><strong>索引设计规范</strong>（<a target="_blank" rel="noopener" href="https://javaguide.cn/database/mysql/mysql-high-performance-optimization-specification-recommendations.html">JavaGuide 优化规范</a>）：</p>
+<ul>
+<li>单表索引 <strong>建议 ≤ 5</strong>；优先 <strong>联合索引</strong>，勿每列单独建索引。</li>
+<li>必须有主键；推荐 <strong>自增 BIGINT</strong>，避免 UUID&#x2F;MD5 随机主键。</li>
+<li>区分度高的列放联合索引 <strong>最左</strong>；范围条件列放 <strong>右侧</strong>。</li>
+<li>OLTP 慎用全文索引；<strong>外键</strong> 建议在业务代码保证一致性。</li>
+</ul>
+<blockquote>
+<p><strong>【面经】</strong> <strong>适合建索引的列</strong>：WHERE &#x2F; JOIN &#x2F; ORDER BY &#x2F; GROUP BY 常用列；高区分度列；外键关联列（不必建 DB 外键约束）。<br><strong>【面经】</strong> <strong>索引未必更快</strong>：表很小、结果集占表很大比例、统计信息过时 — 优化器可能选全表扫。</p>
+</blockquote>
+<h3 id="1-9-事务、ACID-与-MVCC"><a href="#1-9-事务、ACID-与-MVCC" class="headerlink" title="1.9 事务、ACID 与 MVCC"></a>1.9 事务、ACID 与 MVCC</h3><p><strong>ACID</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>含义</th>
+<th>InnoDB 实现要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Atomicity 原子性</td>
+<td>全成或全不成</td>
+<td>Undo 回滚</td>
+</tr>
+<tr>
+<td>Consistency 一致性</td>
+<td>约束不被破坏</td>
+<td>引擎 + 应用共同保证</td>
+</tr>
+<tr>
+<td>Isolation 隔离性</td>
+<td>并发互不干扰</td>
+<td>MVCC + 锁</td>
+</tr>
+<tr>
+<td>Durability 持久性</td>
+<td>提交后不丢</td>
+<td>Redo + Binlog</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>【面经】</strong> ACID 中 <strong>C（一致性）</strong> 常由 <strong>应用 + 事务机制</strong> 共同保证，并非仅由数据库单独实现。</p>
+</blockquote>
+<p><strong>MVCC（多版本并发读）</strong>：普通 <code>SELECT</code> 读 <strong>快照</strong>（历史版本来自 Undo），一般 <strong>不加行锁</strong>；<code>SELECT ... FOR UPDATE</code> 才当前读并加锁。</p>
+<blockquote>
+<p><strong>【面经】</strong> 并发事务导致的四类问题：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>脏读</td>
+<td>读到别的事务 <strong>未提交</strong> 的数据</td>
+</tr>
+<tr>
+<td>不可重复读</td>
+<td>同事务内两次读 <strong>同一行</strong>，结果不同（他人 UPDATE）</td>
+</tr>
+<tr>
+<td>幻读</td>
+<td>同事务内两次 <strong>范围读</strong>，第二次行数变多&#x2F;少（他人 INSERT）</td>
+</tr>
+<tr>
+<td>丢失更新</td>
+<td>两事务同时改同一数据，后写覆盖先写</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>【面经】</strong> 幻读 vs 不可重复读：前者强调 <strong>新增&#x2F;消失的行</strong>；后者强调 <strong>同一行内容被改</strong>。InnoDB 对 INSERT 防幻读依赖 Next-Key Lock。</p>
+</blockquote>
+<p><strong>隔离级别</strong>（<code>transaction_isolation</code>，MySQL 8.0）：</p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+<th>常用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>READ UNCOMMITTED</td>
+<td>可能</td>
+<td>可能</td>
+<td>可能</td>
+<td>极少用</td>
+</tr>
+<tr>
+<td>READ COMMITTED</td>
+<td>否</td>
+<td>可能</td>
+<td>可能</td>
+<td>Oracle 默认；部分 ORM</td>
+</tr>
+<tr>
+<td><strong>REPEATABLE READ</strong></td>
+<td>否</td>
+<td>否</td>
+<td>否*</td>
+<td><strong>MySQL 默认</strong></td>
+</tr>
+<tr>
+<td>SERIALIZABLE</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>性能差，锁多</td>
+</tr>
+</tbody></table>
+<p>*InnoDB 在 RR 下：<strong>一致性读</strong>（普通 <code>SELECT</code>）在同一事务内复用 Read View，可避免幻读；<strong>当前读</strong>（<code>FOR UPDATE</code> 等）靠 <strong>Next-Key Lock</strong> 防插入。上表按 SQL 标准定义；MySQL&#x2F;InnoDB 实际表现以引擎为准。</p>
+<blockquote>
+<p><strong>【面经】</strong> 隔离级别实现：RC&#x2F;RR 主要靠 <strong>MVCC（undo + Read View）</strong>；<code>SERIALIZABLE</code> 靠锁；RR 下 <strong>当前读</strong>（<code>FOR UPDATE</code>）仍用 Next-Key Lock 防幻读。</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> @<span class="variable">@transaction_isolation</span>;</span><br><span class="line"><span class="keyword">SET</span> SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;</span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line"><span class="comment">-- ...</span></span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+
+<p>实务命令见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%BA%8C%E3%80%81%E4%BA%8B%E5%8A%A1%E4%B8%8E%E9%94%81">第十二节</a>。</p>
+<h3 id="1-10-锁：行锁、间隙锁与-MDL"><a href="#1-10-锁：行锁、间隙锁与-MDL" class="headerlink" title="1.10 锁：行锁、间隙锁与 MDL"></a>1.10 锁：行锁、间隙锁与 MDL</h3><table>
+<thead>
+<tr>
+<th>锁类型</th>
+<th>典型触发</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>行锁（Record Lock）</strong></td>
+<td><code>UPDATE/DELETE</code> 命中行</td>
+<td>阻塞其他写同一行</td>
+</tr>
+<tr>
+<td><strong>间隙锁（Gap Lock）</strong></td>
+<td>默认 RR 下范围条件（RC 通常无间隙锁）</td>
+<td>阻塞范围内插入</td>
+</tr>
+<tr>
+<td><strong>Next-Key Lock</strong></td>
+<td>行锁 + 间隙锁</td>
+<td>RR 默认，防幻读</td>
+</tr>
+<tr>
+<td><strong>MDL（元数据锁）</strong></td>
+<td>访问表 &#x2F; <code>ALTER TABLE</code></td>
+<td>DDL 与 DML 互斥，易「堵表」</td>
+</tr>
+<tr>
+<td><strong>意向锁 IS&#x2F;IX</strong></td>
+<td>行锁前在表级标记</td>
+<td>快速判断能否对表加表锁</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>【面经】</strong> InnoDB <strong>行锁加在索引上</strong>：<code>UPDATE</code>&#x2F;<code>DELETE</code> 的 <code>WHERE</code> <strong>未命中索引</strong> 时，可能对扫描到的所有行加锁（甚至接近锁表）。</p>
+</blockquote>
+<blockquote>
+<p><strong>【面经】</strong> <strong>快照读</strong> vs <strong>当前读</strong>：</p>
+<ul>
+<li>快照读：普通 <code>SELECT</code>，走 MVCC，一般不加锁。</li>
+<li>当前读：<code>SELECT ... FOR UPDATE/FOR SHARE</code>、<code>INSERT</code>&#x2F;<code>UPDATE</code>&#x2F;<code>DELETE</code>，加 S&#x2F;X 锁。</li>
+</ul>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 当前读并加写锁</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> accounts <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 共享锁（8.0 推荐 FOR SHARE）</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> accounts <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">FOR</span> SHARE;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> accounts <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> LOCK <span class="keyword">IN</span> SHARE MODE;  <span class="comment">-- 5.7</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>【面经】</strong> 自增锁：<code>AUTO_INCREMENT</code> 插入涉及 <code>innodb_autoinc_lock_mode</code>（8.0 默认 2 交错模式，并发更好）；Statement 格式 binlog 主从需注意插入顺序。</p>
+</blockquote>
+<p>排查：<code>SHOW ENGINE INNODB STATUS\G</code>、<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/#%E5%8D%81%E4%BA%94%E3%80%81%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%8F%82%E6%95%B0%E6%9F%A5%E7%9C%8B">第十五节</a>、<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%83/#%E5%8D%81%E5%85%AB%E3%80%81%E8%BF%9B%E9%98%B6%E8%BF%90%E7%BB%B4%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4">第十八节</a> 锁等待查询。</p>
+<h3 id="1-11-复制与高可用（架构视角）"><a href="#1-11-复制与高可用（架构视角）" class="headerlink" title="1.11 复制与高可用（架构视角）"></a>1.11 复制与高可用（架构视角）</h3><p>经典 <strong>异步主从</strong>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">主库 mysqld  ──写 Binlog──▶  dump 线程</span><br><span class="line">                              │</span><br><span class="line">                              ▼ 网络</span><br><span class="line">从库 mysqld  ◀──I/O 线程写 Relay Log──</span><br><span class="line">       │</span><br><span class="line">       └── SQL 线程 replay ──▶ 从库数据</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>开发注意</th>
+<th>运维注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主库</td>
+<td>写、强一致读</td>
+<td>Binlog 磁盘、<code>sync_binlog</code></td>
+</tr>
+<tr>
+<td>从库</td>
+<td>延迟读可能旧</td>
+<td><code>Seconds_Behind_Source</code>、只读账号</td>
+</tr>
+<tr>
+<td>半同步 &#x2F; GTID</td>
+<td>减少丢数</td>
+<td><code>gtid_mode</code>、故障切换</td>
+</tr>
+</tbody></table>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> MASTER STATUS;</span><br><span class="line"><span class="keyword">SHOW</span> REPLICA STATUS\G</span><br></pre></td></tr></table></figure>
+
+<p>读写分离：<strong>写主、读从</strong>；对一致性敏感读应走主库或等同步。</p>
+<blockquote>
+<p><strong>【面经】</strong> <strong>架构层优化</strong>（索引&#x2F;SQL 优化仍不够时）：<strong>读写分离</strong> → <strong>分库分表</strong> → <strong>冷热分离</strong> → <strong>Redis 缓存热点</strong>；后者引入复杂度，非必要不优先。<br><strong>【面经】</strong> <strong>深度分页</strong>：用 <code>WHERE id &gt; ? ORDER BY id LIMIT n</code> 代替大 <code>OFFSET</code>（见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#11-2-SELECT%EF%BC%88%E8%AF%BB%EF%BC%89%E2%80%94%E2%80%94%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96">11.2</a>）。</p>
+</blockquote>
+<h3 id="1-12-架构-↔-开发-运维对照"><a href="#1-12-架构-↔-开发-运维对照" class="headerlink" title="1.12 架构 ↔ 开发 &#x2F; 运维对照"></a>1.12 架构 ↔ 开发 &#x2F; 运维对照</h3><table>
+<thead>
+<tr>
+<th>你做的事</th>
+<th>触达的架构层</th>
+<th>典型症状</th>
+<th>对应章节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>不写索引的 WHERE</td>
+<td>全表扫描</td>
+<td>慢 SELECT</td>
+<td><a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/#%E4%B8%83%E3%80%81SQL-%E6%9F%A5%E8%AF%A2%EF%BC%88SELECT%EF%BC%89">七</a>、<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%B8%80%E3%80%81CRUD-%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5">十一</a></td>
+</tr>
+<tr>
+<td>循环单行 INSERT</td>
+<td>Redo&#x2F;Binlog&#x2F;索引 × N</td>
+<td>写 QPS 低</td>
+<td><a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/#%E5%85%AB%E3%80%81%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE%EF%BC%88INSERT%EF%BC%89">八</a>、<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%B8%80%E3%80%81CRUD-%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5">十一</a></td>
+</tr>
+<tr>
+<td>大事务 UPDATE</td>
+<td>Undo 膨胀、长锁</td>
+<td>锁等待、从库延迟</td>
+<td><a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/#%E4%B9%9D%E3%80%81%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%EF%BC%88UPDATE%EF%BC%89">九</a>、<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%B8%80%E3%80%81CRUD-%E6%80%A7%E8%83%BD%E5%BC%80%E9%94%80%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5">十一</a>、<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/#%E5%8D%81%E4%BA%8C%E3%80%81%E4%BA%8B%E5%8A%A1%E4%B8%8E%E9%94%81">十二</a></td>
+</tr>
+<tr>
+<td>高峰期 ALTER</td>
+<td>MDL</td>
+<td>业务「卡死」</td>
+<td><a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/#%E5%85%AD%E3%80%81%E5%88%9B%E5%BB%BA%E4%B8%8E%E7%AE%A1%E7%90%86%E8%A1%A8">六</a>、<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%83/#%E5%8D%81%E5%85%AB%E3%80%81%E8%BF%9B%E9%98%B6%E8%BF%90%E7%BB%B4%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4">十八</a></td>
+</tr>
+<tr>
+<td>Buffer Pool 过小</td>
+<td>读盘增多</td>
+<td>整体变慢</td>
+<td>1.6、<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%83/#%E5%8D%81%E5%85%AB%E3%80%81%E8%BF%9B%E9%98%B6%E8%BF%90%E7%BB%B4%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4">十八</a></td>
+</tr>
+<tr>
+<td>连接数过多</td>
+<td>连接层线程</td>
+<td><code>Too many connections</code></td>
+<td><a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/#%E5%8D%81%E4%BA%94%E3%80%81%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%8F%82%E6%95%B0%E6%9F%A5%E7%9C%8B">十五</a></td>
+</tr>
+</tbody></table>
+<h3 id="1-13-与本节相关的查看命令"><a href="#1-13-与本节相关的查看命令" class="headerlink" title="1.13 与本节相关的查看命令"></a>1.13 与本节相关的查看命令</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 版本与引擎</span></span><br><span class="line"><span class="keyword">SELECT</span> VERSION();</span><br><span class="line"><span class="keyword">SHOW</span> ENGINES;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- InnoDB 与日志</span></span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;innodb%&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> VARIABLES <span class="keyword">LIKE</span> <span class="string">&#x27;binlog%&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> ENGINE INNODB STATUS\G</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 当前会话隔离级别与 autocommit</span></span><br><span class="line"><span class="keyword">SELECT</span> @<span class="variable">@transaction_isolation</span>, @<span class="variable">@autocommit</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 表结构与索引</span></span><br><span class="line"><span class="keyword">SHOW</span> <span class="keyword">CREATE TABLE</span> users\G</span><br><span class="line"><span class="keyword">SHOW</span> INDEX <span class="keyword">FROM</span> users;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-14-库表设计基础（开发应知）"><a href="#1-14-库表设计基础（开发应知）" class="headerlink" title="1.14 库表设计基础（开发应知）"></a>1.14 库表设计基础（开发应知）</h3><p><strong>常用数据类型</strong>（InnoDB + utf8mb4 前提下）：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>适用场景</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>TINYINT</code> &#x2F; <code>INT</code> &#x2F; <code>BIGINT</code></td>
+<td>状态、计数、ID</td>
+<td>金额、哈希 ID 用 <code>BIGINT</code>；布尔可用 <code>TINYINT(1)</code></td>
+</tr>
+<tr>
+<td><code>DECIMAL(p,s)</code></td>
+<td>金额、精确小数</td>
+<td><strong>不要用 <code>FLOAT</code> &#x2F; <code>DOUBLE</code> 存钱</strong></td>
+</tr>
+<tr>
+<td><code>VARCHAR(n)</code></td>
+<td>变长字符串</td>
+<td><code>n</code> 按实际需要，过大浪费内存与缓存</td>
+</tr>
+<tr>
+<td><code>CHAR(n)</code></td>
+<td>定长、短码</td>
+<td>如固定长度编码</td>
+</tr>
+<tr>
+<td><code>DATETIME</code> &#x2F; <code>TIMESTAMP</code></td>
+<td>时间</td>
+<td><code>TIMESTAMP</code> 有时区转换，存储 UTC；<code>TIMESTAMP</code> 上限约 <strong>2038-01-19</strong>（2038 问题），<code>DATETIME</code> 范围更大</td>
+</tr>
+<tr>
+<td><code>JSON</code></td>
+<td>半结构化（8.0 常用）</td>
+<td>可建函数索引；不宜替代所有关系建模</td>
+</tr>
+<tr>
+<td><code>BLOB</code> &#x2F; <code>TEXT</code></td>
+<td>大文本、二进制</td>
+<td>大行影响 Buffer Pool；考虑对象存储 + URL</td>
+</tr>
+</tbody></table>
+<p><strong>约束与关系</strong>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> orders (</span><br><span class="line">  id           <span class="type">BIGINT</span> UNSIGNED <span class="keyword">NOT NULL</span> AUTO_INCREMENT,</span><br><span class="line">  user_id      <span class="type">BIGINT</span> UNSIGNED <span class="keyword">NOT NULL</span>,</span><br><span class="line">  amount       <span class="type">DECIMAL</span>(<span class="number">12</span>,<span class="number">2</span>)   <span class="keyword">NOT NULL</span>,</span><br><span class="line">  status       TINYINT         <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,</span><br><span class="line">  created_at   DATETIME        <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> <span class="built_in">CURRENT_TIMESTAMP</span>,</span><br><span class="line">  <span class="keyword">PRIMARY KEY</span> (id),</span><br><span class="line">  KEY idx_orders_user_id (user_id),</span><br><span class="line">  <span class="keyword">CONSTRAINT</span> fk_orders_user</span><br><span class="line">    <span class="keyword">FOREIGN KEY</span> (user_id) <span class="keyword">REFERENCES</span> users (id)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb4;</span><br></pre></td></tr></table></figure>
+
+<p><strong>设计原则（精简）</strong>：</p>
+<ul>
+<li>每张 InnoDB 表应有 <strong>明确主键</strong>（推荐自增 <code>BIGINT</code> 或有序 ID）。  </li>
+<li>业务唯一性用 <strong>UNIQUE</strong> 约束，不要只靠应用层判断。  </li>
+<li>字符集统一 <strong>utf8mb4</strong>，排序规则常用 <code>utf8mb4_unicode_ci</code> 或 <code>_0900_ai_ci</code>（8.0）。  </li>
+<li>字段尽量 <strong>NOT NULL + 默认值</strong>，简化索引与优化器行为。  </li>
+<li>大表预留 <strong>归档 &#x2F; 分区 &#x2F; 分表</strong> 策略，不要等亿级才想。</li>
+</ul>
+<blockquote>
+<p><strong>【面经】</strong> <strong>CHAR vs VARCHAR</strong>：<code>CHAR</code> 定长（不足补空格），适合 MD5、身份证等固定长度；<code>VARCHAR</code> 变长，适合昵称、标题。<code>VARCHAR(100)</code> 与 <code>VARCHAR(10)</code> <strong>磁盘占用相近</strong>，但排序&#x2F;内存可能按声明长度分配，100 更耗内存。</p>
+</blockquote>
+<blockquote>
+<p><strong>【面经】</strong> <strong>UNSIGNED</strong>：非负整数上限翻倍，自增 ID、状态码优先使用 <code>INT UNSIGNED</code> &#x2F; <code>BIGINT UNSIGNED</code>。</p>
+</blockquote>
+<blockquote>
+<p><strong>【面经】</strong> <strong>手机号用 VARCHAR，不用 BIGINT</strong>：前导零、<code>+86</code>、加密密文无法用数字类型表达。</p>
+</blockquote>
+<blockquote>
+<p><strong>【面经】</strong> <strong>IP 可转整型</strong>（纯 IPv4、不需保留格式时）：</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> INET_ATON(<span class="string">&#x27;192.168.1.1&#x27;</span>);</span><br><span class="line"><span class="keyword">SELECT</span> INET_NTOA(<span class="number">3232235777</span>);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>【规范】</strong> 不要用字符串存日期；<strong>禁止 FLOAT&#x2F;DOUBLE 存金额</strong>；<strong>慎用 ENUM</strong>（改值需 DDL，推荐 <code>TINYINT</code> + 字典）；<strong>TEXT&#x2F;BLOB</strong> 大字段单独表或避免 <code>SELECT *</code>；<strong>禁止在库存图片&#x2F;大文件</strong>（存 URL）。</p>
+</blockquote>
+<blockquote>
+<p><strong>【规范】</strong> 单表建议 <strong>≤ 500 万行</strong>（非硬限）；表与字段加 <strong>COMMENT</strong>；关联列 <strong>类型必须一致</strong>，避免隐式转换导致索引失效。</p>
+</blockquote>
+<p>库表命名与设计规范见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/#6-5-%E5%91%BD%E5%90%8D%E4%B8%8E%E8%A1%A8%E8%AE%BE%E8%AE%A1%E8%A7%84%E8%8C%83%E3%80%90%E8%A7%84%E8%8C%83%E3%80%91">第六节 6.5</a>。</p>
+<h3 id="1-15-MySQL-5-7-与-8-0-关键差异"><a href="#1-15-MySQL-5-7-与-8-0-关键差异" class="headerlink" title="1.15 MySQL 5.7 与 8.0 关键差异"></a>1.15 MySQL 5.7 与 8.0 关键差异</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>5.7</th>
+<th>8.0</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>默认认证插件</td>
+<td><code>mysql_native_password</code></td>
+<td><code>caching_sha2_password</code></td>
+</tr>
+<tr>
+<td>默认字符集</td>
+<td>常为 <code>latin1</code>（安装后需改）</td>
+<td>默认 <code>utf8mb4</code></td>
+</tr>
+<tr>
+<td>查询缓存</td>
+<td>有（易成瓶颈，常关）</td>
+<td><strong>已移除</strong></td>
+</tr>
+<tr>
+<td>窗口函数 &#x2F; CTE</td>
+<td>无</td>
+<td><code>ROW_NUMBER()</code>、<code>WITH</code> 等</td>
+</tr>
+<tr>
+<td>不可见索引</td>
+<td>无</td>
+<td><code>CREATE INDEX ... INVISIBLE</code> 便于验证</td>
+</tr>
+<tr>
+<td>降序索引</td>
+<td>伪降序</td>
+<td>真降序索引</td>
+</tr>
+<tr>
+<td>复制术语</td>
+<td><code>SHOW SLAVE STATUS</code></td>
+<td>推荐 <code>SHOW REPLICA STATUS</code></td>
+</tr>
+<tr>
+<td>Redo 日志</td>
+<td><code>ib_logfile*</code></td>
+<td><code>#innodb_redo</code> 目录</td>
+</tr>
+</tbody></table>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 8.0 客户端连旧账号失败时，可改插件或创建兼容用户（按安全策略选择）</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">USER</span> <span class="string">&#x27;app&#x27;</span>@<span class="string">&#x27;%&#x27;</span> IDENTIFIED <span class="keyword">WITH</span> mysql_native_password <span class="keyword">BY</span> <span class="string">&#x27;password&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> plugin, authentication_string <span class="keyword">FROM</span> mysql.user <span class="keyword">WHERE</span> <span class="keyword">user</span> <span class="operator">=</span> <span class="string">&#x27;app&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>升级 5.7 → 8.0 前务必：全量备份、在 staging 跑应用回归、检查 <code>sql_mode</code>、认证插件、保留字冲突（如 <code>RANK</code>、<code>GROUPS</code>）。详见 <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AB/#19-5-%E5%9C%A8%E7%BA%BF-DDL-%E4%B8%8E%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7">19.5</a>。</p>
+<h3 id="1-16-sql-mode-与严格模式（开发必查）"><a href="#1-16-sql-mode-与严格模式（开发必查）" class="headerlink" title="1.16 sql_mode 与严格模式（开发必查）"></a>1.16 <code>sql_mode</code> 与严格模式（开发必查）</h3><p><code>sql_mode</code> 决定「非法&#x2F;宽松数据」是否被拒绝，直接影响 INSERT&#x2F;UPDATE 是否静默截断或报错。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> @<span class="variable">@GLOBAL</span>.sql_mode;</span><br><span class="line"><span class="keyword">SELECT</span> @<span class="variable">@SESSION</span>.sql_mode;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>常见模式</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>STRICT_TRANS_TABLES</code></td>
+<td>事务表非法值报错（推荐开启）</td>
+</tr>
+<tr>
+<td><code>ONLY_FULL_GROUP_BY</code></td>
+<td><code>GROUP BY</code> 列与 SELECT 非聚合列一致（8.0 默认常含）</td>
+</tr>
+<tr>
+<td><code>NO_ZERO_DATE</code> &#x2F; <code>NO_ZERO_IN_DATE</code></td>
+<td>拒绝零日期</td>
+</tr>
+<tr>
+<td><code>ERROR_FOR_DIVISION_BY_ZERO</code></td>
+<td>除零报错而非 NULL</td>
+</tr>
+</tbody></table>
+<p><strong>实践</strong>：新环境对齐 <strong>Staging 与生产</strong> 的 <code>sql_mode</code>；从 5.7 升到 8.0 后，应用 SQL 可能因 <code>ONLY_FULL_GROUP_BY</code> 报错，需提前在测试库验证。</p>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"># 数据库</a>
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/06/03/%E6%AF%94%E8%BE%83-iterrows-%E5%92%8C-itertuples-%E5%9C%A8%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E8%A7%84%E6%A8%A1%E4%B8%8B%E7%9A%84%E6%80%A7%E8%83%BD/" rel="prev" title="比较 iterrows() 和 itertuples() 在不同数据规模下的性能">
+                  <i class="fa fa-angle-left"></i> 比较 iterrows() 和 itertuples() 在不同数据规模下的性能
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%8C/" rel="next" title="MySQL开发运维手册(二) — 命令手册（连接至 DELETE）">
+                  MySQL开发运维手册(二) — 命令手册（连接至 DELETE） <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
