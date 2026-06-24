@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Git 工作区与仓库关系、基础提交流程、分支同步、合并变基、贮藏与常用命令速查。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git 常用命令手册">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/06/24/git%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%89%8B%E5%86%8C/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Git 工作区与仓库关系、基础提交流程、分支同步、合并变基、贮藏与常用命令速查。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-24T07:50:56.000Z">
+<meta property="article:modified_time" content="2026-06-24T08:07:08.348Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="版本控制">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/06/24/git%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%89%8B%E5%86%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/06/24/git%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%89%8B%E5%86%8C/","path":"/2026/06/24/git常用命令手册/","title":"Git 常用命令手册"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Git 常用命令手册 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Git-%E5%8C%BA%E5%9F%9F%E4%B8%8E%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB"><span class="nav-number">1.</span> <span class="nav-text">一、Git 区域与对象关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E6%9C%AC%E5%9C%B0%E5%9B%9B%E4%B8%AA%E5%8C%BA%E5%9F%9F"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 本地四个区域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E3%80%81%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93%E4%B8%8E%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 本地仓库、远程仓库与跟踪分支</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%B8%80%E6%AC%A1%E5%AE%8C%E6%95%B4%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 一次完整提交流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%BB%93%E5%BA%93%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">二、仓库初始化与配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%85%8B%E9%9A%86"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 创建与克隆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 常用配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 远程仓库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%9F%A5%E7%9C%8B%E7%8A%B6%E6%80%81%E4%B8%8E%E5%8E%86%E5%8F%B2"><span class="nav-number">3.</span> <span class="nav-text">三、查看状态与历史</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%8A%B6%E6%80%81%E4%B8%8E%E5%B7%AE%E5%BC%82"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 状态与差异</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%8F%90%E4%BA%A4%E5%8E%86%E5%8F%B2"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 提交历史</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%92%A4%E9%94%80%E3%80%81%E6%81%A2%E5%A4%8D%E4%B8%8E%E5%9B%9E%E9%80%80"><span class="nav-number">4.</span> <span class="nav-text">四、撤销、恢复与回退</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%B7%A5%E4%BD%9C%E5%8C%BA%E4%B8%8E%E6%9A%82%E5%AD%98%E5%8C%BA"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 工作区与暂存区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E4%BF%AE%E6%94%B9%E6%9C%80%E8%BF%91%E4%B8%80%E6%AC%A1%E6%8F%90%E4%BA%A4"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 修改最近一次提交</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E5%9B%9E%E9%80%80%E6%9C%AC%E5%9C%B0%E6%8F%90%E4%BA%A4"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 回退本地提交</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E6%92%A4%E9%94%80%E5%B7%B2%E6%8E%A8%E9%80%81%E7%9A%84%E6%8F%90%E4%BA%A4"><span class="nav-number">4.4.</span> <span class="nav-text">4.4 撤销已推送的提交</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%88%86%E6%94%AF%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C"><span class="nav-number">5.</span> <span class="nav-text">五、分支基础操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%88%87%E6%8D%A2"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 创建与切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E9%87%8D%E5%91%BD%E5%90%8D%E4%B8%8E%E5%88%A0%E9%99%A4"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 重命名与删除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E6%9F%A5%E7%9C%8B%E5%88%86%E6%94%AF%E5%85%B3%E7%B3%BB"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 查看分支关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%88%86%E6%94%AF%E6%9C%AC%E5%9C%B0%E4%B8%8E%E8%BF%9C%E7%A8%8B%E5%90%8C%E6%AD%A5"><span class="nav-number">6.</span> <span class="nav-text">六、分支本地与远程同步</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E4%B8%89%E7%A7%8D%E5%88%86%E6%94%AF%E5%AF%B9%E8%B1%A1%E5%9B%9E%E9%A1%BE"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 三种分支对象回顾</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E7%8A%B6%E6%80%81"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 查看当前状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E5%9C%BA%E6%99%AF-1%EF%BC%9A%E8%BF%9C%E7%A8%8B%E5%88%A0%E9%99%A4%E4%BA%86%E5%88%86%E6%94%AF%EF%BC%8C%E5%90%8C%E6%AD%A5%E5%88%B0%E6%9C%AC%E5%9C%B0%E7%BC%93%E5%AD%98"><span class="nav-number">6.3.</span> <span class="nav-text">6.3 场景 1：远程删除了分支，同步到本地缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-%E5%9C%BA%E6%99%AF-2%EF%BC%9A%E8%BF%9C%E7%A8%8B%E5%B7%B2%E5%88%A0%EF%BC%8C%E6%9C%AC%E5%9C%B0%E5%88%86%E6%94%AF%E4%BB%8D%E5%AD%98%E5%9C%A8"><span class="nav-number">6.4.</span> <span class="nav-text">6.4 场景 2：远程已删，本地分支仍存在</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-%E5%9C%BA%E6%99%AF-3%EF%BC%9A%E6%89%B9%E9%87%8F%E5%88%A0%E9%99%A4%E6%89%80%E6%9C%89%E3%80%8C%E8%BF%9C%E7%A8%8B%E5%B7%B2-gone%E3%80%8D%E7%9A%84%E6%9C%AC%E5%9C%B0%E5%88%86%E6%94%AF"><span class="nav-number">6.5.</span> <span class="nav-text">6.5 场景 3：批量删除所有「远程已 gone」的本地分支</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-6-%E5%9C%BA%E6%99%AF-4%EF%BC%9A%E6%9C%AC%E5%9C%B0%E5%88%A0%E9%99%A4%E5%88%86%E6%94%AF%EF%BC%8C%E5%B9%B6%E5%90%8C%E6%AD%A5%E5%88%A0%E9%99%A4%E8%BF%9C%E7%A8%8B"><span class="nav-number">6.6.</span> <span class="nav-text">6.6 场景 4：本地删除分支，并同步删除远程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-7-%E5%9C%BA%E6%99%AF-5%EF%BC%9A%E8%BF%9C%E7%A8%8B%E5%88%A0%E9%99%A4%E5%90%8E%EF%BC%8C%E6%9B%B4%E6%96%B0%E6%9C%AC%E5%9C%B0%E7%BC%93%E5%AD%98"><span class="nav-number">6.7.</span> <span class="nav-text">6.7 场景 5：远程删除后，更新本地缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-8-%E5%9C%BA%E6%99%AF-6%EF%BC%9A%E6%8E%A8%E9%80%81%E6%9C%AC%E5%9C%B0%E6%96%B0%E5%88%86%E6%94%AF%E5%88%B0%E8%BF%9C%E7%A8%8B"><span class="nav-number">6.8.</span> <span class="nav-text">6.8 场景 6：推送本地新分支到远程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-9-%E5%9C%BA%E6%99%AF-7%EF%BC%9A%E8%BF%9C%E7%A8%8B%E6%96%B0%E5%A2%9E%E5%88%86%E6%94%AF%EF%BC%8C%E5%90%8C%E6%AD%A5%E5%88%B0%E6%9C%AC%E5%9C%B0"><span class="nav-number">6.9.</span> <span class="nav-text">6.9 场景 7：远程新增分支，同步到本地</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-10-%E5%9C%BA%E6%99%AF-8%EF%BC%9A%E5%90%8C%E6%AD%A5%E6%89%80%E6%9C%89%E8%BF%9C%E7%A8%8B%E7%8A%B6%E6%80%81%EF%BC%88%E6%8E%A8%E8%8D%90%E6%97%A5%E5%B8%B8%E6%89%A7%E8%A1%8C%EF%BC%89"><span class="nav-number">6.10.</span> <span class="nav-text">6.10 场景 8：同步所有远程状态（推荐日常执行）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-11-%E5%9C%BA%E6%99%AF-9%EF%BC%9A%E6%9F%A5%E7%9C%8B%E6%9C%AC%E5%9C%B0%E5%93%AA%E4%BA%9B%E5%88%86%E6%94%AF%E5%B7%B2%E4%B8%8D%E5%AD%98%E5%9C%A8%E4%BA%8E%E8%BF%9C%E7%A8%8B"><span class="nav-number">6.11.</span> <span class="nav-text">6.11 场景 9：查看本地哪些分支已不存在于远程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%90%88%E5%B9%B6%E3%80%81%E5%8F%98%E5%9F%BA%E4%B8%8E%E5%86%B2%E7%AA%81"><span class="nav-number">7.</span> <span class="nav-text">七、合并、变基与冲突</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E5%90%88%E5%B9%B6%EF%BC%88merge%EF%BC%89"><span class="nav-number">7.1.</span> <span class="nav-text">7.1 合并（merge）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-%E5%8F%98%E5%9F%BA%EF%BC%88rebase%EF%BC%89"><span class="nav-number">7.2.</span> <span class="nav-text">7.2 变基（rebase）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-%E8%A7%A3%E5%86%B3%E5%86%B2%E7%AA%81"><span class="nav-number">7.3.</span> <span class="nav-text">7.3 解决冲突</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-%E6%8B%89%E5%8F%96%E7%AD%96%E7%95%A5"><span class="nav-number">7.4.</span> <span class="nav-text">7.4 拉取策略</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E8%B4%AE%E8%97%8F%EF%BC%88Stash%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">八、贮藏（Stash）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E6%A0%87%E7%AD%BE%EF%BC%88Tag%EF%BC%89"><span class="nav-number">9.</span> <span class="nav-text">九、标签（Tag）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E3%80%81%E5%85%B6%E4%BB%96%E5%AE%9E%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">10.</span> <span class="nav-text">十、其他实用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#10-1-%E5%BF%BD%E7%95%A5%E6%96%87%E4%BB%B6"><span class="nav-number">10.1.</span> <span class="nav-text">10.1 忽略文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-2-%E5%AD%90%E6%A8%A1%E5%9D%97"><span class="nav-number">10.2.</span> <span class="nav-text">10.2 子模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-3-%E6%B8%85%E7%90%86%E6%9C%AA%E8%B7%9F%E8%B8%AA%E6%96%87%E4%BB%B6"><span class="nav-number">10.3.</span> <span class="nav-text">10.3 清理未跟踪文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-4-%E6%9F%A5%E6%89%BE%E4%B8%8E%E8%AF%8A%E6%96%AD"><span class="nav-number">10.4.</span> <span class="nav-text">10.4 查找与诊断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5"><span class="nav-number">11.</span> <span class="nav-text">十一、常用命令速查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E6%97%A5%E5%B8%B8%E6%8E%A8%E8%8D%90%E4%B9%A0%E6%83%AF"><span class="nav-number">12.</span> <span class="nav-text">十二、日常推荐习惯</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/06/24/git%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E6%89%8B%E5%86%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Git 常用命令手册 | 我的记录小站">
+      <meta itemprop="description" content="Git 工作区与仓库关系、基础提交流程、分支同步、合并变基、贮藏与常用命令速查。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Git 常用命令手册
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-06-24 15:50:56 / 修改时间：16:07:08" itemprop="dateCreated datePublished" datetime="2026-06-24T15:50:56+08:00">2026-06-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Git 工作区与仓库关系、基础提交流程、分支同步、合并变基、贮藏与常用命令速查。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Git 是日常开发中最常用的版本控制工具。本文按「概念 → 基础操作 → 分支同步 → 进阶场景 → 速查」组织，便于查阅与复习。</p>
+<span id="more"></span>
+
+<h2 id="一、Git-区域与对象关系"><a href="#一、Git-区域与对象关系" class="headerlink" title="一、Git 区域与对象关系"></a>一、Git 区域与对象关系</h2><h3 id="1-1-本地四个区域"><a href="#1-1-本地四个区域" class="headerlink" title="1.1 本地四个区域"></a>1.1 本地四个区域</h3><p>Git 在本地维护四个相互关联的区域：</p>
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>说明</th>
+<th>典型命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>工作区</strong>（Working Directory）</td>
+<td>磁盘上实际编辑的文件</td>
+<td>直接改文件</td>
+</tr>
+<tr>
+<td><strong>暂存区</strong>（Staging Area &#x2F; Index）</td>
+<td>下次提交的快照</td>
+<td><code>git add</code></td>
+</tr>
+<tr>
+<td><strong>本地仓库</strong>（Local Repository）</td>
+<td>已提交的历史与分支</td>
+<td><code>git commit</code></td>
+</tr>
+<tr>
+<td><strong>贮藏区</strong>（Stash）</td>
+<td>临时保存未提交的改动</td>
+<td><code>git stash</code></td>
+</tr>
+</tbody></table>
+<p>数据流向：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">工作区  --git add--&gt;   暂存区  --git commit--&gt;  本地仓库</span><br><span class="line">  ^                                              |</span><br><span class="line">  |                                              |</span><br><span class="line">  +----------- git checkout / restore -----------+</span><br><span class="line"></span><br><span class="line">工作区 / 暂存区  --git stash--&gt;  贮藏区  --git stash pop--&gt;  恢复</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-本地仓库、远程仓库与跟踪分支"><a href="#1-2-本地仓库、远程仓库与跟踪分支" class="headerlink" title="1.2 本地仓库、远程仓库与跟踪分支"></a>1.2 本地仓库、远程仓库与跟踪分支</h3><p>除上述四个区域外，还有三类「分支对象」需要区分：</p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>示例</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>本地分支</strong></td>
+<td><code>main</code>、<code>feature_x</code></td>
+<td>指向本地某次提交的可移动指针</td>
+</tr>
+<tr>
+<td><strong>远程仓库分支</strong></td>
+<td><code>origin/main</code>、<code>deepbi/feature_x</code></td>
+<td>托管在 GitHub &#x2F; GitLab 等服务器上的分支</td>
+</tr>
+<tr>
+<td><strong>远程跟踪分支</strong></td>
+<td><code>remotes/origin/main</code></td>
+<td>本地缓存的远程分支状态，由 <code>fetch</code> 更新</td>
+</tr>
+</tbody></table>
+<p>关系示意：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">本地分支  &lt;-- push / pull --&gt;  远程仓库分支</span><br><span class="line">    ^</span><br><span class="line">    |</span><br><span class="line">    +---- fetch / prune ----&gt;  远程跟踪分支（本地缓存）</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>push</strong>：把本地分支的提交推送到远程仓库。</li>
+<li><strong>pull</strong>：<code>fetch</code> + <code>merge</code>（或 <code>rebase</code>），拉取远程更新并合并到当前本地分支。</li>
+<li><strong>fetch</strong>：只更新远程跟踪分支，不改动工作区与当前分支。</li>
+</ul>
+<h3 id="1-3-一次完整提交流程"><a href="#1-3-一次完整提交流程" class="headerlink" title="1.3 一次完整提交流程"></a>1.3 一次完整提交流程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 查看改动</span></span><br><span class="line">git status</span><br><span class="line">git diff              <span class="comment"># 工作区 vs 暂存区</span></span><br><span class="line">git diff --staged     <span class="comment"># 暂存区 vs 最后一次提交</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 加入暂存区</span></span><br><span class="line">git add file.txt</span><br><span class="line">git add .             <span class="comment"># 当前目录全部改动</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 提交到本地仓库</span></span><br><span class="line">git commit -m <span class="string">&quot;feat: 添加某功能&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 推送到远程</span></span><br><span class="line">git push origin main</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、仓库初始化与配置"><a href="#二、仓库初始化与配置" class="headerlink" title="二、仓库初始化与配置"></a>二、仓库初始化与配置</h2><h3 id="2-1-创建与克隆"><a href="#2-1-创建与克隆" class="headerlink" title="2.1 创建与克隆"></a>2.1 创建与克隆</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在当前目录初始化</span></span><br><span class="line">git init</span><br><span class="line"></span><br><span class="line"><span class="comment"># 克隆远程仓库</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/user/repo.git</span><br><span class="line">git <span class="built_in">clone</span> git@github.com:user/repo.git my-dir   <span class="comment"># 指定目录名</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-常用配置"><a href="#2-2-常用配置" class="headerlink" title="2.2 常用配置"></a>2.2 常用配置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 用户名与邮箱（提交记录中显示）</span></span><br><span class="line">git config --global user.name <span class="string">&quot;Your Name&quot;</span></span><br><span class="line">git config --global user.email <span class="string">&quot;you@example.com&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 默认编辑器</span></span><br><span class="line">git config --global core.editor <span class="string">&quot;vim&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看配置</span></span><br><span class="line">git config --list</span><br><span class="line">git config user.name</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-远程仓库"><a href="#2-3-远程仓库" class="headerlink" title="2.3 远程仓库"></a>2.3 远程仓库</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看远程</span></span><br><span class="line">git remote -v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加远程（可配置多个，如 origin、deepbi）</span></span><br><span class="line">git remote add origin https://github.com/user/repo.git</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改远程 URL</span></span><br><span class="line">git remote set-url origin git@github.com:user/repo.git</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除远程</span></span><br><span class="line">git remote remove origin</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、查看状态与历史"><a href="#三、查看状态与历史" class="headerlink" title="三、查看状态与历史"></a>三、查看状态与历史</h2><h3 id="3-1-状态与差异"><a href="#3-1-状态与差异" class="headerlink" title="3.1 状态与差异"></a>3.1 状态与差异</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git status                    <span class="comment"># 工作区与暂存区概况</span></span><br><span class="line">git status -s                 <span class="comment"># 简短格式</span></span><br><span class="line"></span><br><span class="line">git diff                      <span class="comment"># 未暂存的改动</span></span><br><span class="line">git diff --staged             <span class="comment"># 已暂存、待提交的改动</span></span><br><span class="line">git diff HEAD                 <span class="comment"># 工作区与最新提交的全部差异</span></span><br><span class="line">git diff branch_a..branch_b   <span class="comment"># 两分支之间的差异</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-提交历史"><a href="#3-2-提交历史" class="headerlink" title="3.2 提交历史"></a>3.2 提交历史</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">log</span>                       <span class="comment"># 完整日志</span></span><br><span class="line">git <span class="built_in">log</span> --oneline             <span class="comment"># 单行摘要</span></span><br><span class="line">git <span class="built_in">log</span> --oneline --graph --all   <span class="comment"># 图形化所有分支</span></span><br><span class="line">git <span class="built_in">log</span> -5                    <span class="comment"># 最近 5 条</span></span><br><span class="line">git <span class="built_in">log</span> -p file.txt           <span class="comment"># 某文件的改动历史</span></span><br><span class="line">git <span class="built_in">log</span> --author=<span class="string">&quot;name&quot;</span>       <span class="comment"># 按作者筛选</span></span><br><span class="line"></span><br><span class="line">git show abc1234              <span class="comment"># 查看某次提交详情</span></span><br><span class="line">git blame file.txt            <span class="comment"># 逐行查看最后修改者与提交</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、撤销、恢复与回退"><a href="#四、撤销、恢复与回退" class="headerlink" title="四、撤销、恢复与回退"></a>四、撤销、恢复与回退</h2><h3 id="4-1-工作区与暂存区"><a href="#4-1-工作区与暂存区" class="headerlink" title="4.1 工作区与暂存区"></a>4.1 工作区与暂存区</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 丢弃工作区对某文件的改动（未 add）</span></span><br><span class="line">git restore file.txt</span><br><span class="line">git checkout -- file.txt      <span class="comment"># 旧写法，效果相同</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消暂存（已 add，未 commit）</span></span><br><span class="line">git restore --staged file.txt</span><br><span class="line">git reset HEAD file.txt       <span class="comment"># 旧写法</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-修改最近一次提交"><a href="#4-2-修改最近一次提交" class="headerlink" title="4.2 修改最近一次提交"></a>4.2 修改最近一次提交</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 追加文件到上次提交（未 push 时使用）</span></span><br><span class="line">git add forgotten.txt</span><br><span class="line">git commit --amend</span><br><span class="line"></span><br><span class="line"><span class="comment"># 仅修改提交说明</span></span><br><span class="line">git commit --amend -m <span class="string">&quot;新的提交说明&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-回退本地提交"><a href="#4-3-回退本地提交" class="headerlink" title="4.3 回退本地提交"></a>4.3 回退本地提交</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 保留工作区改动，仅移动 HEAD（改动回到暂存区）</span></span><br><span class="line">git reset --soft HEAD~1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 保留工作区改动，清空暂存区（默认 mixed）</span></span><br><span class="line">git reset HEAD~1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 丢弃工作区与暂存区改动（危险）</span></span><br><span class="line">git reset --hard HEAD~1</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-撤销已推送的提交"><a href="#4-4-撤销已推送的提交" class="headerlink" title="4.4 撤销已推送的提交"></a>4.4 撤销已推送的提交</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成一次「反向提交」，不改写历史（推荐用于已 push 的分支）</span></span><br><span class="line">git revert abc1234</span><br><span class="line">git revert HEAD</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、分支基础操作"><a href="#五、分支基础操作" class="headerlink" title="五、分支基础操作"></a>五、分支基础操作</h2><h3 id="5-1-创建与切换"><a href="#5-1-创建与切换" class="headerlink" title="5.1 创建与切换"></a>5.1 创建与切换</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git branch                    <span class="comment"># 列出本地分支</span></span><br><span class="line">git branch feature_x          <span class="comment"># 创建分支（不切换）</span></span><br><span class="line">git checkout feature_x        <span class="comment"># 切换分支</span></span><br><span class="line">git switch feature_x          <span class="comment"># 切换分支（Git 2.23+）</span></span><br><span class="line"></span><br><span class="line">git checkout -b feature_x     <span class="comment"># 创建并切换</span></span><br><span class="line">git switch -c feature_x       <span class="comment"># 创建并切换（推荐）</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-重命名与删除"><a href="#5-2-重命名与删除" class="headerlink" title="5.2 重命名与删除"></a>5.2 重命名与删除</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git branch -m old_name new_name       <span class="comment"># 重命名当前分支</span></span><br><span class="line">git branch -m new_name                <span class="comment"># 重命名当前分支（简写）</span></span><br><span class="line"></span><br><span class="line">git branch -d feature_x               <span class="comment"># 删除已合并的分支</span></span><br><span class="line">git branch -D feature_x               <span class="comment"># 强制删除</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-查看分支关系"><a href="#5-3-查看分支关系" class="headerlink" title="5.3 查看分支关系"></a>5.3 查看分支关系</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git branch -r                 <span class="comment"># 远程跟踪分支</span></span><br><span class="line">git branch -a                 <span class="comment"># 本地 + 远程跟踪</span></span><br><span class="line">git branch -vv                <span class="comment"># 本地分支及其上游关系</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、分支本地与远程同步"><a href="#六、分支本地与远程同步" class="headerlink" title="六、分支本地与远程同步"></a>六、分支本地与远程同步</h2><h3 id="6-1-三种分支对象回顾"><a href="#6-1-三种分支对象回顾" class="headerlink" title="6.1 三种分支对象回顾"></a>6.1 三种分支对象回顾</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">本地分支</span><br><span class="line">    main</span><br><span class="line">    feature_x</span><br><span class="line"></span><br><span class="line">远程仓库分支</span><br><span class="line">    origin/main</span><br><span class="line">    origin/feature_x</span><br><span class="line">    deepbi/main</span><br><span class="line">    deepbi/feature_x</span><br><span class="line"></span><br><span class="line">远程跟踪分支（本地缓存）</span><br><span class="line">    remotes/origin/main</span><br><span class="line">    remotes/deepbi/main</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-查看当前状态"><a href="#6-2-查看当前状态" class="headerlink" title="6.2 查看当前状态"></a>6.2 查看当前状态</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git branch          <span class="comment"># 本地分支</span></span><br><span class="line">git branch -r       <span class="comment"># 远程跟踪分支</span></span><br><span class="line">git branch -a       <span class="comment"># 全部</span></span><br><span class="line">git branch -vv      <span class="comment"># 本地与上游关系</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-场景-1：远程删除了分支，同步到本地缓存"><a href="#6-3-场景-1：远程删除了分支，同步到本地缓存" class="headerlink" title="6.3 场景 1：远程删除了分支，同步到本地缓存"></a>6.3 场景 1：远程删除了分支，同步到本地缓存</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git fetch origin --prune        <span class="comment"># 更新 origin 并清理失效缓存</span></span><br><span class="line">git fetch --all --prune         <span class="comment"># 更新所有远程并清理</span></span><br></pre></td></tr></table></figure>
+
+<p>示例：远程删除 <code>origin/master2.3.0</code> 后执行 <code>git fetch origin --prune</code>，本地 <code>remotes/origin/master2.3.0</code> 会被移除。</p>
+<h3 id="6-4-场景-2：远程已删，本地分支仍存在"><a href="#6-4-场景-2：远程已删，本地分支仍存在" class="headerlink" title="6.4 场景 2：远程已删，本地分支仍存在"></a>6.4 场景 2：远程已删，本地分支仍存在</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git branch -vv</span><br><span class="line"><span class="comment"># master2.3.0  abc123 [origin/master2.3.0: gone]</span></span><br></pre></td></tr></table></figure>
+
+<p>说明：远程已删除，本地分支仍在。可手动清理：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git branch -d master2.3.0       <span class="comment"># 已合并则安全删除</span></span><br><span class="line">git branch -D master2.3.0       <span class="comment"># 强制删除</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-5-场景-3：批量删除所有「远程已-gone」的本地分支"><a href="#6-5-场景-3：批量删除所有「远程已-gone」的本地分支" class="headerlink" title="6.5 场景 3：批量删除所有「远程已 gone」的本地分支"></a>6.5 场景 3：批量删除所有「远程已 gone」的本地分支</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 预览</span></span><br><span class="line">git branch -vv | awk <span class="string">&#x27;/: gone]/&#123;print $1&#125;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行删除</span></span><br><span class="line">git branch -vv | awk <span class="string">&#x27;/: gone]/&#123;print $1&#125;&#x27;</span> | xargs git branch -D</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-6-场景-4：本地删除分支，并同步删除远程"><a href="#6-6-场景-4：本地删除分支，并同步删除远程" class="headerlink" title="6.6 场景 4：本地删除分支，并同步删除远程"></a>6.6 场景 4：本地删除分支，并同步删除远程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git branch -D master2.3.0</span><br><span class="line">git push origin --delete master2.3.0</span><br><span class="line"><span class="comment"># 或</span></span><br><span class="line">git push deepbi --delete master2.3.0</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-7-场景-5：远程删除后，更新本地缓存"><a href="#6-7-场景-5：远程删除后，更新本地缓存" class="headerlink" title="6.7 场景 5：远程删除后，更新本地缓存"></a>6.7 场景 5：远程删除后，更新本地缓存</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git push deepbi --delete master2.3.0</span><br><span class="line">git fetch deepbi --prune</span><br><span class="line"><span class="comment"># remotes/deepbi/master2.3.0 消失</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-8-场景-6：推送本地新分支到远程"><a href="#6-8-场景-6：推送本地新分支到远程" class="headerlink" title="6.8 场景 6：推送本地新分支到远程"></a>6.8 场景 6：推送本地新分支到远程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b feature_test</span><br><span class="line">git push -u origin feature_test</span><br><span class="line"><span class="comment"># 或</span></span><br><span class="line">git push -u deepbi feature_test</span><br></pre></td></tr></table></figure>
+
+<p><code>-u</code>（<code>--set-upstream</code>）建立上游跟踪，之后可直接 <code>git push</code> &#x2F; <code>git pull</code>。</p>
+<h3 id="6-9-场景-7：远程新增分支，同步到本地"><a href="#6-9-场景-7：远程新增分支，同步到本地" class="headerlink" title="6.9 场景 7：远程新增分支，同步到本地"></a>6.9 场景 7：远程新增分支，同步到本地</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git fetch origin</span><br><span class="line">git branch -r</span><br><span class="line"></span><br><span class="line">git checkout -b feature_test origin/feature_test</span><br><span class="line"><span class="comment"># 或（推荐）</span></span><br><span class="line">git switch -c feature_test origin/feature_test</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-10-场景-8：同步所有远程状态（推荐日常执行）"><a href="#6-10-场景-8：同步所有远程状态（推荐日常执行）" class="headerlink" title="6.10 场景 8：同步所有远程状态（推荐日常执行）"></a>6.10 场景 8：同步所有远程状态（推荐日常执行）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git fetch --all --prune</span><br></pre></td></tr></table></figure>
+
+<p>作用：同步所有远程仓库，并清理已删除远程分支的本地缓存。</p>
+<h3 id="6-11-场景-9：查看本地哪些分支已不存在于远程"><a href="#6-11-场景-9：查看本地哪些分支已不存在于远程" class="headerlink" title="6.11 场景 9：查看本地哪些分支已不存在于远程"></a>6.11 场景 9：查看本地哪些分支已不存在于远程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git branch -vv</span><br><span class="line"><span class="comment"># master2.2.8 [origin/master2.2.8: gone]</span></span><br><span class="line"><span class="comment"># master2.2.9 [origin/master2.2.9: gone]</span></span><br></pre></td></tr></table></figure>
+
+<p>出现 <code>gone</code> 表示上游远程分支已删除，本地可考虑清理。</p>
+<hr>
+<h2 id="七、合并、变基与冲突"><a href="#七、合并、变基与冲突" class="headerlink" title="七、合并、变基与冲突"></a>七、合并、变基与冲突</h2><h3 id="7-1-合并（merge）"><a href="#7-1-合并（merge）" class="headerlink" title="7.1 合并（merge）"></a>7.1 合并（merge）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git checkout main</span><br><span class="line">git merge feature_x             <span class="comment"># 将 feature_x 合并进 main</span></span><br><span class="line"></span><br><span class="line">git merge --no-ff feature_x     <span class="comment"># 保留合并提交（非快进）</span></span><br><span class="line">git merge --abort               <span class="comment"># 冲突时放弃合并</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-变基（rebase）"><a href="#7-2-变基（rebase）" class="headerlink" title="7.2 变基（rebase）"></a>7.2 变基（rebase）</h3><p>变基会把当前分支的提交「挪到」目标分支最新提交之后，历史更线性：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git checkout feature_x</span><br><span class="line">git rebase main                 <span class="comment"># 在 main 最新提交之上重放 feature_x</span></span><br><span class="line"></span><br><span class="line">git rebase --abort              <span class="comment"># 放弃变基</span></span><br><span class="line">git rebase --<span class="built_in">continue</span>           <span class="comment"># 解决冲突后继续</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：不要对已 push 且他人共用的分支做 rebase，除非团队约定使用。</p>
+<h3 id="7-3-解决冲突"><a href="#7-3-解决冲突" class="headerlink" title="7.3 解决冲突"></a>7.3 解决冲突</h3><p>冲突时 Git 会在文件中标记：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span><br><span class="line">当前分支的内容</span><br><span class="line">=======</span><br><span class="line">待合并分支的内容</span><br><span class="line">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature_x</span><br></pre></td></tr></table></figure>
+
+<p>手动编辑后：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git add conflicted_file.txt</span><br><span class="line">git commit                      <span class="comment"># merge 场景</span></span><br><span class="line"><span class="comment"># 或</span></span><br><span class="line">git rebase --<span class="built_in">continue</span>           <span class="comment"># rebase 场景</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="7-4-拉取策略"><a href="#7-4-拉取策略" class="headerlink" title="7.4 拉取策略"></a>7.4 拉取策略</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git pull                        <span class="comment"># 默认 fetch + merge</span></span><br><span class="line">git pull --rebase               <span class="comment"># fetch + rebase（保持线性历史）</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 为当前分支设置默认 pull 策略</span></span><br><span class="line">git config pull.rebase <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、贮藏（Stash）"><a href="#八、贮藏（Stash）" class="headerlink" title="八、贮藏（Stash）"></a>八、贮藏（Stash）</h2><p>临时切换分支但改动尚未提交时，可用 stash 暂存：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">git stash                       <span class="comment"># 贮藏工作区与暂存区改动</span></span><br><span class="line">git stash push -m <span class="string">&quot;wip: 某功能&quot;</span>  <span class="comment"># 带说明</span></span><br><span class="line">git stash -u                    <span class="comment"># 连同未跟踪文件一起贮藏</span></span><br><span class="line"></span><br><span class="line">git stash list                  <span class="comment"># 查看贮藏列表</span></span><br><span class="line">git stash show -p stash@&#123;0&#125;     <span class="comment"># 查看某条贮藏的具体改动</span></span><br><span class="line"></span><br><span class="line">git stash pop                   <span class="comment"># 弹出并应用最新贮藏</span></span><br><span class="line">git stash apply stash@&#123;0&#125;       <span class="comment"># 应用但不删除</span></span><br><span class="line">git stash drop stash@&#123;0&#125;        <span class="comment"># 删除某条贮藏</span></span><br><span class="line">git stash clear                 <span class="comment"># 清空全部贮藏</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="九、标签（Tag）"><a href="#九、标签（Tag）" class="headerlink" title="九、标签（Tag）"></a>九、标签（Tag）</h2><p>用于标记发布版本等里程碑：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">git tag                         <span class="comment"># 列出标签</span></span><br><span class="line">git tag v1.0.0                  <span class="comment"># 轻量标签（当前 HEAD）</span></span><br><span class="line">git tag -a v1.0.0 -m <span class="string">&quot;Release 1.0.0&quot;</span>   <span class="comment"># 附注标签</span></span><br><span class="line"></span><br><span class="line">git show v1.0.0                 <span class="comment"># 查看标签详情</span></span><br><span class="line">git push origin v1.0.0          <span class="comment"># 推送单个标签</span></span><br><span class="line">git push origin --tags          <span class="comment"># 推送全部标签</span></span><br><span class="line"></span><br><span class="line">git tag -d v1.0.0               <span class="comment"># 删除本地标签</span></span><br><span class="line">git push origin --delete v1.0.0 <span class="comment"># 删除远程标签</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十、其他实用命令"><a href="#十、其他实用命令" class="headerlink" title="十、其他实用命令"></a>十、其他实用命令</h2><h3 id="10-1-忽略文件"><a href="#10-1-忽略文件" class="headerlink" title="10.1 忽略文件"></a>10.1 忽略文件</h3><p>项目根目录 <code>.gitignore</code> 示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">*.log</span><br><span class="line">node_modules/</span><br><span class="line">.env</span><br><span class="line">dist/</span><br></pre></td></tr></table></figure>
+
+<p>已跟踪的文件需先从索引移除：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">rm</span> --cached file.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-子模块"><a href="#10-2-子模块" class="headerlink" title="10.2 子模块"></a>10.2 子模块</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git submodule add https://github.com/user/lib.git path/to/lib</span><br><span class="line">git submodule update --init --recursive</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-3-清理未跟踪文件"><a href="#10-3-清理未跟踪文件" class="headerlink" title="10.3 清理未跟踪文件"></a>10.3 清理未跟踪文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clean -n                    <span class="comment"># 预览将删除的文件</span></span><br><span class="line">git clean -fd                   <span class="comment"># 删除未跟踪的文件与目录</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="10-4-查找与诊断"><a href="#10-4-查找与诊断" class="headerlink" title="10.4 查找与诊断"></a>10.4 查找与诊断</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git fsck                        <span class="comment"># 检查仓库完整性</span></span><br><span class="line">git reflog                      <span class="comment"># 查看 HEAD 移动记录（找回误删提交）</span></span><br><span class="line">git cherry-pick abc1234         <span class="comment"># 把某次提交应用到当前分支</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十一、常用命令速查"><a href="#十一、常用命令速查" class="headerlink" title="十一、常用命令速查"></a>十一、常用命令速查</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>更新远程状态</td>
+<td><code>git fetch --all --prune</code></td>
+</tr>
+<tr>
+<td>查看所有分支</td>
+<td><code>git branch -a</code></td>
+</tr>
+<tr>
+<td>查看分支关系</td>
+<td><code>git branch -vv</code></td>
+</tr>
+<tr>
+<td>暂存并提交</td>
+<td><code>git add . &amp;&amp; git commit -m &quot;msg&quot;</code></td>
+</tr>
+<tr>
+<td>推送</td>
+<td><code>git push</code> &#x2F; <code>git push -u origin branch</code></td>
+</tr>
+<tr>
+<td>拉取</td>
+<td><code>git pull</code> &#x2F; <code>git pull --rebase</code></td>
+</tr>
+<tr>
+<td>删除本地分支</td>
+<td><code>git branch -d branch_name</code></td>
+</tr>
+<tr>
+<td>强制删除本地分支</td>
+<td><code>git branch -D branch_name</code></td>
+</tr>
+<tr>
+<td>删除远程分支</td>
+<td><code>git push origin --delete branch_name</code></td>
+</tr>
+<tr>
+<td>推送新分支</td>
+<td><code>git push -u origin branch_name</code></td>
+</tr>
+<tr>
+<td>跟踪远程分支</td>
+<td><code>git switch -c branch_name origin/branch_name</code></td>
+</tr>
+<tr>
+<td>贮藏改动</td>
+<td><code>git stash</code> &#x2F; <code>git stash pop</code></td>
+</tr>
+<tr>
+<td>撤销工作区改动</td>
+<td><code>git restore file</code></td>
+</tr>
+<tr>
+<td>取消暂存</td>
+<td><code>git restore --staged file</code></td>
+</tr>
+<tr>
+<td>安全撤销已 push 提交</td>
+<td><code>git revert commit_hash</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十二、日常推荐习惯"><a href="#十二、日常推荐习惯" class="headerlink" title="十二、日常推荐习惯"></a>十二、日常推荐习惯</h2><ol>
+<li><strong>提交前</strong>：<code>git status</code> + <code>git diff</code>，确认改动范围。</li>
+<li><strong>拉代码前</strong>：<code>git fetch --all --prune</code>，了解远程变化后再 merge &#x2F; rebase。</li>
+<li><strong>分支清理</strong>：定期 <code>git branch -vv</code>，删除带 <code>gone</code> 的本地分支。</li>
+<li><strong>推送前</strong>：<code>git log --oneline origin/main..HEAD</code>，确认待推送的提交。</li>
+<li><strong>已共享分支</strong>：用 <code>revert</code> 而非 <code>reset --hard</code> 回退，避免改写他人已拉取的历史。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Git/" rel="tag"># Git</a>
+              <a href="/tags/%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6/" rel="tag"># 版本控制</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E5%85%AB/" rel="prev" title="MySQL开发运维手册(八) — 查漏补缺与快速索引">
+                  <i class="fa fa-angle-left"></i> MySQL开发运维手册(八) — 查漏补缺与快速索引
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
