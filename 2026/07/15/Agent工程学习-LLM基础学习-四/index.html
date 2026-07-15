@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="调用侧：Chat Completion、流式输出、多模态&#x2F;VLM、结构化输出全套，以及 Tool Calling 从 Schema 到错误处理的闭环。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LLM基础学习(四)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="调用侧：Chat Completion、流式输出、多模态&#x2F;VLM、结构化输出全套，以及 Tool Calling 从 Schema 到错误处理的闭环。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-15T04:45:00.000Z">
+<meta property="article:modified_time" content="2026-07-15T04:50:00.000Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LLM">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/","path":"2026/07/15/Agent工程学习-LLM基础学习-四/","title":"AI-Agent工程学习-LLM基础学习(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LLM基础学习(四) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Chat-Completion"><span class="nav-number">1.</span> <span class="nav-text">1. Chat Completion</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%80%E6%AC%A1%E8%B0%83%E7%94%A8%E5%9C%A8%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 一次调用在做什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Message-Role%EF%BC%88%E5%A4%8D%E4%B9%A0%E4%B8%8E%E6%89%A9%E5%B1%95%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">2. Message Role（复习与扩展）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Streaming-Output%EF%BC%88%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. Streaming Output（流式输出）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%8E-Prefill-%E5%BB%B6%E8%BF%9F%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 与 Prefill &#x2F; 延迟的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Multimodal-Input-%E4%B8%8E-Vision-Language-Model"><span class="nav-number">4.</span> <span class="nav-text">4. Multimodal Input 与 Vision-Language Model</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Multimodal-Input%EF%BC%88%E5%A4%9A%E6%A8%A1%E6%80%81%E8%BE%93%E5%85%A5%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Multimodal Input（多模态输入）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Vision-Language-Model%EF%BC%88VLM%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 Vision-Language Model（VLM）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Structured-Output%EF%BC%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">5. Structured Output（结构化输出）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-JSON-Output"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 JSON Output</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-JSON-Schema"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 JSON Schema</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-Schema-Validation%EF%BC%88%E6%A8%A1%E5%BC%8F%E6%A0%A1%E9%AA%8C%EF%BC%89"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 Schema Validation（模式校验）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-Typed-Output%EF%BC%88%E7%B1%BB%E5%9E%8B%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89"><span class="nav-number">5.4.</span> <span class="nav-text">5.4 Typed Output（类型化输出）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-5-%E5%B1%82%E6%AC%A1%E5%85%B3%E7%B3%BB%EF%BC%88%E5%90%88%E7%9C%8B%EF%BC%89"><span class="nav-number">5.5.</span> <span class="nav-text">5.5 层次关系（合看）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">6. Tool Calling（工具调用）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-Function-Calling-%E4%B8%8E-Tool-Calling"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 Function Calling 与 Tool Calling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-Tool-Schema"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 Tool Schema</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-Tool-Invocation%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%E6%84%8F%E5%9B%BE%EF%BC%89"><span class="nav-number">6.3.</span> <span class="nav-text">6.3 Tool Invocation（工具调用意图）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-Tool-Result%EF%BC%88%E5%B7%A5%E5%85%B7%E7%BB%93%E6%9E%9C%EF%BC%89"><span class="nav-number">6.4.</span> <span class="nav-text">6.4 Tool Result（工具结果）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-Tool-Error-Handling%EF%BC%88%E5%B7%A5%E5%85%B7%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%EF%BC%89"><span class="nav-number">6.5.</span> <span class="nav-text">6.5 Tool Error Handling（工具错误处理）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-6-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">6.6.</span> <span class="nav-text">6.6 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LLM基础学习(四) | 我的记录小站">
+      <meta itemprop="description" content="调用侧：Chat Completion、流式输出、多模态&#x2F;VLM、结构化输出全套，以及 Tool Calling 从 Schema 到错误处理的闭环。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LLM基础学习(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-15 12:45:00 / 修改时间：12:50:00" itemprop="dateCreated datePublished" datetime="2026-07-15T12:45:00+08:00">2026-07-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">调用侧：Chat Completion、流式输出、多模态/VLM、结构化输出全套，以及 Tool Calling 从 Schema 到错误处理的闭环。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">第三篇</a>：把消息送进 API，学会结构化输出与工具调用闭环</p>
+<span id="more"></span>
+<h2 id="1-Chat-Completion"><a href="#1-Chat-Completion" class="headerlink" title="1. Chat Completion"></a>1. Chat Completion</h2><p><strong>什么是 Chat Completion？</strong></p>
+<p>Chat Completion（聊天补全）是现代 LLM 产品最常见的 <strong>调用入口</strong>：你提交一组带角色的 <strong>messages</strong>（以及可选的 tools、采样参数等），服务端做一次（或一轮内多次）Inference，返回 <strong>assistant</strong> 的回复（或工具调用意图）。</p>
+<p>相对更早的「纯文本 Continuation &#x2F; Completion」（给一段前缀往后补），Chat Completion 以 <strong>对话消息列表</strong> 为合同，便于多轮、system 约束与工具协议。</p>
+<h3 id="1-1-一次调用在做什么"><a href="#1-1-一次调用在做什么" class="headerlink" title="1.1 一次调用在做什么"></a>1.1 一次调用在做什么</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">messages（+ 可选 tools / response_format / temperature …）</span><br><span class="line">        ↓</span><br><span class="line">拼进 Context Window</span><br><span class="line">        ↓</span><br><span class="line">Inference：Prefill → Decode</span><br><span class="line">        ↓</span><br><span class="line">返回：assistant 文本 和/或 Tool Invocation</span><br></pre></td></tr></table></figure>
+
+<p>对应：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">Context Window（第一篇）</a> → <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#7-2-Prefill-%E4%B8%8E-Decode">Inference &#x2F; Prefill·Decode（第二篇）</a>。</p>
+<p>与已学概念的对应：</p>
+<ol>
+<li>每条 message 都经 <a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#3-Tokenization%EF%BC%88%E5%88%86%E8%AF%8D%EF%BC%89">Tokenization</a>，占用 Context；输出受 <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-4-%E7%94%9F%E6%88%90%E4%BD%95%E6%97%B6%E5%81%9C%E6%AD%A2%EF%BC%9AEOS-stop-max-tokens">max_tokens &#x2F; EOS &#x2F; stop</a> 约束。</li>
+<li>采样参数（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#4-Temperature">Temperature</a>、<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#6-Top-p-Sampling%EF%BC%88Nucleus-Sampling%EF%BC%89">Top-p</a> 等）仍作用在 Logits → Token 链上。</li>
+<li>多轮不是模型「自己记得」，而是应用把历史 messages <strong>再次提交</strong>（见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89">第三篇消息角色</a>）。</li>
+</ol>
+<h3 id="1-2-对-Agent-的影响"><a href="#1-2-对-Agent-的影响" class="headerlink" title="1.2 对 Agent 的影响"></a>1.2 对 Agent 的影响</h3><p>Agent 的「一步思考」往往就是一次 Chat Completion；调工具、读结果、再决策 &#x3D; <strong>多次</strong> Completion 串起来。费用与延迟按次数与 Token 累加。</p>
+<hr>
+<h2 id="2-Message-Role（复习与扩展）"><a href="#2-Message-Role（复习与扩展）" class="headerlink" title="2. Message Role（复习与扩展）"></a>2. Message Role（复习与扩展）</h2><p>system &#x2F; user &#x2F; assistant 的含义见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89">第三篇第 1 节</a>。本篇补上工具相关角色在多轮中的位置。</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>谁写入</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>system &#x2F; user &#x2F; assistant</td>
+<td>应用 &#x2F; 用户 &#x2F; 模型（由应用回写）</td>
+<td>普通对话</td>
+</tr>
+<tr>
+<td><strong>assistant</strong>（含 tool_calls）</td>
+<td>模型经 API 返回，应用写入历史</td>
+<td>声明要调哪些工具及参数</td>
+</tr>
+<tr>
+<td><strong>tool</strong>（或旧称 function）</td>
+<td><strong>应用</strong>在真实执行工具后写入</td>
+<td>把 Tool Result &#x2F; 错误送回模型</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">user 提问</span><br><span class="line">  → assistant（可能带 Tool Invocation）</span><br><span class="line">  → tool（Result 或 Error）   ← 应用执行后写入</span><br><span class="line">  → assistant 最终回答（或再次提出 Tool Invocation）</span><br></pre></td></tr></table></figure>
+
+<p>没有把 tool 消息写回 Context，模型就看不到工具结果，只能靠「猜」——这正是幻觉高发区（见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89">第三篇 Hallucination</a>）。</p>
+<hr>
+<h2 id="3-Streaming-Output（流式输出）"><a href="#3-Streaming-Output（流式输出）" class="headerlink" title="3. Streaming Output（流式输出）"></a>3. Streaming Output（流式输出）</h2><p><strong>什么是 Streaming？</strong></p>
+<p>Streaming（流式输出）指：Decode 每产生一些 Token（或 chunk），就通过网络推给客户端，而不是等整段生成完再一次性返回。</p>
+<h3 id="3-1-与-Prefill-延迟的关系"><a href="#3-1-与-Prefill-延迟的关系" class="headerlink" title="3.1 与 Prefill &#x2F; 延迟的关系"></a>3.1 与 Prefill &#x2F; 延迟的关系</h3><table>
+<thead>
+<tr>
+<th>观感</th>
+<th>主要卡在</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>发出请求后迟迟不出第一个字</td>
+<td><strong>Prefill &#x2F; TTFT</strong>（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#5-%E5%BB%B6%E8%BF%9F%E4%B8%8E%E5%90%9E%E5%90%90%E7%9B%B8%E5%85%B3%E5%90%8D%E8%AF%8D%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89">第三篇延迟名词</a>；<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#7-2-Prefill-%E4%B8%8E-Decode">第二篇 Prefill</a>）</td>
+</tr>
+<tr>
+<td>第一个字出现后，文字一个个蹦出</td>
+<td><strong>Decode</strong> 逐步推进；Streaming 让用户提前看见</td>
+</tr>
+</tbody></table>
+<p>Streaming <strong>不改变</strong> 模型算什么，只改变 <strong>结果何时送达</strong>。总 Token 数、Context 占用与非流式相同。</p>
+<h3 id="3-2-对-Agent-的影响"><a href="#3-2-对-Agent-的影响" class="headerlink" title="3.2 对 Agent 的影响"></a>3.2 对 Agent 的影响</h3><ol>
+<li><strong>聊天 UI</strong>：流式体验好，用户感知延迟更低。</li>
+<li><strong>等完整 JSON &#x2F; Tool 参数</strong>：往往要等流结束（或缓冲到可解析边界）再 <code>JSON.parse</code> &#x2F; 执行工具；半截 JSON 不能当正式 Invocation。</li>
+<li>需要严格结构化时：可非流式，或流式仅用于展示、工具路径仍等完整 chunk。</li>
+</ol>
+<hr>
+<h2 id="4-Multimodal-Input-与-Vision-Language-Model"><a href="#4-Multimodal-Input-与-Vision-Language-Model" class="headerlink" title="4. Multimodal Input 与 Vision-Language Model"></a>4. Multimodal Input 与 Vision-Language Model</h2><h3 id="4-1-Multimodal-Input（多模态输入）"><a href="#4-1-Multimodal-Input（多模态输入）" class="headerlink" title="4.1 Multimodal Input（多模态输入）"></a>4.1 Multimodal Input（多模态输入）</h3><p>一次 Chat Completion 的 content 可以不只是纯文本，还可以包含 <strong>图像、音频</strong> 等（视模型与 API 而定）。消息里常见「文本块 + 图片块」的复合 content。</p>
+<p>要点：</p>
+<ol>
+<li>图片等也会被编码进模型可用的表示，并 <strong>占用 Context</strong>（计费单位因厂商而异，不一定按「一张图 &#x3D; 固定 Token」的简单直觉）。</li>
+<li>与<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#3-Tokenization%EF%BC%88%E5%88%86%E8%AF%8D%EF%BC%89">第一篇 Tokenization</a>「文本切分」不同：多模态另有视觉&#x2F;音频侧处理，名词级只需知道 <strong>输入通道变多了</strong>。</li>
+</ol>
+<h3 id="4-2-Vision-Language-Model（VLM）"><a href="#4-2-Vision-Language-Model（VLM）" class="headerlink" title="4.2 Vision-Language Model（VLM）"></a>4.2 Vision-Language Model（VLM）</h3><p><strong>VLM（视觉-语言模型）</strong>：能同时理解图像与文本、并生成文本（或再调工具）的模型。Chat + 看图问答、UI 截图理解、单据识别等，通常依赖 VLM 能力。</p>
+<p>对 Agent：工具可以返回图片 URL &#x2F; 截图，再作为多模态消息送回下一轮 Completion——Context 与费用会明显高于纯文本。</p>
+<hr>
+<h2 id="5-Structured-Output（结构化输出）"><a href="#5-Structured-Output（结构化输出）" class="headerlink" title="5. Structured Output（结构化输出）"></a>5. Structured Output（结构化输出）</h2><p><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#4-%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E4%B8%8E%E7%BA%A6%E6%9D%9F%E8%A7%A3%E7%A0%81%EF%BC%88%E6%80%BB%E8%A7%88%EF%BC%89">第三篇第 4 节</a>已给出「软→硬」总览。本节展开清单中的名词，并分清 <strong>模型侧约束</strong> 与 <strong>应用侧校验</strong>。</p>
+<h3 id="5-1-JSON-Output"><a href="#5-1-JSON-Output" class="headerlink" title="5.1 JSON Output"></a>5.1 JSON Output</h3><p>要求模型输出 <strong>JSON 文本</strong>（对象或数组），便于程序解析。实现路径包括：Prompt 约定、API 的 JSON Mode &#x2F; <code>response_format</code>、或更强的 Schema 约束解码。</p>
+<p>失败模式：不是合法 JSON、多余 markdown 代码围栏、尾部废话、字段缺失。</p>
+<h3 id="5-2-JSON-Schema"><a href="#5-2-JSON-Schema" class="headerlink" title="5.2 JSON Schema"></a>5.2 JSON Schema</h3><p><strong>JSON Schema</strong> 是描述「JSON 长什么样」的标准：类型、必填字段、枚举、嵌套结构等。用于：</p>
+<ol>
+<li>告诉模型 &#x2F; 约束解码器：只能生成符合该形状的内容。</li>
+<li>告诉应用：如何校验、如何生成类型或表单。</li>
+</ol>
+<p>Tool 的参数定义，在多数 API 里 <strong>就是一份 JSON Schema</strong>（见<a href="#6-2-Tool-Schema">第 6 节 Tool Schema</a>）。</p>
+<h3 id="5-3-Schema-Validation（模式校验）"><a href="#5-3-Schema-Validation（模式校验）" class="headerlink" title="5.3 Schema Validation（模式校验）"></a>5.3 Schema Validation（模式校验）</h3><p><strong>Schema Validation</strong> 发生在 <strong>应用侧</strong>：拿到模型字符串 → 解析 JSON → 用 JSON Schema（或等价规则）检查是否合法。</p>
+<p>与「模型保证生成合法 JSON」不是同一件事：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>约束解码 &#x2F; JSON Mode</th>
+<th>Schema Validation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>谁做</td>
+<td>推理服务 &#x2F; 解码器</td>
+<td>你的后端 &#x2F; Agent 运行时</td>
+</tr>
+<tr>
+<td>何时</td>
+<td>生成过程中</td>
+<td>生成完成之后</td>
+</tr>
+<tr>
+<td>失败时</td>
+<td>尽量不生成非法 Token</td>
+<td>拒绝、重试、或报错给上游</td>
+</tr>
+</tbody></table>
+<p>Agent 最佳实践：<strong>即使开了 JSON Mode，仍做 Validation</strong>——尤其是 Tool 参数、写库、调付费 API 之前。</p>
+<h3 id="5-4-Typed-Output（类型化输出）"><a href="#5-4-Typed-Output（类型化输出）" class="headerlink" title="5.4 Typed Output（类型化输出）"></a>5.4 Typed Output（类型化输出）</h3><p><strong>Typed Output</strong> 多指 SDK &#x2F; 框架把「符合 Schema 的 JSON」再映射成语言里的 <strong>类型对象</strong>（如 TypeScript interface、Pydantic 模型）。名词级：Schema → 校验通过 → 得到类型安全的结构，供后续代码使用。</p>
+<p>它不替代 Schema Validation，而是 Validation 之后的开发体验层。</p>
+<h3 id="5-5-层次关系（合看）"><a href="#5-5-层次关系（合看）" class="headerlink" title="5.5 层次关系（合看）"></a>5.5 层次关系（合看）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Prompt 约定（最软）</span><br><span class="line">    ↓</span><br><span class="line">JSON Output / JSON Mode</span><br><span class="line">    ↓</span><br><span class="line">JSON Schema（形状契约）± 约束解码（最硬，在模型侧）</span><br><span class="line">    ↓</span><br><span class="line">Schema Validation（应用侧必做保险）</span><br><span class="line">    ↓</span><br><span class="line">Typed Output（可选，方便写业务代码）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-Tool-Calling（工具调用）"><a href="#6-Tool-Calling（工具调用）" class="headerlink" title="6. Tool Calling（工具调用）"></a>6. Tool Calling（工具调用）</h2><p><strong>Tool Calling</strong> 让模型在对话中 <strong>提出要调用的外部工具及参数</strong>，由 <strong>应用真实执行</strong>，再把结果写回消息列表继续推理。这是 Agent「能办事」的 API 基础能力。</p>
+<h3 id="6-1-Function-Calling-与-Tool-Calling"><a href="#6-1-Function-Calling-与-Tool-Calling" class="headerlink" title="6.1 Function Calling 与 Tool Calling"></a>6.1 Function Calling 与 Tool Calling</h3><p>历史上不少文档称 <strong>Function Calling</strong>；现多称 <strong>Tool Calling</strong>。能力本质相同：模型不直接碰你的数据库&#x2F;HTTP，而是输出结构化的「调用意图」。</p>
+<p>本篇统一用 <strong>Tool Calling</strong>；读旧文看到 Function Calling，可视为同义。</p>
+<h3 id="6-2-Tool-Schema"><a href="#6-2-Tool-Schema" class="headerlink" title="6.2 Tool Schema"></a>6.2 Tool Schema</h3><p><strong>Tool Schema</strong> 描述「有哪些工具、干什么、参数是什么」，通常包括：</p>
+<ol>
+<li><strong>name</strong>：工具标识（模型用来点名）。</li>
+<li><strong>description</strong>：自然语言说明；影响模型是否选对工具。</li>
+<li><strong>parameters</strong>：多为 <strong>JSON Schema</strong>（类型、必填项、枚举等）。</li>
+</ol>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">tools = [</span><br><span class="line">  &#123;</span><br><span class="line">    name: &quot;search_docs&quot;,</span><br><span class="line">    description: &quot;在知识库中按关键词检索&quot;,</span><br><span class="line">    parameters: &#123; … JSON Schema … &#125;</span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>Schema 写糊（描述含糊、缺必填、同名冲突）→ 选错工具或参数幻觉（见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89">第三篇</a>）。</p>
+<h3 id="6-3-Tool-Invocation（工具调用意图）"><a href="#6-3-Tool-Invocation（工具调用意图）" class="headerlink" title="6.3 Tool Invocation（工具调用意图）"></a>6.3 Tool Invocation（工具调用意图）</h3><p><strong>Tool Invocation</strong> &#x3D; 模型在某次 Completion 中返回的「请执行：工具名 + 参数」。</p>
+<p>注意：</p>
+<ol>
+<li>此时工具 <strong>尚未执行</strong>；只是 assistant 消息里的结构化意图（常伴 <code>tool_calls</code> 一类字段）。</li>
+<li>参数应先做 <a href="#5-3-Schema-Validation%EF%BC%88%E6%A8%A1%E5%BC%8F%E6%A0%A1%E9%AA%8C%EF%BC%89">Schema Validation</a>，再执行。</li>
+<li>一次回复可能包含 <strong>多个</strong> Invocation（并行调多个工具），视 API 与编排策略而定。</li>
+</ol>
+<h3 id="6-4-Tool-Result（工具结果）"><a href="#6-4-Tool-Result（工具结果）" class="headerlink" title="6.4 Tool Result（工具结果）"></a>6.4 Tool Result（工具结果）</h3><p>应用执行成功后，把结果写成 <strong>tool</strong>（或 function）角色消息，内容多为文本或 JSON 字符串，并带上对应调用的 id，以便模型对齐「这是哪一次调用的返回」。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tools + messages → Chat Completion</span><br><span class="line">        ↓</span><br><span class="line">assistant 提出 Tool Invocation</span><br><span class="line">        ↓</span><br><span class="line">应用执行工具（真实副作用在这里）</span><br><span class="line">        ↓</span><br><span class="line">写入 Tool Result（role: tool）</span><br><span class="line">        ↓</span><br><span class="line">再 Chat Completion → 最终回答 或 继续 Invocation</span><br></pre></td></tr></table></figure>
+
+<p>Result 会进入 Context，占用 Token；过大时需截断或摘要（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-7-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E4%B8%8E-Agent">第一篇 Context 管理</a>）。</p>
+<h3 id="6-5-Tool-Error-Handling（工具错误处理）"><a href="#6-5-Tool-Error-Handling（工具错误处理）" class="headerlink" title="6.5 Tool Error Handling（工具错误处理）"></a>6.5 Tool Error Handling（工具错误处理）</h3><p>工具会失败：超时、4xx&#x2F;5xx、权限不足、参数合法但业务拒绝等。处理原则：</p>
+<ol>
+<li><strong>把错误写回 tool 消息</strong>（明确错误类型与可行动信息），让模型有机会改参或换工具——不要静默吞掉。</li>
+<li><strong>不要把错误当成功</strong>：禁止伪造「已完成」的 Result；那会放大幻觉。</li>
+<li><strong>重试策略在应用层</strong>：可重试的瞬时错误 vs 不可重试的参数错误；限制次数，避免死循环烧 Token。</li>
+<li><strong>降级</strong>：连续失败则向用户说明、或走人工&#x2F;默认路径，而不是无限 Completion。</li>
+</ol>
+<p>与 Structured Output 的关系：Invocation 的参数用 Schema Validation；Result &#x2F; Error 的格式也建议固定，便于下一轮模型与日志解析。</p>
+<h3 id="6-6-对-Agent-的影响"><a href="#6-6-对-Agent-的影响" class="headerlink" title="6.6 对 Agent 的影响"></a>6.6 对 Agent 的影响</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">感知（user / 多模态）</span><br><span class="line">  → 决策（Chat Completion ± tools）</span><br><span class="line">  → 行动（执行 Tool Invocation）</span><br><span class="line">  → 观察（Tool Result / Error 写回）</span><br><span class="line">  → 再决策 …</span><br></pre></td></tr></table></figure>
+
+<p>没有可靠的 Schema、Validation 与 Error Handling，Agent 只是「会说话的脚本」；有了闭环，才进入可编排的系统（后续篇：ReAct、规划、记忆等）。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Chat Completion</strong>：以 messages 为合同的主调用入口；一次调用 ≈ 一次（轮）Inference。</p>
+<p><strong>Message Role</strong>：在<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89">第三篇</a>三角色之上，用 <strong>tool</strong> 消息承载执行结果。</p>
+<p><strong>Streaming</strong>：边 Decode 边推送；改善 TTFT 之后的体感；结构化&#x2F;工具路径常需等完整再解析。</p>
+<p><strong>Multimodal &#x2F; VLM</strong>：输入可含图等；VLM 能看图说话；Context 与费用更贵。</p>
+<p><strong>Structured Output</strong>：JSON Output → JSON Schema →（模型侧约束）→ Schema Validation → Typed Output；校验在应用侧不可省。</p>
+<p><strong>Tool Calling</strong>（含旧称 Function Calling）：Tool Schema → Invocation → 应用执行 → Result&#x2F;Error 写回 → 再 Completion。</p>
+<p><strong>系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）表示与容量</a></li>
+<li><a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）生成与加速</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）模型侧认名</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）调用侧</a>（本篇）</li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">（一）（二）模型如何表示与生成</span><br><span class="line">（三）认名：角色、训练阶段、幻觉、延迟</span><br><span class="line">（四）调用：Chat Completion → Structured Output → Tool Calling 闭环</span><br></pre></td></tr></table></figure>
+
+<p>下一篇起：在工具闭环之上做 Agent 编排（ReAct、多步规划、记忆实现等）。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-LLM基础学习(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LLM基础学习(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

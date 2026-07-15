@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="模型侧认名收口：消息角色、Pretrain&#x2F;SFT&#x2F;RLHF、指令遵循与幻觉、结构化输出总览、延迟名词；调用侧见第四篇。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LLM基础学习(三)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="模型侧认名收口：消息角色、Pretrain&#x2F;SFT&#x2F;RLHF、指令遵循与幻觉、结构化输出总览、延迟名词；调用侧见第四篇。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-15T04:30:00.000Z">
+<meta property="article:modified_time" content="2026-07-15T04:50:00.000Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LLM">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/","path":"2026/07/15/Agent工程学习-LLM基础学习-三/","title":"AI-Agent工程学习-LLM基础学习(三)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LLM基础学习(三) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">1. 消息角色（Message Roles）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%8E-Context-Window-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 与 Context Window 的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E8%AE%AD%E7%BB%83%E9%98%B6%E6%AE%B5%E8%AE%A4%E5%90%8D%EF%BC%9APretrain-SFT-RLHF"><span class="nav-number">2.</span> <span class="nav-text">2. 训练阶段认名：Pretrain &#x2F; SFT &#x2F; RLHF</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Pretrain%EF%BC%88%E9%A2%84%E8%AE%AD%E7%BB%83%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Pretrain（预训练）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-SFT%EF%BC%88Supervised-Fine-Tuning%EF%BC%8C%E7%9B%91%E7%9D%A3%E5%BE%AE%E8%B0%83%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 SFT（Supervised Fine-Tuning，监督微调）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-RLHF-Alignment%EF%BC%88%E5%AF%B9%E9%BD%90%EF%BC%8C%E8%AE%A4%E5%90%8D%E5%8D%B3%E5%8F%AF%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 RLHF &#x2F; Alignment（对齐，认名即可）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Instruction-Following-%E4%B8%8E-Hallucination"><span class="nav-number">3.</span> <span class="nav-text">3. Instruction Following 与 Hallucination</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Instruction-Following%EF%BC%88%E6%8C%87%E4%BB%A4%E9%81%B5%E5%BE%AA%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Instruction Following（指令遵循）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 Hallucination（幻觉）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E4%B8%8E%E7%BA%A6%E6%9D%9F%E8%A7%A3%E7%A0%81%EF%BC%88%E6%80%BB%E8%A7%88%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">4. 结构化输出与约束解码（总览）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%BB%B6%E8%BF%9F%E4%B8%8E%E5%90%9E%E5%90%90%E7%9B%B8%E5%85%B3%E5%90%8D%E8%AF%8D%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">5. 延迟与吞吐相关名词（可选）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%88%E6%A8%A1%E5%9E%8B%E4%BE%A7%E6%94%B6%E5%8F%A3%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">总结（模型侧收口）</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LLM基础学习(三) | 我的记录小站">
+      <meta itemprop="description" content="模型侧认名收口：消息角色、Pretrain&#x2F;SFT&#x2F;RLHF、指令遵循与幻觉、结构化输出总览、延迟名词；调用侧见第四篇。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LLM基础学习(三)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-15 12:30:00 / 修改时间：12:50:00" itemprop="dateCreated datePublished" datetime="2026-07-15T12:30:00+08:00">2026-07-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">模型侧认名收口：消息角色、Pretrain/SFT/RLHF、指令遵循与幻觉、结构化输出总览、延迟名词；调用侧见第四篇。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">第一篇</a>、<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">第二篇</a>：补齐读模型说明时常碰到的认名概念（调用侧见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>）</p>
+<span id="more"></span>
+<h2 id="1-消息角色（Message-Roles）"><a href="#1-消息角色（Message-Roles）" class="headerlink" title="1. 消息角色（Message Roles）"></a>1. 消息角色（Message Roles）</h2><p><strong>什么是消息角色？</strong></p>
+<p>Chat 类 API 通常不把整段对话当成「一大坨纯文本」，而是拆成带 <strong>role</strong> 的消息列表。模型按对话模板理解：谁在说、该听谁的约束。</p>
+<p>常见三种：</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>含义</th>
+<th>典型内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>system</strong></td>
+<td>系统 &#x2F; 开发者设定</td>
+<td>人设、硬规则、输出格式、安全边界</td>
+</tr>
+<tr>
+<td><strong>user</strong></td>
+<td>用户</td>
+<td>当前问题、任务、附件说明</td>
+</tr>
+<tr>
+<td><strong>assistant</strong></td>
+<td>模型自己的历史回复</td>
+<td>上一轮回答；多轮时由应用写回</td>
+</tr>
+</tbody></table>
+<p>部分协议还有 <strong>tool &#x2F; function</strong> 角色（把工具执行结果写回对话）。其在 Chat Completion 多轮中的位置、与 Tool Schema &#x2F; Invocation 的关系，见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">第四篇</a>。</p>
+<h3 id="1-1-与-Context-Window-的关系"><a href="#1-1-与-Context-Window-的关系" class="headerlink" title="1.1 与 Context Window 的关系"></a>1.1 与 Context Window 的关系</h3><p>每一条消息经 Tokenization 后都占用 Context（见<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">第一篇第 5 节</a>）。多轮对话 &#x3D; 把历史 <code>user</code> &#x2F; <code>assistant</code>（有时还有 <code>system</code>）再次送进同一次 Inference。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123; role: system,    content: &quot;你是…；必须输出 JSON…&quot; &#125;,</span><br><span class="line">  &#123; role: user,      content: &quot;上一轮用户话&quot; &#125;,</span><br><span class="line">  &#123; role: assistant, content: &quot;上一轮模型话&quot; &#125;,</span><br><span class="line">  &#123; role: user,      content: &quot;当前问题&quot; &#125;</span><br><span class="line">]</span><br><span class="line">        ↓</span><br><span class="line">   拼进 Context Window → Inference</span><br></pre></td></tr></table></figure>
+
+<p>对应：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">Context Window（第一篇）</a> → <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">Inference（第二篇）</a>。</p>
+<h3 id="1-2-对-Agent-的影响"><a href="#1-2-对-Agent-的影响" class="headerlink" title="1.2 对 Agent 的影响"></a>1.2 对 Agent 的影响</h3><ol>
+<li><strong>规则放 system</strong>：工具用法、禁止事项、输出契约，优先放 system，减少每轮重复堆在 user 里（仍占 Token，但职责更清晰）。</li>
+<li><strong>历史要裁剪</strong>：轮数一多就触碰 Context 上限，需摘要 &#x2F; 滑动窗口（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-7-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E4%B8%8E-Agent">第一篇 5.7</a>）。</li>
+<li><strong>不要假设模型「真的记住」</strong>：没有写入本次消息列表的内容，本轮 Inference 看不见。</li>
+</ol>
+<hr>
+<h2 id="2-训练阶段认名：Pretrain-SFT-RLHF"><a href="#2-训练阶段认名：Pretrain-SFT-RLHF" class="headerlink" title="2. 训练阶段认名：Pretrain &#x2F; SFT &#x2F; RLHF"></a>2. 训练阶段认名：Pretrain &#x2F; SFT &#x2F; RLHF</h2><p>读模型卡、技术报告时，常按阶段描述「这个模型怎么来的」。名词级只需分清目的，不必会训。</p>
+<h3 id="2-1-Pretrain（预训练）"><a href="#2-1-Pretrain（预训练）" class="headerlink" title="2.1 Pretrain（预训练）"></a>2.1 Pretrain（预训练）</h3><p>在大规模语料上做 <strong>下一 Token 预测</strong>（与<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-1-%E8%87%AA%E5%9B%9E%E5%BD%92%EF%BC%88Autoregressive%EF%BC%89%E7%94%9F%E6%88%90">第二篇自回归</a>同一目标），学会语言与世界知识的统计规律。产物多为 <strong>基座模型（Base）</strong>：补全能力强，但不一定「听话聊天」。</p>
+<h3 id="2-2-SFT（Supervised-Fine-Tuning，监督微调）"><a href="#2-2-SFT（Supervised-Fine-Tuning，监督微调）" class="headerlink" title="2.2 SFT（Supervised Fine-Tuning，监督微调）"></a>2.2 SFT（Supervised Fine-Tuning，监督微调）</h3><p>用「指令 → 优质回答」等高质量示范数据继续训练，让模型学会 <strong>按指令行事、对话格式、助手口吻</strong>。Chat 模型多经过 SFT。<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">第二篇 Inference</a>表里的「SFT」即指这一阶段。</p>
+<h3 id="2-3-RLHF-Alignment（对齐，认名即可）"><a href="#2-3-RLHF-Alignment（对齐，认名即可）" class="headerlink" title="2.3 RLHF &#x2F; Alignment（对齐，认名即可）"></a>2.3 RLHF &#x2F; Alignment（对齐，认名即可）</h3><p><strong>RLHF（Reinforcement Learning from Human Feedback）</strong> 等：用人类（或 AI）偏好信号，进一步让输出更符合「有用、无害、诚实」等目标。还有 DPO 等同类思想的不同算法，产品文案里常统称 <strong>Alignment（对齐）</strong>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Pretrain（会补全、有知识）</span><br><span class="line">    ↓</span><br><span class="line">SFT（会按指令聊天）</span><br><span class="line">    ↓</span><br><span class="line">RLHF / 其他对齐（更符合偏好与安全策略）</span><br><span class="line">    ↓</span><br><span class="line">你调用的 Chat / Instruct 模型</span><br></pre></td></tr></table></figure>
+
+<p><strong>和 Agent 的关系</strong>：你调的几乎都是对齐后的 Chat 模型；Base 模型一般不适合直接当 Agent 大脑。对齐不能消灭幻觉，只能降低某些不良行为概率。</p>
+<hr>
+<h2 id="3-Instruction-Following-与-Hallucination"><a href="#3-Instruction-Following-与-Hallucination" class="headerlink" title="3. Instruction Following 与 Hallucination"></a>3. Instruction Following 与 Hallucination</h2><h3 id="3-1-Instruction-Following（指令遵循）"><a href="#3-1-Instruction-Following（指令遵循）" class="headerlink" title="3.1 Instruction Following（指令遵循）"></a>3.1 Instruction Following（指令遵循）</h3><p>指模型 <strong>按你的约束执行</strong> 的能力：格式、步骤、语言、禁止事项、工具调用约定等。</p>
+<p>影响因素（与已学概念的联系）：</p>
+<ol>
+<li><strong>模型是否经过 SFT &#x2F; 对齐</strong>（<a href="#2-%E8%AE%AD%E7%BB%83%E9%98%B6%E6%AE%B5%E8%AE%A4%E5%90%8D%EF%BC%9APretrain-SFT-RLHF">本节第 2 节</a>）。</li>
+<li><strong>Prompt &#x2F; system 是否写清</strong>（<a href="#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89">消息角色</a>）。</li>
+<li><strong>Temperature 等是否过「活」</strong>（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#4-Temperature">第二篇</a>）：工具参数、JSON 宜低温。</li>
+<li><strong>Context 是否被挤爆或 Lost in the Middle</strong>（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-4-Context-%E5%A2%9E%E5%A4%A7%E7%9A%84%E9%97%AE%E9%A2%98">第一篇</a>）：关键指令被淹没会「听不见」。</li>
+</ol>
+<h3 id="3-2-Hallucination（幻觉）"><a href="#3-2-Hallucination（幻觉）" class="headerlink" title="3.2 Hallucination（幻觉）"></a>3.2 Hallucination（幻觉）</h3><p>模型生成了 <strong>听起来合理、但事实错误或无依据</strong> 的内容：编造引用、假 API 字段、不存在的论文等。</p>
+<p>要点：</p>
+<ol>
+<li>本质仍是「选下一个高概率 Token」，不是在查真伪数据库（除非你接了检索 &#x2F; 工具）。</li>
+<li><strong>RAG、工具调用、要求引用原文</strong> 是工程上降幻觉的主手段，不是把 Temperature 调到 0 就万事大吉（低温只更稳，不保证真）。</li>
+<li>Agent 场景：幻觉常表现为 <strong>捏造工具参数、假路径、假 ID</strong>——必须校验工具返回，不能盲信模型自述「已完成」。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Instruction Following</th>
+<th>Hallucination</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>问的是</td>
+<td>听不听指令、守不守格式</td>
+<td>内容是否属实、有无依据</td>
+</tr>
+<tr>
+<td>失败表现</td>
+<td>漏字段、不按步骤、忽略 system</td>
+<td>言之凿凿的假信息</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-结构化输出与约束解码（总览）"><a href="#4-结构化输出与约束解码（总览）" class="headerlink" title="4. 结构化输出与约束解码（总览）"></a>4. 结构化输出与约束解码（总览）</h2><p>Agent 经常要模型输出 <strong>可解析的结构</strong>（JSON、XML、特定 schema），而不是散文。约束由软到硬大致三层：</p>
+<ol>
+<li><strong>Prompt 约束</strong>：在 system &#x2F; user 里写清格式并给示例，配合低温；偶发漏括号、多废话。</li>
+<li><strong>JSON Mode &#x2F; response_format</strong>：API 要求输出合法 JSON；仍可能不符合业务字段。</li>
+<li><strong>Schema &#x2F; Guided Decoding</strong>：生成时只允许符合语法或 JSON Schema 的 Token；更适合严格表单与 Tool 参数。</li>
+</ol>
+<p>与<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#3-Decoding-Strategy%EF%BC%88%E8%A7%A3%E7%A0%81%E7%AD%96%E7%95%A5%EF%BC%89">第二篇</a>关系：约束作用在解码可选 Token 集合上，和 Top-k &#x2F; Top-p「截断候选」同一类思想。</p>
+<p><strong>展开</strong>：JSON Output、JSON Schema、Schema Validation、Typed Output，以及它们与 Tool 参数的关系，见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-Structured-Output%EF%BC%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89">第四篇 Structured Output</a>。本篇只建立「软→硬」心智模型即可。</p>
+<hr>
+<h2 id="5-延迟与吞吐相关名词（可选）"><a href="#5-延迟与吞吐相关名词（可选）" class="headerlink" title="5. 延迟与吞吐相关名词（可选）"></a>5. 延迟与吞吐相关名词（可选）</h2><p>部署或读性能文档时常见：</p>
+<table>
+<thead>
+<tr>
+<th>名词</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Latency</strong></td>
+<td>一次请求的耗时（需说明是首字还是整段）。</td>
+</tr>
+<tr>
+<td><strong>TTFT（Time To First Token）</strong></td>
+<td>发出请求到收到 <strong>第一个</strong> 输出 Token 的时间；与 <strong>Prefill</strong> 强相关（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#7-2-Prefill-%E4%B8%8E-Decode">第二篇 7.2</a>）。</td>
+</tr>
+<tr>
+<td><strong>Throughput</strong></td>
+<td>单位时间处理量（如 tokens&#x2F;s、请求数&#x2F;s）。</td>
+</tr>
+<tr>
+<td><strong>Batch</strong></td>
+<td>多条请求一起算，提高吞吐，可能增加单请求等待。</td>
+</tr>
+</tbody></table>
+<p>Agent 体感：工具多、轮次多 → 多次 Inference 叠加；历史长 → Prefill &#x2F; TTFT 变差。优化仍优先减 Context、减轮次，而不是先调采样参数。</p>
+<hr>
+<h2 id="总结（模型侧收口）"><a href="#总结（模型侧收口）" class="headerlink" title="总结（模型侧收口）"></a>总结（模型侧收口）</h2><p><strong>本篇（模型 &#x2F; 产品认名）：</strong></p>
+<ul>
+<li><strong>消息角色</strong>：system &#x2F; user &#x2F; assistant 构成 Chat Context；tool 角色见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#2-Message-Role%EF%BC%88%E5%A4%8D%E4%B9%A0%E4%B8%8E%E6%89%A9%E5%B1%95%EF%BC%89">第四篇</a>。</li>
+<li><strong>Pretrain → SFT → RLHF&#x2F;对齐</strong>：基座会补全，Chat 模型更听话；对齐 ≠ 无幻觉。</li>
+<li><strong>Instruction Following &#x2F; Hallucination</strong>：听指令 vs 内容是否属实。</li>
+<li><strong>结构化输出</strong>：仅总览软→硬三层；细节见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-Structured-Output%EF%BC%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89">第四篇</a>。</li>
+<li><strong>TTFT &#x2F; Prefill &#x2F; Decode &#x2F; Throughput</strong>：用来读懂「为什么慢」。</li>
+</ul>
+<p><strong>系列主链：</strong></p>
+<ul>
+<li><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）表示与容量</a></li>
+<li><a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）生成与加速</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）模型侧认名</a>（本篇）</li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）调用侧：Chat API &#x2F; Streaming &#x2F; Structured &#x2F; Tool 闭环</a></li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">（一）文本 → Tokenization → Embedding → Transformer</span><br><span class="line">（二）→ Logits → 采样 → Token；KV Cache；停止条件</span><br><span class="line">（三）消息角色；训练阶段；指令遵循与幻觉；结构化总览；延迟</span><br><span class="line">（四）Chat Completion → Structured Output → Tool Calling 闭环</span><br></pre></td></tr></table></figure>
+
+<p>到这里，<strong>模型侧名词级认名</strong>可以收口。下一步读<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>：把消息列表真正送进 Chat Completion，并学会结构化输出与 Tool Calling 全闭环。第五篇起再进入 Agent 编排（ReAct、规划、记忆实现等），建立在第四篇工具闭环之上。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/" rel="prev" title="AI-Agent工程学习-LLM基础学习(二)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LLM基础学习(二)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/" rel="next" title="AI-Agent工程学习-LLM基础学习(四)">
+                  AI-Agent工程学习-LLM基础学习(四) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

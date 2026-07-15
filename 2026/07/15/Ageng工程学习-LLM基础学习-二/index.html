@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="接第一篇：Inference、Logits、解码策略、Temperature &#x2F; Top-k &#x2F; Top-p、停止条件，以及 KV Cache 与 Prefill&#x2F;Decode。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LLM基础学习(二)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="接第一篇：Inference、Logits、解码策略、Temperature &#x2F; Top-k &#x2F; Top-p、停止条件，以及 KV Cache 与 Prefill&#x2F;Decode。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-15T03:57:47.000Z">
+<meta property="article:modified_time" content="2026-07-15T04:32:16.691Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LLM">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/","path":"2026/07/15/Ageng工程学习-LLM基础学习-二/","title":"AI-Agent工程学习-LLM基础学习(二)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LLM基础学习(二) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">1. Inference（推理）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E8%87%AA%E5%9B%9E%E5%BD%92%EF%BC%88Autoregressive%EF%BC%89%E7%94%9F%E6%88%90"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 自回归（Autoregressive）生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Inference-%E4%B8%8E%E7%AC%AC%E4%B8%80%E7%AF%87%E6%A6%82%E5%BF%B5%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Inference 与第一篇概念的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-Inference-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 Inference 对 Agent 的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E7%94%9F%E6%88%90%E4%BD%95%E6%97%B6%E5%81%9C%E6%AD%A2%EF%BC%9AEOS-stop-max-tokens"><span class="nav-number">1.4.</span> <span class="nav-text">1.4 生成何时停止：EOS &#x2F; stop &#x2F; max_tokens</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Logits"><span class="nav-number">2.</span> <span class="nav-text">2. Logits</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Softmax%EF%BC%9A%E4%BB%8E%E5%88%86%E6%95%B0%E5%88%B0%E6%A6%82%E7%8E%87"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Softmax：从分数到概率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-LM-Head-%E4%B8%8E%E6%B5%81%E6%B0%B4%E7%BA%BF%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 LM Head 与流水线中的位置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Decoding-Strategy%EF%BC%88%E8%A7%A3%E7%A0%81%E7%AD%96%E7%95%A5%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. Decoding Strategy（解码策略）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%A4%E5%A4%A7%E7%B1%BB"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 两大类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E7%AD%96%E7%95%A5%E5%A6%82%E4%BD%95%E6%8C%82%E5%9C%A8%E7%94%9F%E6%88%90%E9%93%BE%E4%B8%8A"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 策略如何挂在生成链上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%92%8C-Agent-%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%88%E9%A2%84%E5%91%8A%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 和 Agent 的关系（预告）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Temperature"><span class="nav-number">4.</span> <span class="nav-text">4. Temperature</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E7%9B%B4%E8%A7%82%E6%95%88%E6%9E%9C"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 直观效果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%B8%B8%E8%A7%81%E4%BD%BF%E7%94%A8%E5%8C%BA%E9%97%B4"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 常见使用区间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Temperature-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 Temperature 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Top-k-Sampling"><span class="nav-number">5.</span> <span class="nav-text">5. Top-k Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 工作机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E7%89%B9%E7%82%B9"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E4%B8%8E-Temperature-%E7%9A%84%E9%85%8D%E5%90%88"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 与 Temperature 的配合</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Top-p-Sampling%EF%BC%88Nucleus-Sampling%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">6. Top-p Sampling（Nucleus Sampling）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 工作机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-Top-p-%E4%B8%8E-Top-k-%E5%AF%B9%E6%AF%94"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 Top-p 与 Top-k 对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E5%B8%B8%E8%A7%81%E7%BB%84%E5%90%88"><span class="nav-number">6.3.</span> <span class="nav-text">6.3 常见组合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">6.4.</span> <span class="nav-text">6.4 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-KV-Cache"><span class="nav-number">7.</span> <span class="nav-text">7. KV Cache</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%AE%83"><span class="nav-number">7.1.</span> <span class="nav-text">7.1 为什么需要它</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-Prefill-%E4%B8%8E-Decode"><span class="nav-number">7.2.</span> <span class="nav-text">7.2 Prefill 与 Decode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-%E4%B8%8E-Causal-Attention-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">7.3.</span> <span class="nav-text">7.3 与 Causal Attention 的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-%E4%BB%A3%E4%BB%B7%EF%BC%9A%E6%98%BE%E5%AD%98"><span class="nav-number">7.4.</span> <span class="nav-text">7.4 代价：显存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-5-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">7.5.</span> <span class="nav-text">7.5 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LLM基础学习(二) | 我的记录小站">
+      <meta itemprop="description" content="接第一篇：Inference、Logits、解码策略、Temperature &#x2F; Top-k &#x2F; Top-p、停止条件，以及 KV Cache 与 Prefill&#x2F;Decode。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LLM基础学习(二)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-15 11:57:47 / 修改时间：12:32:16" itemprop="dateCreated datePublished" datetime="2026-07-15T11:57:47+08:00">2026-07-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">接第一篇：Inference、Logits、解码策略、Temperature / Top-k / Top-p、停止条件，以及 KV Cache 与 Prefill/Decode。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">第一篇</a>：从「预测下一个 Token」讲清推理与采样</p>
+<span id="more"></span>
+<h2 id="1-Inference（推理）"><a href="#1-Inference（推理）" class="headerlink" title="1. Inference（推理）"></a>1. Inference（推理）</h2><p><strong>什么是 Inference？</strong></p>
+<p>Inference（推理）指：模型已经训练好之后，用当前输入 <strong>生成输出</strong> 的过程。聊天、补全、Agent 调 API，用的都是 Inference，不是在现场重新训练模型。</p>
+<p><strong>与 Training 的对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Training（训练）</th>
+<th>Inference（推理）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目的</td>
+<td>学参数</td>
+<td>用参数生成</td>
+</tr>
+<tr>
+<td>是否更新权重</td>
+<td>是</td>
+<td>否</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>预训练、SFT</td>
+<td>Chat、API、Agent</td>
+</tr>
+</tbody></table>
+<p><strong>负责</strong>：读入 Context → 前向计算 → 得到下一 Token 的分布 → 选出 Token → 写入序列 → 重复，直到结束条件满足。</p>
+<p><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">第一篇</a>讲到 Transformer 输出表示后「预测 Token」；本篇从这里往下拆：<strong>怎么从模型输出变成一个个 Token，以及怎么算得更快。</strong></p>
+<h3 id="1-1-自回归（Autoregressive）生成"><a href="#1-1-自回归（Autoregressive）生成" class="headerlink" title="1.1 自回归（Autoregressive）生成"></a>1.1 自回归（Autoregressive）生成</h3><p>现代 Decoder-only LLM 是 <strong>自回归（Autoregressive, AR）</strong> 的：</p>
+<ol>
+<li>每次只预测 <strong>下一个</strong> Token（Next-Token Prediction）。</li>
+<li>把新 Token <strong>追加</strong> 到序列末尾，作为下一步的输入。</li>
+<li>重复，直到触发停止条件（<a href="#1-4-%E7%94%9F%E6%88%90%E4%BD%95%E6%97%B6%E5%81%9C%E6%AD%A2%EF%BC%9AEOS-stop-max-tokens">见 1.4</a>）。</li>
+</ol>
+<p>「自回归」&#x3D; 用已经生成的内容，回归地预测下一步。这与<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#2-1-Causal-Attention%EF%BC%88%E5%9B%A0%E6%9E%9C%E6%B3%A8%E6%84%8F%E5%8A%9B%EF%BC%89">第一篇的 Causal Attention</a>一致：每一步只能看见过去，不能看见未来。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Context（Prompt + 已生成 Token）</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Transformer 前向计算</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">得到 Logits（词表上每个 Token 的分数）</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Decoding Strategy（Temperature / Top-k / Top-p 等）</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">选出下一个 Token</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">拼回序列，继续下一轮（通常配合 KV Cache）</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-Inference-与第一篇概念的关系"><a href="#1-2-Inference-与第一篇概念的关系" class="headerlink" title="1.2 Inference 与第一篇概念的关系"></a>1.2 Inference 与第一篇概念的关系</h3><ol>
+<li><strong>Tokenization</strong>：输入先变成 Token ID；输出也是 Token，再解码成文字。</li>
+<li><strong>Context Window</strong>：已有输入 + 已生成输出都占同一窗口；输出越长，剩余输入预算越少。</li>
+<li><strong>Causal Attention</strong>：只能看过去 Token，因此可以逐步生成，也才能用 KV Cache。</li>
+</ol>
+<h3 id="1-3-Inference-对-Agent-的影响"><a href="#1-3-Inference-对-Agent-的影响" class="headerlink" title="1.3 Inference 对 Agent 的影响"></a>1.3 Inference 对 Agent 的影响</h3><p>Agent 一次任务往往多次 Inference：规划、调工具、读结果、再规划。每次都会产生延迟与 Token 费用。采样参数（Temperature 等）还会影响：是否稳定执行工具、是否胡编参数、回答是否发散。</p>
+<h3 id="1-4-生成何时停止：EOS-stop-max-tokens"><a href="#1-4-生成何时停止：EOS-stop-max-tokens" class="headerlink" title="1.4 生成何时停止：EOS &#x2F; stop &#x2F; max_tokens"></a>1.4 生成何时停止：EOS &#x2F; stop &#x2F; max_tokens</h3><p>自回归不会无限跑下去，常见停止条件：</p>
+<ol>
+<li><strong>EOS（End of Sequence）</strong>：模型生成了表示「结束」的特殊 Token（具体 ID 因 Tokenizer &#x2F; 对话模板而异），服务端据此停。</li>
+<li><strong>stop 序列</strong>：API 可配置遇到某些字符串 &#x2F; Token 序列就停（如三个反引号、自定义分隔符），便于截断到指定格式边界。</li>
+<li><strong>max_tokens（或 max_output_tokens）</strong>：输出长度上限。到顶就停，<strong>即使句子没说完</strong>——所以<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">第一篇</a>强调要在 Context 里给输出预留额度，并合理设上限。</li>
+</ol>
+<p>Agent 调工具时：既要设够 <code>max_tokens</code> 装下完整 JSON &#x2F; 参数，又可用 <code>stop</code> 减少废话尾巴。</p>
+<hr>
+<h2 id="2-Logits"><a href="#2-Logits" class="headerlink" title="2. Logits"></a>2. Logits</h2><p><strong>什么是 Logits？</strong></p>
+<p>Logits 是模型在词表上、对每个候选 Token 给出的 <strong>原始分数</strong>（未归一化）。可以理解为：「下一个词是这个 ID 有多合适」的打分表，但这时 <strong>还不是概率</strong>。</p>
+<p>假设词表大小为 $V$（如数万～十几万），某一步会得到长度为 $V$ 的向量：每个位置一个 logit。</p>
+<h3 id="2-1-Softmax：从分数到概率"><a href="#2-1-Softmax：从分数到概率" class="headerlink" title="2.1 Softmax：从分数到概率"></a>2.1 Softmax：从分数到概率</h3><p><strong>Softmax</strong> 把一组 Logits 变成和为 1 的概率分布（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#2-4-Attention-%E6%95%B0%E5%AD%A6%E6%9C%BA%E5%88%B6">第一篇 Attention</a>里也用 Softmax，那里是把匹配分数变成关注权重；这里是把词表分数变成「下一个 Token」的概率）：</p>
+<p>$$P_i &#x3D; \frac{e^{z_i}}{\sum_{j&#x3D;1}^{V} e^{z_j}}$$</p>
+<p>其中 $z_i$ 是第 $i$ 个 Token 的 logit。</p>
+<p><strong>容易混淆的点：</strong></p>
+<ol>
+<li><strong>Logits</strong>：可正可负，和不必为 1。</li>
+<li><strong>概率</strong>：Softmax 之后，每项在 $(0,1)$，总和为 1。</li>
+<li>Decoding 往往先对 Logits 做变换（如除以 Temperature、做 Top-k &#x2F; Top-p 截断），再 Softmax 或在截断后的集合里采样。</li>
+</ol>
+<h3 id="2-2-LM-Head-与流水线中的位置"><a href="#2-2-LM-Head-与流水线中的位置" class="headerlink" title="2.2 LM Head 与流水线中的位置"></a>2.2 LM Head 与流水线中的位置</h3><p>Transformer 最后一层给出每个位置的隐藏向量后，还要经过一层线性投影（常称 <strong>LM Head &#x2F; 语言建模头</strong>），把向量维度映射到 <strong>词表大小</strong>，才得到 Logits。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Transformer 最后一层输出表示</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">LM Head（线性层：隐藏维 → 词表维）</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Logits（长度 = 词表大小）</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">（可选）Temperature / Top-k / Top-p</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Softmax → 概率 → 选 Token</span><br></pre></td></tr></table></figure>
+
+<p>没有 Logits，就谈不上 Temperature 或采样：它们都是在「改分数 &#x2F; 截候选」，再决定下一个 Token。</p>
+<hr>
+<h2 id="3-Decoding-Strategy（解码策略）"><a href="#3-Decoding-Strategy（解码策略）" class="headerlink" title="3. Decoding Strategy（解码策略）"></a>3. Decoding Strategy（解码策略）</h2><p><strong>什么是 Decoding Strategy？</strong></p>
+<p>Decoding Strategy（解码策略）指：拿到 Logits（或概率）之后，<strong>用什么规则选出下一个 Token</strong>。同一套 Logits，策略不同，生成风格可以差很多。</p>
+<h3 id="3-1-两大类"><a href="#3-1-两大类" class="headerlink" title="3.1 两大类"></a>3.1 两大类</h3><ol>
+<li><strong>Greedy Decoding（贪心）</strong>：每一步选当前概率最高的 Token。确定、可复现，但容易呆板、重复。</li>
+<li><strong>Sampling（采样）</strong>：按概率随机抽。更自然、更多样，但同一 Prompt 多次结果可能不同。</li>
+</ol>
+<p>Temperature、Top-k、Top-p 都是在 <strong>采样路径</strong> 上控制「有多随机、候选池多大」。</p>
+<p><strong>Greedy 与 Temperature → 0：</strong></p>
+<ul>
+<li>理论上，$T \to 0$ 时 Softmax 会极端尖锐，采样结果 <strong>几乎总是</strong> 最高分 Token，行为接近 Greedy。</li>
+<li>工程上不少 API 提供 <code>temperature=0</code> 表示「尽量确定」；是否内部直接改成 argmax，因实现而异。</li>
+<li>需要严格可复现时：用 Greedy &#x2F; <code>temperature=0</code>，并固定其他随机源；仍可能因实现细节有极小差异。</li>
+</ul>
+<h3 id="3-2-策略如何挂在生成链上"><a href="#3-2-策略如何挂在生成链上" class="headerlink" title="3.2 策略如何挂在生成链上"></a>3.2 策略如何挂在生成链上</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Logits</span><br><span class="line">    ↓</span><br><span class="line">Temperature 缩放（调分布锐度）</span><br><span class="line">    ↓</span><br><span class="line">Top-k / Top-p 截断（缩小候选集）</span><br><span class="line">    ↓</span><br><span class="line">Softmax（在保留的候选上）</span><br><span class="line">    ↓</span><br><span class="line">采样 or 取最大</span><br><span class="line">    ↓</span><br><span class="line">下一个 Token</span><br></pre></td></tr></table></figure>
+
+<p>工程上常见组合：<strong>Temperature + Top-p</strong>，或 <strong>Temperature + Top-k</strong>，有的 API 允许两者同时开（先按各自规则过滤，再采样）。</p>
+<h3 id="3-3-和-Agent-的关系（预告）"><a href="#3-3-和-Agent-的关系（预告）" class="headerlink" title="3.3 和 Agent 的关系（预告）"></a>3.3 和 Agent 的关系（预告）</h3><ul>
+<li>写代码、填 JSON、调 Tool：<strong>偏贪心或低温</strong>，要稳。</li>
+<li>头脑风暴、文案：<strong>可提高 Temperature &#x2F; 放宽 Top-p</strong>，要活。</li>
+</ul>
+<p>具体参数见下面几节。</p>
+<hr>
+<h2 id="4-Temperature"><a href="#4-Temperature" class="headerlink" title="4. Temperature"></a>4. Temperature</h2><p><strong>什么是 Temperature？</strong></p>
+<p>Temperature（温度）是一个标量 $T$，在 Softmax 前把 Logits 除以 $T$，用来控制分布的 <strong>锐利程度</strong>：</p>
+<p>$$P_i &#x3D; \frac{e^{z_i &#x2F; T}}{\sum_{j} e^{z_j &#x2F; T}}$$</p>
+<h3 id="4-1-直观效果"><a href="#4-1-直观效果" class="headerlink" title="4.1 直观效果"></a>4.1 直观效果</h3><table>
+<thead>
+<tr>
+<th>Temperature</th>
+<th>分布形态</th>
+<th>生成感觉</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$T \to 0$</td>
+<td>几乎只剩最高分</td>
+<td>近似贪心，很稳、很死板</td>
+</tr>
+<tr>
+<td>$T &#x3D; 1$</td>
+<td>模型原始分布</td>
+<td>默认基准</td>
+</tr>
+<tr>
+<td>$T &gt; 1$</td>
+<td>更平坦</td>
+<td>更随机、更跳跃，也可能更胡说</td>
+</tr>
+</tbody></table>
+<p>$T$ 越小，高峰越尖，更容易反复选同一批「安全」Token；$T$ 越大，小概率 Token 也更容易被抽到。</p>
+<h3 id="4-2-常见使用区间"><a href="#4-2-常见使用区间" class="headerlink" title="4.2 常见使用区间"></a>4.2 常见使用区间</h3><p>口头上常说的「低温 &#x2F; 高温」大致是：</p>
+<ol>
+<li><strong>0～0.3</strong>：事实问答、格式严格、工具参数。</li>
+<li><strong>0.5～0.8</strong>：一般对话、写作。</li>
+<li><strong>0.9～1.2+</strong>：创意、多样性优先（需能接受不稳定）。</li>
+</ol>
+<p>具体数值因模型和厂商默认值而异，调参要以实测为准。</p>
+<h3 id="4-3-Temperature-对-Agent-的影响"><a href="#4-3-Temperature-对-Agent-的影响" class="headerlink" title="4.3 Temperature 对 Agent 的影响"></a>4.3 Temperature 对 Agent 的影响</h3><p>Agent 若要 <strong>可靠调用工具</strong>（字段名、路径、JSON 不能飘），Temperature 宜低。若某一步是「想几个方案」，可单独提高 Temperature，再在执行步降回来——不同步骤可以用不同采样参数。</p>
+<hr>
+<h2 id="5-Top-k-Sampling"><a href="#5-Top-k-Sampling" class="headerlink" title="5. Top-k Sampling"></a>5. Top-k Sampling</h2><p><strong>什么是 Top-k Sampling？</strong></p>
+<p>Top-k：每一步只保留 Logits &#x2F; 概率 <strong>最高的 k 个</strong> Token，其余概率视为 0，再在这 k 个里按（重新归一化后的）概率采样。</p>
+<h3 id="5-1-工作机制"><a href="#5-1-工作机制" class="headerlink" title="5.1 工作机制"></a>5.1 工作机制</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">全部词表上的分数</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">取出分数最高的 k 个 Token</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">对其余 Token 屏蔽（不参与采样）</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">在 k 个候选上 Softmax / 采样</span><br></pre></td></tr></table></figure>
+
+<p>例如 $k &#x3D; 50$：无论词表多大多小，这一步最多从 50 个词里抽。</p>
+<h3 id="5-2-特点"><a href="#5-2-特点" class="headerlink" title="5.2 特点"></a>5.2 特点</h3><ol>
+<li><strong>候选数量固定</strong>：好理解，好设默认。</li>
+<li><strong>分布很尖时</strong>：真正有意义的候选可能远少于 k，等于白留了一些低质量尾巴。</li>
+<li><strong>分布很平时</strong>：真正合理的词可能超过 k，会被硬切掉。</li>
+</ol>
+<p>所以 Top-k 简单，但对「这一步有多不确定」不够自适应。</p>
+<h3 id="5-3-与-Temperature-的配合"><a href="#5-3-与-Temperature-的配合" class="headerlink" title="5.3 与 Temperature 的配合"></a>5.3 与 Temperature 的配合</h3><p>通常先 Temperature 缩放 Logits，再做 Top-k 截断，最后采样。只调 k、不调 Temperature，也能改变多样性，但两者控制的维度不同：Temperature 改相对差距，Top-k 改候选个数上限。</p>
+<hr>
+<h2 id="6-Top-p-Sampling（Nucleus-Sampling）"><a href="#6-Top-p-Sampling（Nucleus-Sampling）" class="headerlink" title="6. Top-p Sampling（Nucleus Sampling）"></a>6. Top-p Sampling（Nucleus Sampling）</h2><p><strong>什么是 Top-p Sampling？</strong></p>
+<p>Top-p（又称 Nucleus Sampling）：不固定个数，而是按概率从高到低累加，取 <strong>累积概率刚好达到（或超过）p</strong> 的最小集合，只在这个「核」里采样。</p>
+<p>例如 $p &#x3D; 0.9$：覆盖约 90% 概率质量的那些头部 Token，其余砍掉。</p>
+<h3 id="6-1-工作机制"><a href="#6-1-工作机制" class="headerlink" title="6.1 工作机制"></a>6.1 工作机制</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Token 按概率从高到低排序</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">依次累加概率</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">累加和 ≥ p 时停止</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">只在该集合内重新归一化并采样</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-Top-p-与-Top-k-对比"><a href="#6-2-Top-p-与-Top-k-对比" class="headerlink" title="6.2 Top-p 与 Top-k 对比"></a>6.2 Top-p 与 Top-k 对比</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>Top-k</th>
+<th>Top-p</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>截断依据</td>
+<td>固定个数 k</td>
+<td>累积概率阈值 p</td>
+</tr>
+<tr>
+<td>候选规模</td>
+<td>恒定</td>
+<td>随分布尖&#x2F;平自动变多或变少</td>
+</tr>
+<tr>
+<td>直观性</td>
+<td>更直观</td>
+<td>对「不确定程度」更自适应</td>
+</tr>
+</tbody></table>
+<p>模型很有把握时，Top-p 集合可能只有很少几个 Token；拿不准时集合会变大——这是它常被默认推荐的原因之一。</p>
+<h3 id="6-3-常见组合"><a href="#6-3-常见组合" class="headerlink" title="6.3 常见组合"></a>6.3 常见组合</h3><p>许多 API 同时提供 <code>temperature</code>、<code>top_p</code>、<code>top_k</code>：</p>
+<ol>
+<li>只开 <strong>Temperature + Top-p</strong> 很常见。</li>
+<li>Top-k 与 Top-p 一起开时，以具体实现为准（通常是两者过滤条件都满足才保留）。</li>
+<li>调参建议：先定任务要稳还是要活（Temperature），再用 Top-p 挡住明显的长尾胡话。</li>
+</ol>
+<h3 id="6-4-对-Agent-的影响"><a href="#6-4-对-Agent-的影响" class="headerlink" title="6.4 对 Agent 的影响"></a>6.4 对 Agent 的影响</h3><p>Tool 调用、结构化输出：Top-p 可偏低（如 0.8～0.95 且配合低温），减少抽到稀奇 Token。开放生成：可略提高 Top-p，但仍建议设上限，避免完全放任长尾。</p>
+<hr>
+<h2 id="7-KV-Cache"><a href="#7-KV-Cache" class="headerlink" title="7. KV Cache"></a>7. KV Cache</h2><p><strong>什么是 KV Cache？</strong></p>
+<p>KV Cache 是 Inference 时的加速手段：把历史 Token 已经算好的 <strong>Key（K）和 Value（V）</strong> 存起来，新 Token 只需算自己的 Query（Q）以及自己的 K、V，再与缓存中的 K、V 做 Attention。</p>
+<p><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#2-1-Causal-Attention%EF%BC%88%E5%9B%A0%E6%9E%9C%E6%B3%A8%E6%84%8F%E5%8A%9B%EF%BC%89">第一篇 2.1</a> &#x2F; <a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#2-7-Attention-%E4%BC%98%E5%8C%96%E6%8A%80%E6%9C%AF">2.7</a> 已指出：Causal Attention 下历史 K、V 不会因「未来 Token」而改变，因此可以缓存。本节把它放进完整推理链路里看。</p>
+<h3 id="7-1-为什么需要它"><a href="#7-1-为什么需要它" class="headerlink" title="7.1 为什么需要它"></a>7.1 为什么需要它</h3><p>若每生成一个新 Token 都对整段序列从头算 Attention，历史部分会 <strong>重复计算</strong>。序列越长，浪费越大。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">无 KV Cache（示意）：</span><br><span class="line">每步都对位置 1…t 重算 K、V，再算 Attention</span><br><span class="line"></span><br><span class="line">有 KV Cache：</span><br><span class="line">位置 1…t-1 的 K、V 已缓存</span><br><span class="line">只算位置 t 的 Q、K、V，再与缓存做 Attention，并把新的 K、V 追加进缓存</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-Prefill-与-Decode"><a href="#7-2-Prefill-与-Decode" class="headerlink" title="7.2 Prefill 与 Decode"></a>7.2 Prefill 与 Decode</h3><p>带 KV Cache 的 Inference 常分成两阶段（读延迟相关资料时会遇到这两个词）：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>做什么</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Prefill</strong></td>
+<td>一次吃进整段 Prompt（已有 Token），算出并写入整段 K、V</td>
+<td>可并行算多 Token；决定 <strong>首 Token 前等待</strong>（常称 TTFT）</td>
+</tr>
+<tr>
+<td><strong>Decode</strong></td>
+<td>之后每步只追加 1 个新 Token，读缓存、写新的 K&#x2F;V</td>
+<td>基本串行；输出越长总耗时越长</td>
+</tr>
+</tbody></table>
+<p>因此：Prompt 很长 → Prefill 贵；回答很长 → Decode 步数多。Agent 堆历史与 Tool 结果，两边都会变慢。</p>
+<h3 id="7-3-与-Causal-Attention-的关系"><a href="#7-3-与-Causal-Attention-的关系" class="headerlink" title="7.3 与 Causal Attention 的关系"></a>7.3 与 Causal Attention 的关系</h3><ol>
+<li><strong>因果掩码</strong>：位置 t 看不到 t 之后 → 过去位置的表示在生成过程中可视为固定。</li>
+<li><strong>因此</strong>：过去的 K、V 算一次即可复用。</li>
+<li><strong>新 Token</strong>：追加到序列末尾，缓存长度随生成增长。</li>
+</ol>
+<h3 id="7-4-代价：显存"><a href="#7-4-代价：显存" class="headerlink" title="7.4 代价：显存"></a>7.4 代价：显存</h3><p>KV Cache 用 <strong>显存换时间</strong>：</p>
+<ol>
+<li>层数越多、头数越多、Hidden 越大 → 每 Token 缓存越大。</li>
+<li>Context 越长（输入 + 已生成）→ 缓存越长。</li>
+<li>并发请求越多 → 多份缓存同时占显存。</li>
+</ol>
+<p>这与<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">第一篇 Context Window</a>、<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#2-6-Attention-%E7%9A%84%E8%AE%A1%E7%AE%97%E5%A4%8D%E6%9D%82%E5%BA%A6">Attention O(n²)</a> 的限制是同一类工程现实：长上下文不但算得慢，缓存也更贵。</p>
+<h3 id="7-5-对-Agent-的影响"><a href="#7-5-对-Agent-的影响" class="headerlink" title="7.5 对 Agent 的影响"></a>7.5 对 Agent 的影响</h3><p>Agent 多轮、多 Tool 结果 → 序列长 → Prefill &#x2F; Decode &#x2F; KV Cache 都更贵。优化仍回到<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-7-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E4%B8%8E-Agent">第一篇的 Context 管理</a>：压缩、摘要、检索、滑动窗口，从源头缩短参与 Attention 的 Token 数。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Inference</strong>：训练后的自回归生成；用 EOS &#x2F; stop &#x2F; max_tokens 结束；含 Prefill（吃 Prompt）与 Decode（逐步吐 Token）。</p>
+<p><strong>Logits &#x2F; Softmax &#x2F; LM Head</strong>：隐藏向量经 LM Head → Logits；Softmax 变成词表概率。</p>
+<p><strong>Decoding Strategy</strong>：Greedy 求稳（≈ Temperature→0）；Sampling 求活；Temperature、Top-k、Top-p 是常用旋钮。</p>
+<p><strong>Temperature</strong>：除以 $T$ 调分布锐度；Agent 工具调用宜偏低。</p>
+<p><strong>Top-k</strong>：只保留前 k 个再采样；候选数固定。</p>
+<p><strong>Top-p</strong>：按累积概率截「核」；候选数随把握程度变化，常与 Temperature 联用。</p>
+<p><strong>KV Cache</strong>：缓存历史 K、V 加速 Decode；省算力、耗显存；与 Context 长度强相关。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">文本 → Tokenization → Embedding → Transformer（Attention + KV Cache）</span><br><span class="line">                                         ↓</span><br><span class="line">                                      Logits</span><br><span class="line">                                         ↓</span><br><span class="line">                         Temperature → Top-k / Top-p → 采样</span><br><span class="line">                                         ↓</span><br><span class="line">                                   下一个 Token → 写回 Context</span><br><span class="line">                                   （直到 EOS / stop / max_tokens）</span><br></pre></td></tr></table></figure>
+
+<p>与第一篇合起来：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">第一篇</a>讲 <strong>模型如何表示与理解序列</strong>；本篇讲 <strong>序列如何一步步生成出来，以及工程上如何加速与控随机性</strong>。<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">第三篇</a>补 <strong>消息角色、训练阶段认名、幻觉与结构化总览</strong>；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>讲 <strong>Chat Completion、Streaming、Structured Output 细节与 Tool Calling 闭环</strong>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/" rel="prev" title="AI-Agent工程学习-LLM基础学习(一)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LLM基础学习(一)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/" rel="next" title="AI-Agent工程学习-LLM基础学习(三)">
+                  AI-Agent工程学习-LLM基础学习(三) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
