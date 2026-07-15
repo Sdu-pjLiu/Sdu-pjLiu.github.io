@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="LLM基础名词和概念学习 1. Transformer 什么是Transformer？ 通俗来讲，Transformer是一种让AI理解一整段文本中所有词之间关系的神经网络架构。他最核心的能力是通过 Self-Attention（自注意力机制），让模型能够理解输入序列中不同 Token 之间的关系。 负责 ：理解输入 -&gt; 建立上下文关系 -&gt; 生成输出 主要解决的问题为： 长距离依赖">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LLM基础学习(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/13/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="LLM基础名词和概念学习 1. Transformer 什么是Transformer？ 通俗来讲，Transformer是一种让AI理解一整段文本中所有词之间关系的神经网络架构。他最核心的能力是通过 Self-Attention（自注意力机制），让模型能够理解输入序列中不同 Token 之间的关系。 负责 ：理解输入 -&gt; 建立上下文关系 -&gt; 生成输出 主要解决的问题为： 长距离依赖">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-13T09:29:53.000Z">
+<meta property="article:modified_time" content="2026-07-15T09:09:12.737Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LLM">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/13/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/13/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/","path":"2026/07/13/Ageng工程学习-LLM基础学习-一/","title":"AI-Agent工程学习-LLM基础学习(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LLM基础学习(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LLM%E5%9F%BA%E7%A1%80%E5%90%8D%E8%AF%8D%E5%92%8C%E6%A6%82%E5%BF%B5%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.</span> <span class="nav-text">LLM基础名词和概念学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Transformer"><span class="nav-number">1.1.</span> <span class="nav-text">1. Transformer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Attention-Mechanism"><span class="nav-number">1.2.</span> <span class="nav-text">2. Attention Mechanism</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-QKV-%E6%9C%BA%E5%88%B6"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 QKV 机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Attention-%E8%AE%A1%E7%AE%97%E8%BF%87%E7%A8%8B"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 Attention 计算过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Attention-%E6%95%B0%E5%AD%A6%E6%9C%BA%E5%88%B6"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 Attention 数学机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Attention-%E7%9A%84%E8%AE%A1%E7%AE%97%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">1.2.4.</span> <span class="nav-text">2.4 Attention 的计算复杂度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Attention-%E4%BC%98%E5%8C%96%E6%8A%80%E6%9C%AF"><span class="nav-number">1.2.5.</span> <span class="nav-text">2.5 Attention 优化技术</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Transformer-%E4%B8%8E-Attention-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.2.6.</span> <span class="nav-text">2.6. Transformer 与 Attention 的关系</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/13/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LLM基础学习(一) | 我的记录小站">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LLM基础学习(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-13 17:29:53" itemprop="dateCreated datePublished" datetime="2026-07-13T17:29:53+08:00">2026-07-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-15 17:09:12" itemprop="dateModified" datetime="2026-07-15T17:09:12+08:00">2026-07-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="LLM基础名词和概念学习"><a href="#LLM基础名词和概念学习" class="headerlink" title="LLM基础名词和概念学习"></a>LLM基础名词和概念学习</h1><h2 id="1-Transformer"><a href="#1-Transformer" class="headerlink" title="1. Transformer"></a>1. Transformer</h2><p><strong>什么是Transformer？</strong></p>
+<p>通俗来讲，Transformer是一种让AI理解一整段文本中所有词之间关系的神经网络架构。他最核心的能力是通过 Self-Attention（自注意力机制），让模型能够理解输入序列中不同 Token 之间的关系。</p>
+<p><strong>负责</strong>：理解输入 -&gt; 建立上下文关系 -&gt; 生成输出</p>
+<p><strong>主要解决的问题为：</strong></p>
+<ol>
+<li>长距离依赖。</li>
+<li>并行计算</li>
+<li>更容易拓展</li>
+</ol>
+<p><strong>Transformer 的基本计算流程为：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">输入 Token</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Token Embedding</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Position Encoding</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Transformer Block</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">输出表示</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">预测 Token</span><br></pre></td></tr></table></figure>
+
+<p>一个 Transformer Block：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Input</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Self-Attention（自注意力机制；作用：计算 Token 之间的关联程度。）</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Feed Forward Network （前馈神经网络；作用：对 Attention 输出进行进一步非线性转换。负责：特征提取,信息加工,增强模型表达能力）</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Layer Normalization（层归一化；作用：保持计算稳定。解决：梯度问题，训练不稳定问题）</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Output</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-Attention-Mechanism"><a href="#2-Attention-Mechanism" class="headerlink" title="2. Attention Mechanism"></a>2. Attention Mechanism</h2><p>Attention Mechanism 是一种让模型动态决定当前 Token 应该关注哪些其他 Token的机制。简单来讲是模拟人的注意力的机制</p>
+<p><strong>Self-Attention（自注意力）</strong></p>
+<p>含义：一个序列内部：每个 Token 都可以关注其他 Token。</p>
+<h3 id="2-1-QKV-机制"><a href="#2-1-QKV-机制" class="headerlink" title="2.1 QKV 机制"></a>2.1 QKV 机制</h3><p>Attention 的核心是 Query（Q）、Key（K）、Value（V）三个概念。</p>
+<p><strong>Query（Q）</strong></p>
+<p>表示：当前 Token 想寻找什么信息。</p>
+<p>例如：“他”需要寻找——谁是这个人的信息。</p>
+<p><strong>Key（K）</strong></p>
+<p>表示：其他 Token 提供什么特征。</p>
+<p>例如：“小明”提供——人物信息。</p>
+<p><strong>Value（V）</strong></p>
+<p>表示：Token 实际包含的信息。</p>
+<p>例如：小明对应的具体语义内容。</p>
+<h3 id="2-2-Attention-计算过程"><a href="#2-2-Attention-计算过程" class="headerlink" title="2.2 Attention 计算过程"></a>2.2 Attention 计算过程</h3><p><strong>Attention 的计算流程为：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">Token 表示</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">生成 Query / Key / Value</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">Query 与所有 Key 比较</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">计算相关程度</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">得到 Attention 权重</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">加权组合 Value</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">得到新的 Token 表示</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Attention-数学机制"><a href="#2-3-Attention-数学机制" class="headerlink" title="2.3 Attention 数学机制"></a>2.3 Attention 数学机制</h3><p>核心公式：</p>
+<p>$$\mathrm{Attention}(Q, K, V) &#x3D; \mathrm{softmax}\left(\frac{QK^{T}}{\sqrt{d_k}}\right)V$$</p>
+<p>其中：</p>
+<ol>
+<li>$QK^{T}$：计算 Query 与所有 Key 的匹配分数。</li>
+<li>$\sqrt{d_k}$：按 Key 维度缩放，避免点积过大导致 Softmax 梯度消失。</li>
+<li>$\mathrm{softmax}(\cdots)$：把分数转成和为 1 的 Attention 权重。</li>
+<li>再与 $V$ 加权求和，得到新的 Token 表示。</li>
+</ol>
+<p><strong>计算过程：</strong></p>
+<ol>
+<li>计算 Q 和 K 的匹配程度。</li>
+<li>Softmax 转换为权重。</li>
+<li>根据权重组合 Value。</li>
+</ol>
+<p><strong>结果</strong>：得到新的语义表示。</p>
+<h3 id="2-4-Attention-的计算复杂度"><a href="#2-4-Attention-的计算复杂度" class="headerlink" title="2.4 Attention 的计算复杂度"></a>2.4 Attention 的计算复杂度</h3><p>Self-Attention 的计算复杂度为 <strong>O(n²)</strong>，其中 n &#x3D; Token 数量。</p>
+<p><strong>原因</strong>：每个 Token 都需要和其他所有 Token 计算关系。</p>
+<p><strong>例如：</strong></p>
+<ol>
+<li>1000 Token：需要 1000 × 1000 次关系计算。</li>
+<li>100000 Token：需要 100000 × 100000 次关系计算。</li>
+</ol>
+<h3 id="2-5-Attention-优化技术"><a href="#2-5-Attention-优化技术" class="headerlink" title="2.5 Attention 优化技术"></a>2.5 Attention 优化技术</h3><p><strong>Flash Attention</strong></p>
+<p>一种对标准 Attention 做 IO 感知（IO-aware）优化的实现：不改变数学结果，而是通过分块计算、减少 GPU 高带宽显存读写，来加速 Softmax Attention。</p>
+<p><strong>作用：</strong></p>
+<ol>
+<li>降低显存占用</li>
+<li>提高训练 &#x2F; 推理速度</li>
+</ol>
+<p><strong>Sparse Attention</strong></p>
+<p>不再让每个 Token 与全部 Token 两两计算，而是只关注局部窗口、特定稀疏模式或重要位置上的 Token。</p>
+<p>**作用：**减少无关位置的计算，降低长序列下的计算量。</p>
+<p><strong>Linear Attention</strong></p>
+<p>通过改写 Attention 中的 Softmax &#x2F; 核函数形式，把「Token 两两交互」近似成可线性累加的计算，使复杂度从 O(n²) 降到接近 O(n)。</p>
+<p>**作用：**在更长上下文场景下控制计算与显存开销（通常会有一定精度折中）。</p>
+<p><strong>KV Cache</strong></p>
+<p>自回归生成时，历史 Token 的 Key &#x2F; Value 不会变；把它们缓存下来，新 Token 只需计算自己的 Q，并与已缓存的 K、V 做 Attention。</p>
+<p>**作用：**避免重复计算历史状态，显著提升逐 Token 生成速度。</p>
+<h3 id="2-6-Transformer-与-Attention-的关系"><a href="#2-6-Transformer-与-Attention-的关系" class="headerlink" title="2.6. Transformer 与 Attention 的关系"></a>2.6. Transformer 与 Attention 的关系</h3><p><strong>关系：</strong></p>
+<ol>
+<li>Transformer 是整体架构。</li>
+<li>Attention 是 Transformer 的核心计算模块。</li>
+</ol>
+<p><strong>结构：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Transformer</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">包含多个 Transformer Block</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">每个 Block</span><br><span class="line"></span><br><span class="line">    ↓</span><br><span class="line"></span><br><span class="line">包含 Self-Attention</span><br></pre></td></tr></table></figure>
+
+<p><strong>总结：</strong></p>
+<p>Transformer &#x3D; 大脑结构</p>
+<p>Attention &#x3D; 大脑中的注意力计算机制</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/" rel="prev" title="AI-Agent工程学习-LLM基础学习(一)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LLM基础学习(一)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-LLM基础学习(二)">
+                  AI-Agent工程学习-LLM基础学习(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
