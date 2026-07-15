@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Prompt 工程化：Versioning 与 Registry、Evaluation、Optimization、A&#x2F;B Testing，以及从编写到发布的闭环。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Prompt Engineering(三)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Prompt 工程化：Versioning 与 Registry、Evaluation、Optimization、A&#x2F;B Testing，以及从编写到发布的闭环。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-15T09:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-15T09:08:27.100Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Prompt">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/","path":"2026/07/15/Agent工程学习-Prompt-Engineering-三/","title":"AI-Agent工程学习-Prompt Engineering(三)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Prompt Engineering(三) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Versioning-%E4%B8%8E-Registry"><span class="nav-number">1.</span> <span class="nav-text">1. Versioning 与 Registry</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Prompt-Versioning%EF%BC%88%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 Prompt Versioning（版本管理）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Prompt-Registry%EF%BC%88%E6%B3%A8%E5%86%8C%E4%B8%8E%E6%B2%BB%E7%90%86%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Prompt Registry（注册与治理）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Prompt-Evaluation%EF%BC%88%E8%AF%84%E6%B5%8B%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">2. Prompt Evaluation（评测）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E8%AF%84%E4%BB%80%E4%B9%88"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 评什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%80%8E%E4%B9%88%E8%AF%84"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 怎么评</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E7%A6%BB%E7%BA%BF%E8%AF%84%E6%B5%8B-vs-%E7%BA%BF%E4%B8%8A%E7%9B%91%E6%8E%A7"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 离线评测 vs 线上监控</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Prompt-Optimization%EF%BC%88%E4%BC%98%E5%8C%96%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. Prompt Optimization（优化）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%BA%BA%E5%B7%A5%E8%BF%AD%E4%BB%A3%E5%BE%AA%E7%8E%AF"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 人工迭代循环</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E8%87%AA%E5%8A%A8-%E5%8D%8A%E8%87%AA%E5%8A%A8%E4%BC%98%E5%8C%96%EF%BC%88%E8%AE%A4%E5%90%8D%E5%8D%B3%E5%8F%AF%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 自动 &#x2F; 半自动优化（认名即可）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Prompt-A-B-Testing"><span class="nav-number">4.</span> <span class="nav-text">4. Prompt A&#x2F;B Testing</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%9F%BA%E6%9C%AC%E8%A6%81%E7%B4%A0"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 基本要素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E4%B8%8E-Registry-Version-%E6%8C%82%E6%8E%A5"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 与 Registry &#x2F; Version 挂接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E4%BD%95%E6%97%B6%E5%85%88%E7%A6%BB%E7%BA%BF%E5%8D%B3%E5%8F%AF"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 何时先离线即可</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%B7%A5%E7%A8%8B%E9%97%AD%E7%8E%AF"><span class="nav-number">5.</span> <span class="nav-text">5. 工程闭环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Prompt Engineering(三) | 我的记录小站">
+      <meta itemprop="description" content="Prompt 工程化：Versioning 与 Registry、Evaluation、Optimization、A&#x2F;B Testing，以及从编写到发布的闭环。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Prompt Engineering(三)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-15 17:00:00 / 修改时间：17:08:27" itemprop="dateCreated datePublished" datetime="2026-07-15T17:00:00+08:00">2026-07-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Prompt 工程化：Versioning 与 Registry、Evaluation、Optimization、A/B Testing，以及从编写到发布的闭环。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">Prompt Engineering（二）</a>：把 Prompt 当成可版本、可评测、可优化的产品资产，而不是聊天草稿。</p>
+<span id="more"></span>
+<h2 id="1-Versioning-与-Registry"><a href="#1-Versioning-与-Registry" class="headerlink" title="1. Versioning 与 Registry"></a>1. Versioning 与 Registry</h2><h3 id="1-1-Prompt-Versioning（版本管理）"><a href="#1-1-Prompt-Versioning（版本管理）" class="headerlink" title="1.1 Prompt Versioning（版本管理）"></a>1.1 Prompt Versioning（版本管理）</h3><p>每次上线变更应有 <strong>可回滚的版本号</strong>，并记录改了什么。</p>
+<p>常见变更类型：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文案</td>
+<td>改措辞、补禁止事项</td>
+</tr>
+<tr>
+<td>结构</td>
+<td>调整四积木顺序、增减区块</td>
+</tr>
+<tr>
+<td>示例</td>
+<td>增删 Few-shot</td>
+</tr>
+<tr>
+<td>输出契约</td>
+<td>字段增删、与 Schema 对齐</td>
+</tr>
+</tbody></table>
+<p>建议：</p>
+<ol>
+<li><strong>语义化版本或单调 build 号</strong>（如 <code>planner@3</code>、<code>tool_fill@2026.07.15.1</code>），团队内统一一种即可。</li>
+<li><strong>绑定依赖</strong>：该版本对应的 <strong>模型名&#x2F;版本</strong>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-2-Tool-Schema">Tool Schema</a> 版本、相关业务配置。模型升级导致行为漂移时，才能判断是 Prompt 问题还是模型问题。</li>
+<li><strong>变更日志</strong>：为什么改、预期改善什么、回滚点是哪一版。</li>
+<li><strong>灰度与回滚</strong>：先小流量，再全量；出问题立刻切回上一 version。</li>
+</ol>
+<h3 id="1-2-Prompt-Registry（注册与治理）"><a href="#1-2-Prompt-Registry（注册与治理）" class="headerlink" title="1.2 Prompt Registry（注册与治理）"></a>1.2 Prompt Registry（注册与治理）</h3><p>Registry 是 Prompt 的 <strong>目录与仓库</strong>：按名称取用「当前环境该用的那一版」。</p>
+<p>至少应有的元数据：</p>
+<ol>
+<li><strong>名称与用途</strong>（如 <code>agent.plan</code>、<code>agent.tool_args</code>、<code>agent.summarize</code>）</li>
+<li><strong>输入变量列表</strong>（Template 槽位）</li>
+<li><strong>输出契约</strong>（自然语言说明或 Schema id）</li>
+<li><strong>依赖模型 &#x2F; 工具</strong></li>
+<li><strong>环境</strong>：dev &#x2F; staging &#x2F; prod 各自指针</li>
+<li><strong>负责人与变更权限</strong>：谁能改 prod</li>
+</ol>
+<p>没有 Registry 时，Prompt 散落在代码常量与临时实验里，A&#x2F;B 与回滚都会失控。</p>
+<hr>
+<h2 id="2-Prompt-Evaluation（评测）"><a href="#2-Prompt-Evaluation（评测）" class="headerlink" title="2. Prompt Evaluation（评测）"></a>2. Prompt Evaluation（评测）</h2><h3 id="2-1-评什么"><a href="#2-1-评什么" class="headerlink" title="2.1 评什么"></a>2.1 评什么</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>正确性</td>
+<td>答案 &#x2F; 决策是否对</td>
+</tr>
+<tr>
+<td>格式合规</td>
+<td>能否通过 Schema &#x2F; 规则解析</td>
+</tr>
+<tr>
+<td>指令遵循</td>
+<td>是否遵守 Role&#x2F;Instruction（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-1-Instruction-Following%EF%BC%88%E6%8C%87%E4%BB%A4%E9%81%B5%E5%BE%AA%EF%BC%89">第三篇</a>）</td>
+</tr>
+<tr>
+<td>安全与拒答</td>
+<td>越权、注入、违规请求是否处理得当</td>
+</tr>
+<tr>
+<td>成本与延迟</td>
+<td>Token 数、轮次、TTFT &#x2F; 端到端耗时</td>
+</tr>
+</tbody></table>
+<p>Agent 场景额外关注：工具参数是否可执行、是否在无工具结果时 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89">幻觉</a>「已完成」。</p>
+<h3 id="2-2-怎么评"><a href="#2-2-怎么评" class="headerlink" title="2.2 怎么评"></a>2.2 怎么评</h3><ol>
+<li><strong>黄金集（Golden Set）</strong>：固定输入 + 期望输出（或期望属性）；回归时必跑。</li>
+<li><strong>规则校验</strong>：JSON Schema、必填字段、枚举、正则——与<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-3-Schema-Validation%EF%BC%88%E6%A8%A1%E5%BC%8F%E6%A0%A1%E9%AA%8C%EF%BC%89">Schema Validation</a>同一思路，评测流水线里应自动化。</li>
+<li><strong>LLM-as-Judge</strong>：用另一 Prompt&#x2F;模型按量表打分；要固定裁判 Prompt 版本，并抽检防偏。</li>
+<li><strong>人工抽检</strong>：开放生成、安全边界、产品口吻；比例可小但不可省。</li>
+</ol>
+<p>用例设计提示：</p>
+<ol>
+<li>正常路径 + 边界（空 Context、冲突材料、超长输入）</li>
+<li>幻觉高发：要求引用不存在的 id、诱导跳过工具</li>
+<li>格式破坏：要求「顺便聊两句」看是否仍守契约</li>
+</ol>
+<h3 id="2-3-离线评测-vs-线上监控"><a href="#2-3-离线评测-vs-线上监控" class="headerlink" title="2.3 离线评测 vs 线上监控"></a>2.3 离线评测 vs 线上监控</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>离线</th>
+<th>线上</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据</td>
+<td>黄金集 &#x2F; 仿真</td>
+<td>真实流量抽样</td>
+</tr>
+<tr>
+<td>目的</td>
+<td>发版门禁</td>
+<td>漂移与劣化告警</td>
+</tr>
+<tr>
+<td>指标</td>
+<td>准确率、合规率</td>
+<td>成功率、重试率、人工差评、P95 延迟</td>
+</tr>
+</tbody></table>
+<p>发版前过离线门禁；上线后盯线上指标。二者互补，不能只靠其中一个。</p>
+<hr>
+<h2 id="3-Prompt-Optimization（优化）"><a href="#3-Prompt-Optimization（优化）" class="headerlink" title="3. Prompt Optimization（优化）"></a>3. Prompt Optimization（优化）</h2><h3 id="3-1-人工迭代循环"><a href="#3-1-人工迭代循环" class="headerlink" title="3.1 人工迭代循环"></a>3.1 人工迭代循环</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">观察失败样本</span><br><span class="line">    ↓</span><br><span class="line">归因（契约不清 / Context 噪声 / 示例误导 / 模型能力 / 工具问题）</span><br><span class="line">    ↓</span><br><span class="line">改 Template（积木、示例、约束）或改裁剪策略</span><br><span class="line">    ↓</span><br><span class="line">跑回归评测</span><br><span class="line">    ↓</span><br><span class="line">通过则发新 version；否则继续</span><br></pre></td></tr></table></figure>
+
+<p>归因时先分清：<strong>改 Prompt</strong> 是否够用。</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>更可能动哪里</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>格式偶发失败</td>
+<td>Format &#x2F; Schema &#x2F; 低温</td>
+</tr>
+<tr>
+<td>事实错误但材料里有答案</td>
+<td>Context 排序与引用指令</td>
+</tr>
+<tr>
+<td>事实错误且材料没有</td>
+<td>RAG &#x2F; 工具，而不是加形容词</td>
+</tr>
+<tr>
+<td>某类题系统性不会</td>
+<td>换更强模型或拆解任务（见第二篇）</td>
+</tr>
+<tr>
+<td>工具参数类型错</td>
+<td>Tool Schema + 执行侧校验</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-自动-半自动优化（认名即可）"><a href="#3-2-自动-半自动优化（认名即可）" class="headerlink" title="3.2 自动 &#x2F; 半自动优化（认名即可）"></a>3.2 自动 &#x2F; 半自动优化（认名即可）</h3><p>方向包括：生成多份候选 Prompt → 用黄金集打分 → 保留优胜者。工程上仍建议 <strong>人审后入 Registry</strong>，避免自动优化写出不安全或不可读的指令。本系列不展开具体算法。</p>
+<hr>
+<h2 id="4-Prompt-A-B-Testing"><a href="#4-Prompt-A-B-Testing" class="headerlink" title="4. Prompt A&#x2F;B Testing"></a>4. Prompt A&#x2F;B Testing</h2><h3 id="4-1-基本要素"><a href="#4-1-基本要素" class="headerlink" title="4.1 基本要素"></a>4.1 基本要素</h3><ol>
+<li><strong>假设</strong>：改哪一版、预期提升哪一指标（如工具一次成功率 +X%）</li>
+<li><strong>分流</strong>：按用户 &#x2F; 会话稳定哈希，避免同用户来回跳版本</li>
+<li><strong>主指标</strong>与 <strong>护栏指标</strong>：主指标变好时，延迟、投诉率、安全拒答误伤不得明显变差</li>
+<li><strong>样本量与时长</strong>：未达置信度不盲目全量</li>
+</ol>
+<h3 id="4-2-与-Registry-Version-挂接"><a href="#4-2-与-Registry-Version-挂接" class="headerlink" title="4.2 与 Registry &#x2F; Version 挂接"></a>4.2 与 Registry &#x2F; Version 挂接</h3><p>A&#x2F;B 比较的是 <strong>明确的 version id</strong>（如 <code>summarize@7</code> vs <code>summarize@8</code>），而不是「线上随手改的那份字符串」。实验结束：胜出者成为 prod 指针，失败者归档。</p>
+<h3 id="4-3-何时先离线即可"><a href="#4-3-何时先离线即可" class="headerlink" title="4.3 何时先离线即可"></a>4.3 何时先离线即可</h3><ol>
+<li>纯格式合规、字段抽取：离线黄金集足够。</li>
+<li>强依赖真实用户分布、口吻偏好、长链路 Agent 成功率：需要线上 A&#x2F;B 或影子流量。</li>
+<li>安全相关改动：先离线红队集，再小流量，慎用「只看业务主指标」。</li>
+</ol>
+<hr>
+<h2 id="5-工程闭环"><a href="#5-工程闭环" class="headerlink" title="5. 工程闭环"></a>5. 工程闭环</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">编写 Template</span><br><span class="line">    ↓</span><br><span class="line">入库 Registry（元数据齐全）</span><br><span class="line">    ↓</span><br><span class="line">打 Version + 变更日志</span><br><span class="line">    ↓</span><br><span class="line">离线 Evaluation（门禁）</span><br><span class="line">    ↓</span><br><span class="line">（可选）线上 A/B</span><br><span class="line">    ↓</span><br><span class="line">Optimization（基于失败归因）</span><br><span class="line">    ↓</span><br><span class="line">发布 / 回滚</span><br></pre></td></tr></table></figure>
+
+<p><strong>对 Agent 的门禁建议</strong>：规划、工具参数、用户可见总结等关键节点，各自有独立 Template 名与 version；未过评测的版本不得指向 prod。</p>
+<p>与前两篇的关系：</p>
+<ol>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> 解决「写什么结构」</li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> 解决「用什么推理&#x2F;编排技巧」</li>
+<li>本篇解决「如何当成资产长期演进」</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Versioning + Registry</strong>：有版本、有目录、有环境指针、与模型&#x2F;工具 Schema 绑定。</p>
+<p><strong>Evaluation</strong>：正确性、格式、遵循、安全、成本；黄金集 + 规则 +（可选）裁判模型 + 人工；离线门禁与线上监控并用。</p>
+<p><strong>Optimization</strong>：失败归因后改 Prompt 或改系统其它层；回归后再发版。</p>
+<p><strong>A&#x2F;B</strong>：比较明确 version；设主指标与护栏；简单格式问题可先离线。</p>
+<p><strong>闭环</strong>：编写 → 入库 → 版本 → 评测 →（可选）A&#x2F;B → 优化 → 发布。</p>
+<p><strong>Prompt Engineering 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）组成与行为控制</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）推理与编排</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）工程化闭环</a>（本篇）</li>
+</ul>
+<p><strong>LLM 基础学习（前置）：</strong></p>
+<ul>
+<li><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）表示与容量</a></li>
+<li><a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）生成与加速</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）模型侧认名</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）调用侧</a></li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LLM 基础：算与调</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）（二）（三）：写、推、管</span><br><span class="line">    ↓</span><br><span class="line">下一模块：Agent 编排（ReAct、多步规划、记忆实现等）</span><br></pre></td></tr></table></figure>
+
+<p>下一模块将在工具闭环与可控 Prompt 之上，进入 <strong>Agent 编排</strong>（ReAct、多步规划、记忆实现等）——本篇不展开。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Prompt/" rel="tag"># Prompt</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/" rel="prev" title="AI-Agent工程学习-Prompt Engineering(二)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Prompt Engineering(二)
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

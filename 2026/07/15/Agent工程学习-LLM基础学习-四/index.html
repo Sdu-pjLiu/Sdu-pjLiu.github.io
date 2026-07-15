@@ -27,7 +27,7 @@
 <meta property="og:description" content="调用侧：Chat Completion、流式输出、多模态&#x2F;VLM、结构化输出全套，以及 Tool Calling 从 Schema 到错误处理的闭环。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-15T04:45:00.000Z">
-<meta property="article:modified_time" content="2026-07-15T04:50:00.000Z">
+<meta property="article:modified_time" content="2026-07-15T06:50:00.000Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="LLM">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-count">20</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -216,7 +216,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2026-07-15 12:45:00 / 修改时间：12:50:00" itemprop="dateCreated datePublished" datetime="2026-07-15T12:45:00+08:00">2026-07-15</time>
+      <time title="创建时间：2026-07-15 12:45:00 / 修改时间：14:50:00" itemprop="dateCreated datePublished" datetime="2026-07-15T12:45:00+08:00">2026-07-15</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -401,14 +401,12 @@
 <p><strong>Tool Calling</strong>（含旧称 Function Calling）：Tool Schema → Invocation → 应用执行 → Result&#x2F;Error 写回 → 再 Completion。</p>
 <p><strong>系列导航：</strong></p>
 <ul>
-<li><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）表示与容量</a></li>
-<li><a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）生成与加速</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）模型侧认名</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）调用侧</a>（本篇）</li>
+<li>LLM 基础：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）表示与容量</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）生成与加速</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）模型侧认名</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）调用侧</a>（本篇）</li>
+<li>下一模块：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">Prompt Engineering（一）· 组成与行为控制</a></li>
 </ul>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">（一）（二）模型如何表示与生成</span><br><span class="line">（三）认名：角色、训练阶段、幻觉、延迟</span><br><span class="line">（四）调用：Chat Completion → Structured Output → Tool Calling 闭环</span><br></pre></td></tr></table></figure>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">（一）（二）模型如何表示与生成</span><br><span class="line">（三）认名：角色、训练阶段、幻觉、延迟</span><br><span class="line">（四）调用：Chat Completion → Structured Output → Tool Calling 闭环</span><br><span class="line">    ↓</span><br><span class="line">Prompt Engineering：怎么写可控 Prompt / 怎么推 / 怎么版本评测</span><br></pre></td></tr></table></figure>
 
-<p>下一篇起：在工具闭环之上做 Agent 编排（ReAct、多步规划、记忆实现等）。</p>
+<p>LLM 基础学习到此收口。下一步进入平级模块 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">Prompt Engineering（一）</a>：在工具闭环之上把输入合同写稳；其后是推理编排与 Prompt 工程化，再往后才是 Agent 编排（ReAct、多步规划、记忆实现等）。</p>
 
     </div>
 
@@ -431,6 +429,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/" rel="next" title="AI-Agent工程学习-Prompt Engineering(一)">
+                  AI-Agent工程学习-Prompt Engineering(一) <i class="fa fa-angle-right"></i>
+                </a>
             </div>
           </div>
     </footer>

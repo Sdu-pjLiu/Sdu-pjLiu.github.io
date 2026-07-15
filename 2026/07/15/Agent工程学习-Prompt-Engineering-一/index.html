@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Prompt Engineering 开篇：Prompt 与 messages 的关系、Template、Role&#x2F;Instruction&#x2F;Context&#x2F;Format 四积木、组装顺序与 Agent 行为控制清单。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Prompt Engineering(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Prompt Engineering 开篇：Prompt 与 messages 的关系、Template、Role&#x2F;Instruction&#x2F;Context&#x2F;Format 四积木、组装顺序与 Agent 行为控制清单。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-15T08:30:00.000Z">
+<meta property="article:modified_time" content="2026-07-15T09:08:27.100Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Prompt">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/","path":"2026/07/15/Agent工程学习-Prompt-Engineering-一/","title":"AI-Agent工程学习-Prompt Engineering(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Prompt Engineering(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Prompt-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">2.</span> <span class="nav-text">1. Prompt 是什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Prompt-Template%EF%BC%88%E6%A8%A1%E6%9D%BF%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">2. Prompt Template（模板）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8-Template"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 为什么要用 Template</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%8F%98%E9%87%8F%E6%B3%A8%E5%85%A5%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 变量注入注意点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Prompt-%E7%9A%84%E5%9B%9B%E5%9D%97%E7%A7%AF%E6%9C%A8"><span class="nav-number">4.</span> <span class="nav-text">3. Prompt 的四块积木</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Role-Prompt%EF%BC%88%E8%A7%92%E8%89%B2%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 Role Prompt（角色）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Instruction-Prompt%EF%BC%88%E6%8C%87%E4%BB%A4%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 Instruction Prompt（指令）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-Context-Prompt%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%89"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 Context Prompt（上下文）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-Output-Format-Specification%EF%BC%88%E8%BE%93%E5%87%BA%E6%A0%BC%E5%BC%8F%E7%BA%A6%E5%AE%9A%EF%BC%89"><span class="nav-number">4.4.</span> <span class="nav-text">3.4 Output Format Specification（输出格式约定）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%BB%84%E8%A3%85%E9%A1%BA%E5%BA%8F%E4%B8%8E%E5%86%B2%E7%AA%81%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">5.</span> <span class="nav-text">4. 组装顺序与冲突优先级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%8E%A8%E8%8D%90%E7%BB%84%E8%A3%85%E9%A1%BA%E5%BA%8F"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 推荐组装顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%86%B2%E7%AA%81%E6%97%B6%E8%B0%81%E4%BC%98%E5%85%88"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 冲突时谁优先</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Context-%E8%86%A8%E8%83%80%E6%97%B6%E5%85%88%E7%A0%8D%E4%BB%80%E4%B9%88"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 Context 膨胀时先砍什么</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AF%B9-Agent-%E8%A1%8C%E4%B8%BA%E6%8E%A7%E5%88%B6"><span class="nav-number">6.</span> <span class="nav-text">5. 对 Agent 行为控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E6%98%AF%E5%90%A6%E6%8B%86%E6%88%90%E5%A4%9A%E4%BB%BD-Prompt"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 是否拆成多份 Prompt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E8%A1%8C%E4%B8%BA%E5%8F%AF%E6%8E%A7%E7%9A%84%E6%9C%80%E5%B0%8F%E6%A3%80%E6%9F%A5%E6%B8%85%E5%8D%95"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 行为可控的最小检查清单</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Prompt Engineering(一) | 我的记录小站">
+      <meta itemprop="description" content="Prompt Engineering 开篇：Prompt 与 messages 的关系、Template、Role&#x2F;Instruction&#x2F;Context&#x2F;Format 四积木、组装顺序与 Agent 行为控制清单。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Prompt Engineering(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-15 16:30:00 / 修改时间：17:08:27" itemprop="dateCreated datePublished" datetime="2026-07-15T16:30:00+08:00">2026-07-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Prompt Engineering 开篇：Prompt 与 messages 的关系、Template、Role/Instruction/Context/Format 四积木、组装顺序与 Agent 行为控制清单。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 LLM 基础学习：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">消息角色与指令遵循（三）</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">Chat Completion 与结构化输出（四）</a>。本系列与 LLM 基础学习平级，编号从（一）重起：讲清怎么写可控 Prompt。</p>
+<span id="more"></span>
+<h2 id="0-本系列在学习路径中的位置"><a href="#0-本系列在学习路径中的位置" class="headerlink" title="0. 本系列在学习路径中的位置"></a>0. 本系列在学习路径中的位置</h2><p><strong>LLM 基础学习</strong>负责：模型怎么表示与生成、怎么调用 API、工具闭环怎么走。</p>
+<p><strong>Prompt Engineering</strong>负责：在同一套调用合同上，<strong>怎么写输入</strong>，让 Agent 行为更稳、可复现、可评测。</p>
+<p>依赖（已学，本文只引用）：</p>
+<ol>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89">消息角色 system &#x2F; user &#x2F; assistant</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-1-Instruction-Following%EF%BC%88%E6%8C%87%E4%BB%A4%E9%81%B5%E5%BE%AA%EF%BC%89">Instruction Following</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#1-Chat-Completion">Chat Completion</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-Structured-Output%EF%BC%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89">Structured Output</a></li>
+<li><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">Context Window &#x2F; Token 成本</a></li>
+</ol>
+<hr>
+<h2 id="1-Prompt-是什么"><a href="#1-Prompt-是什么" class="headerlink" title="1. Prompt 是什么"></a>1. Prompt 是什么</h2><p><strong>什么是 Prompt？</strong></p>
+<p>Prompt 是送进一次 <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">Inference</a> 的 <strong>输入合同</strong>：告诉模型「你是谁、要干什么、依据什么、输出成什么样」。在 Chat API 里，它通常不是单字符串，而是一组带角色的 <strong>messages</strong>（见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#1-Chat-Completion">第四篇 Chat Completion</a>）。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Role + Instruction + Context + Format（+ 可选示例）</span><br><span class="line">        ↓</span><br><span class="line">拼成 messages（system / user / …）</span><br><span class="line">        ↓</span><br><span class="line">占满一部分 Context Window（经 Tokenization）</span><br><span class="line">        ↓</span><br><span class="line">Chat Completion → assistant 文本 或 Tool Invocation</span><br></pre></td></tr></table></figure>
+
+<p>要点：</p>
+<ol>
+<li><strong>没有写入本次 messages 的内容，本轮看不见</strong>（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#1-2-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D">第三篇 1.2</a>）。</li>
+<li>Prompt 越长，<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#3-Tokenization%EF%BC%88%E5%88%86%E8%AF%8D%EF%BC%89">Token</a> 与 Prefill 成本越高；关键约束若被挤到中间，可能「听不见」（Lost in the Middle）。</li>
+<li>Prompt 管的是 <strong>指令遵循与格式</strong>；内容是否属实还要靠检索 &#x2F; 工具 &#x2F; 校验，不是只靠把字写漂亮（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89">幻觉</a>）。</li>
+</ol>
+<h3 id="1-1-对-Agent-的影响"><a href="#1-1-对-Agent-的影响" class="headerlink" title="1.1 对 Agent 的影响"></a>1.1 对 Agent 的影响</h3><p>Agent 每一步决策往往就是一次带 Prompt 的 Completion。规划、调工具、读结果、总结，可以共用一份「万能 Prompt」，也可以拆成多份专用 Prompt——后文第 5 节给出拆分原则。</p>
+<hr>
+<h2 id="2-Prompt-Template（模板）"><a href="#2-Prompt-Template（模板）" class="headerlink" title="2. Prompt Template（模板）"></a>2. Prompt Template（模板）</h2><p><strong>什么是 Prompt Template？</strong></p>
+<p>把固定骨架与可变槽位分开：骨架写死规则与结构，槽位在运行时填入任务、用户问题、检索片段、工具结果等。</p>
+<p>示意：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">【角色】你是客服助手；禁止编造订单号。</span><br><span class="line">【任务】&#123;&#123;task&#125;&#125;</span><br><span class="line">【用户问题】&#123;&#123;user_query&#125;&#125;</span><br><span class="line">【参考资料】&#123;&#123;retrieved_docs&#125;&#125;</span><br><span class="line">【输出】只输出 JSON，字段见 schema 说明。</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-为什么要用-Template"><a href="#2-1-为什么要用-Template" class="headerlink" title="2.1 为什么要用 Template"></a>2.1 为什么要用 Template</h3><ol>
+<li><strong>可复用</strong>：同一 Agent 节点多请求共用骨架，只换变量。</li>
+<li><strong>可版本化</strong>：改的是模板文件，而不是散落在代码里的长字符串（工程化见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">本系列（三）</a>）。</li>
+<li><strong>可评测</strong>：固定骨架 + 变量集，才能做黄金集对比。</li>
+</ol>
+<h3 id="2-2-变量注入注意点"><a href="#2-2-变量注入注意点" class="headerlink" title="2.2 变量注入注意点"></a>2.2 变量注入注意点</h3><ol>
+<li><strong>占位符约定统一</strong>（如 <code>&#123;&#123;name&#125;&#125;</code>），避免半套模板半套拼接。</li>
+<li><strong>注入内容要边界清晰</strong>：检索原文、用户粘贴的代码，用分隔符或标签包住，减少「把资料当成新指令」的注入风险。</li>
+<li><strong>空值策略</strong>：无检索结果时写明「无参考资料，请说明无法确认」，而不是留空让模型脑补。</li>
+</ol>
+<hr>
+<h2 id="3-Prompt-的四块积木"><a href="#3-Prompt-的四块积木" class="headerlink" title="3. Prompt 的四块积木"></a>3. Prompt 的四块积木</h2><p>一条可控 Prompt，通常由下面四块拼成（可落在不同 role 的 message 里）。</p>
+<h3 id="3-1-Role-Prompt（角色）"><a href="#3-1-Role-Prompt（角色）" class="headerlink" title="3.1 Role Prompt（角色）"></a>3.1 Role Prompt（角色）</h3><p>规定 <strong>身份、能力边界、禁止事项、语气</strong>。优先放在 <strong>system</strong>（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89">第三篇</a>）。</p>
+<p>写好 Role 的要点：</p>
+<ol>
+<li>说清「你是什么 &#x2F; 不是什么」。</li>
+<li>硬规则用短句、可检查（禁止编造 ID、禁止跳过校验等）。</li>
+<li>不要把整本业务手册塞进 Role；细则放到 Instruction 或外部文档经 Context 注入。</li>
+</ol>
+<h3 id="3-2-Instruction-Prompt（指令）"><a href="#3-2-Instruction-Prompt（指令）" class="headerlink" title="3.2 Instruction Prompt（指令）"></a>3.2 Instruction Prompt（指令）</h3><p>规定 <strong>本次要完成的目标、步骤、优先级、失败时怎么做</strong>。</p>
+<p>常见结构：</p>
+<ol>
+<li>目标（一句话）</li>
+<li>步骤（有序列表）</li>
+<li>约束（必须 &#x2F; 禁止）</li>
+<li>失败分支（信息不足时：追问 &#x2F; 拒答 &#x2F; 标注不确定）</li>
+</ol>
+<p>Instruction 写得越可执行，<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-1-Instruction-Following%EF%BC%88%E6%8C%87%E4%BB%A4%E9%81%B5%E5%BE%AA%EF%BC%89">Instruction Following</a> 越容易被观测：漏步骤、乱顺序都算失败。</p>
+<h3 id="3-3-Context-Prompt（上下文）"><a href="#3-3-Context-Prompt（上下文）" class="headerlink" title="3.3 Context Prompt（上下文）"></a>3.3 Context Prompt（上下文）</h3><p>提供 <strong>本轮决策所需的事实材料</strong>：对话摘要、RAG 片段、工具返回、用户配置等。</p>
+<p>与已学概念的接口：</p>
+<ol>
+<li>占 <a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">Context Window</a>；材料越多，越要排序与裁剪。</li>
+<li>工具结果应作为 <strong>已发生事实</strong> 写入，而不是让模型「回忆自己调过」（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#2-Message-Role%EF%BC%88%E5%A4%8D%E4%B9%A0%E4%B8%8E%E6%89%A9%E5%B1%95%EF%BC%89">第四篇 tool 消息</a>）。</li>
+<li>标明来源与时效（「以下为检索结果，可能过时」），降低把噪声当真理。</li>
+</ol>
+<h3 id="3-4-Output-Format-Specification（输出格式约定）"><a href="#3-4-Output-Format-Specification（输出格式约定）" class="headerlink" title="3.4 Output Format Specification（输出格式约定）"></a>3.4 Output Format Specification（输出格式约定）</h3><p>在 Prompt 里写清 <strong>输出长什么样</strong>：纯文本结构、JSON 字段、是否允许解释性前言等。</p>
+<p>本篇只谈 <strong>契约怎么写</strong>；强制 JSON、Schema、应用侧校验的实现见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-Structured-Output%EF%BC%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89">第四篇 Structured Output</a>。</p>
+<p>契约写法建议：</p>
+<ol>
+<li>字段名、类型、必填&#x2F;可选写死。</li>
+<li>给一个 <strong>最小合法示例</strong>（完整 Few-shot 见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">本系列（二）</a>）。</li>
+<li>明确「除 JSON 外不要输出其他文字」或「先简短理由再给 JSON」——二选一，不要含糊。</li>
+<li>Agent 要调工具时：说明何时输出自然语言、何时应走 Tool Invocation（协议由 API &#x2F; Schema 约束，Prompt 负责意图边界）。</li>
+</ol>
+<hr>
+<h2 id="4-组装顺序与冲突优先级"><a href="#4-组装顺序与冲突优先级" class="headerlink" title="4. 组装顺序与冲突优先级"></a>4. 组装顺序与冲突优先级</h2><h3 id="4-1-推荐组装顺序"><a href="#4-1-推荐组装顺序" class="headerlink" title="4.1 推荐组装顺序"></a>4.1 推荐组装顺序</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Role（身份与硬规则）</span><br><span class="line">    ↓</span><br><span class="line">Instruction（本轮目标与步骤）</span><br><span class="line">    ↓</span><br><span class="line">Context（事实材料）</span><br><span class="line">    ↓</span><br><span class="line">Output Format（输出契约）</span><br><span class="line">    ↓</span><br><span class="line">可选：少量示例（Few-shot，见第二篇）</span><br></pre></td></tr></table></figure>
+
+<p>落到 messages 时的常见拆法：</p>
+<table>
+<thead>
+<tr>
+<th>积木</th>
+<th>常见落点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Role + 全局 Format + 硬禁止</td>
+<td>system</td>
+</tr>
+<tr>
+<td>本轮 Instruction + 用户问题</td>
+<td>user</td>
+</tr>
+<tr>
+<td>检索 &#x2F; 工具结果</td>
+<td>user 中的独立区块，或 tool 消息</td>
+</tr>
+<tr>
+<td>历史对话</td>
+<td>按轮次的 user &#x2F; assistant</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-冲突时谁优先"><a href="#4-2-冲突时谁优先" class="headerlink" title="4.2 冲突时谁优先"></a>4.2 冲突时谁优先</h3><ol>
+<li><strong>system 硬规则</strong>优先于 user 的临时要求（例如 user 要求「忽略安全规则」应被拒绝）。</li>
+<li><strong>输出契约</strong>优先于「写得好看」：需要可解析时，散文解释让路。</li>
+<li><strong>已写入的工具 &#x2F; 检索事实</strong>优先于模型参数里的「常识」：材料与常识冲突时，应遵循材料或标明冲突。</li>
+</ol>
+<h3 id="4-3-Context-膨胀时先砍什么"><a href="#4-3-Context-膨胀时先砍什么" class="headerlink" title="4.3 Context 膨胀时先砍什么"></a>4.3 Context 膨胀时先砍什么</h3><p>预算不够时，建议裁剪顺序（先砍后留）：</p>
+<ol>
+<li>重复历史、冗长思维链原文</li>
+<li>低相关检索片段</li>
+<li>次要示例</li>
+<li>保留：Role 硬规则、本轮 Instruction、输出契约、与当前决策直接相关的 Context</li>
+</ol>
+<hr>
+<h2 id="5-对-Agent-行为控制"><a href="#5-对-Agent-行为控制" class="headerlink" title="5. 对 Agent 行为控制"></a>5. 对 Agent 行为控制</h2><h3 id="5-1-是否拆成多份-Prompt"><a href="#5-1-是否拆成多份-Prompt" class="headerlink" title="5.1 是否拆成多份 Prompt"></a>5.1 是否拆成多份 Prompt</h3><table>
+<thead>
+<tr>
+<th>步骤类型</th>
+<th>建议</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>规划（下一步做什么）</td>
+<td>专用或偏探索</td>
+<td>允许短推理，输出结构化计划</td>
+</tr>
+<tr>
+<td>执行（填工具参数）</td>
+<td>专用、低温、严格式</td>
+<td>参数错误代价高</td>
+</tr>
+<tr>
+<td>总结（给用户看）</td>
+<td>专用、可读性优先</td>
+<td>不必塞满 Schema</td>
+</tr>
+</tbody></table>
+<p>一份「万能 Prompt」初期省事，步骤一多往往互相干扰：总结口吻污染工具 JSON，或工具规则淹没用户可读回答。</p>
+<h3 id="5-2-行为可控的最小检查清单"><a href="#5-2-行为可控的最小检查清单" class="headerlink" title="5.2 行为可控的最小检查清单"></a>5.2 行为可控的最小检查清单</h3><p>写完或改完 Template 后，至少确认：</p>
+<ol>
+<li><strong>可复现</strong>：同样变量 → 同类结构输出（配合低温，见<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#4-Temperature">第二篇 Temperature</a>）。</li>
+<li><strong>可校验</strong>：有 Format &#x2F; Schema，应用侧能判对错（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-3-Schema-Validation%EF%BC%88%E6%A8%A1%E5%BC%8F%E6%A0%A1%E9%AA%8C%EF%BC%89">Schema Validation</a>）。</li>
+<li><strong>可截断</strong>：规定 max 步骤、信息不足时的停止&#x2F;追问，避免空转。</li>
+<li><strong>职责清晰</strong>：Role &#x2F; Instruction &#x2F; Context &#x2F; Format 没有混成一团无法改的长文。</li>
+<li><strong>事实有出处</strong>：关键断言来自 Context 或工具，而不是模型自述「已完成」。</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Prompt</strong>：一次 Inference 的输入合同；在 Chat 里体现为 messages。</p>
+<p><strong>Template</strong>：固定骨架 + 变量槽；为复用、版本、评测打底。</p>
+<p><strong>四积木</strong>：Role、Instruction、Context、Output Format——身份、任务、事实、契约。</p>
+<p><strong>组装</strong>：Role → Instruction → Context → Format →（可选示例）；冲突时硬规则与契约优先；Context 膨胀按相关性裁剪。</p>
+<p><strong>Agent</strong>：规划 &#x2F; 执行 &#x2F; 总结宜分 Prompt；用「可复现、可校验、可截断」做最小门禁。</p>
+<p><strong>系列导航：</strong></p>
+<ul>
+<li>Prompt Engineering：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）组成与行为控制</a>（本篇）</li>
+<li>LLM 基础：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LLM：模型怎么算、怎么调、工具怎么走</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）：输入合同怎么写（Template + 四积木）</span><br><span class="line">    ↓</span><br><span class="line">下一篇：推理技巧与多步编排</span><br></pre></td></tr></table></figure>
+
+<p>下一篇：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">Prompt Engineering（二）· 推理与编排</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Prompt/" rel="tag"># Prompt</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/" rel="prev" title="AI-Agent工程学习-LLM基础学习(四)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LLM基础学习(四)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-Prompt Engineering(二)">
+                  AI-Agent工程学习-Prompt Engineering(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

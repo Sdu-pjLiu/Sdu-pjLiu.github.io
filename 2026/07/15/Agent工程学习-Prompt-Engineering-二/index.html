@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Prompt 推理与编排：Zero&#x2F;Few-shot、CoT 与 Self-Consistency、Tree of Thoughts、Least-to-Most 与分解、Prompt Chaining，以及选型表。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Prompt Engineering(二)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Prompt 推理与编排：Zero&#x2F;Few-shot、CoT 与 Self-Consistency、Tree of Thoughts、Least-to-Most 与分解、Prompt Chaining，以及选型表。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-15T08:45:00.000Z">
+<meta property="article:modified_time" content="2026-07-15T09:08:27.100Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Prompt">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/","path":"2026/07/15/Agent工程学习-Prompt-Engineering-二/","title":"AI-Agent工程学习-Prompt Engineering(二)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Prompt Engineering(二) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E7%A4%BA%E4%BE%8B%E7%AD%96%E7%95%A5%EF%BC%9AZero-shot-%E4%B8%8E-Few-shot"><span class="nav-number">1.</span> <span class="nav-text">1. 示例策略：Zero-shot 与 Few-shot</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Zero-shot-Prompting"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 Zero-shot Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Few-shot-Prompting"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Few-shot Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%BD%95%E6%97%B6%E7%94%A8%E7%A4%BA%E4%BE%8B%EF%BC%8C%E4%BD%95%E6%97%B6%E6%94%B9%E7%94%A8-Schema-%E5%B7%A5%E5%85%B7"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 何时用示例，何时改用 Schema &#x2F; 工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%8E%A8%E7%90%86%E9%93%BE%EF%BC%9AChain-of-Thought-%E4%B8%8E-Self-Consistency"><span class="nav-number">2.</span> <span class="nav-text">2. 推理链：Chain-of-Thought 与 Self-Consistency</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Chain-of-Thought%EF%BC%88CoT%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Chain-of-Thought（CoT）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E4%BD%95%E6%97%B6%E4%B8%8D%E8%AF%A5%E5%BC%BA%E5%88%B6-CoT"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 何时不该强制 CoT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Self-Consistency%EF%BC%88%E8%87%AA%E8%AF%84%E4%B8%80%E8%87%B4%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Self-Consistency（自评一致）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Tree-of-Thoughts%EF%BC%88ToT%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. Tree of Thoughts（ToT）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E9%97%AE%E9%A2%98%E6%8B%86%E8%A7%A3%EF%BC%9ALeast-to-Most-%E4%B8%8E-Prompt-Decomposition"><span class="nav-number">4.</span> <span class="nav-text">4. 问题拆解：Least-to-Most 与 Prompt Decomposition</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Least-to-Most-Prompting"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Least-to-Most Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Prompt-Decomposition"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 Prompt Decomposition</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Prompt-Chaining%EF%BC%88%E6%8F%90%E7%A4%BA%E9%93%BE%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">5. Prompt Chaining（提示链）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E4%B8%8E-Tool-Calling-%E5%A4%9A%E8%BD%AE%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 与 Tool Calling 多轮的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E4%B8%AD%E9%97%B4%E7%BB%93%E6%9E%9C%E6%A0%A1%E9%AA%8C%E3%80%81%E7%9F%AD%E8%B7%AF%E3%80%81%E9%87%8D%E8%AF%95"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 中间结果校验、短路、重试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%E8%A1%A8"><span class="nav-number">6.</span> <span class="nav-text">6. 技术选型表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Prompt Engineering(二) | 我的记录小站">
+      <meta itemprop="description" content="Prompt 推理与编排：Zero&#x2F;Few-shot、CoT 与 Self-Consistency、Tree of Thoughts、Least-to-Most 与分解、Prompt Chaining，以及选型表。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Prompt Engineering(二)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-15 16:45:00 / 修改时间：17:08:27" itemprop="dateCreated datePublished" datetime="2026-07-15T16:45:00+08:00">2026-07-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Prompt 推理与编排：Zero/Few-shot、CoT 与 Self-Consistency、Tree of Thoughts、Least-to-Most 与分解、Prompt Chaining，以及选型表。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">Prompt Engineering（一）</a>：在会写可控 Prompt 的基础上，学习单轮推理技巧与多步编排。</p>
+<span id="more"></span>
+<h2 id="1-示例策略：Zero-shot-与-Few-shot"><a href="#1-示例策略：Zero-shot-与-Few-shot" class="headerlink" title="1. 示例策略：Zero-shot 与 Few-shot"></a>1. 示例策略：Zero-shot 与 Few-shot</h2><h3 id="1-1-Zero-shot-Prompting"><a href="#1-1-Zero-shot-Prompting" class="headerlink" title="1.1 Zero-shot Prompting"></a>1.1 Zero-shot Prompting</h3><p><strong>只给指令，不给示范</strong>，直接让模型做题。</p>
+<p>适用：任务表述清晰、模型本身已很熟（分类、简单改写、常见 JSON 形态）、或示范成本高。</p>
+<p>失败常见表现：格式漂移、边界 case 乱猜。此时优先补 <strong>Output Format</strong> 或改用 Schema &#x2F; 工具（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-Structured-Output%EF%BC%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89">第四篇</a>），而不是先堆长篇说教。</p>
+<h3 id="1-2-Few-shot-Prompting"><a href="#1-2-Few-shot-Prompting" class="headerlink" title="1.2 Few-shot Prompting"></a>1.2 Few-shot Prompting</h3><p>在指令之外，提供 <strong>少量输入→输出示范</strong>，让模型对齐模式。</p>
+<p>写好 Few-shot 的要点：</p>
+<ol>
+<li><strong>示例要像真实分布</strong>：覆盖正常路径 + 一两个边界（空输入、拒答）。</li>
+<li><strong>数量</strong>：通常 1～5 条；过多占 Context，且可能过拟合到示例措辞。</li>
+<li><strong>顺序</strong>：难例或关键约束相关的示例靠近「当前问题」一侧，往往更稳（仍要实测）。</li>
+<li><strong>正反例</strong>：可展示「错误示范 → 正确示范」，但反例要标明「以下为错误，勿模仿」。</li>
+</ol>
+<h3 id="1-3-何时用示例，何时改用-Schema-工具"><a href="#1-3-何时用示例，何时改用-Schema-工具" class="headerlink" title="1.3 何时用示例，何时改用 Schema &#x2F; 工具"></a>1.3 何时用示例，何时改用 Schema &#x2F; 工具</h3><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>更合适的手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>口吻、分类标签、短结构对齐</td>
+<td>Few-shot</td>
+</tr>
+<tr>
+<td>字段必须合法、可机读</td>
+<td>JSON Schema &#x2F; 约束解码（LLM 四）</td>
+</tr>
+<tr>
+<td>需要外部真值</td>
+<td>Tool &#x2F; RAG，而不是在示例里编造「假事实」</td>
+</tr>
+</tbody></table>
+<p>示例解决的是 <strong>形态对齐</strong>；真伪与副作用仍靠工具与校验。</p>
+<hr>
+<h2 id="2-推理链：Chain-of-Thought-与-Self-Consistency"><a href="#2-推理链：Chain-of-Thought-与-Self-Consistency" class="headerlink" title="2. 推理链：Chain-of-Thought 与 Self-Consistency"></a>2. 推理链：Chain-of-Thought 与 Self-Consistency</h2><h3 id="2-1-Chain-of-Thought（CoT）"><a href="#2-1-Chain-of-Thought（CoT）" class="headerlink" title="2.1 Chain-of-Thought（CoT）"></a>2.1 Chain-of-Thought（CoT）</h3><p>要求模型 <strong>显式写出中间步骤</strong>，再给出结论（「一步步想」或结构化步骤字段）。</p>
+<p>适用：多步算术、逻辑、需要展示依据的分析。</p>
+<p>代价：</p>
+<ol>
+<li>输出 Token 变多 → 延迟与费用上升（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">第二篇 Inference</a>）。</li>
+<li>步骤本身也可能错，且错得「看起来很认真」。</li>
+</ol>
+<h3 id="2-2-何时不该强制-CoT"><a href="#2-2-何时不该强制-CoT" class="headerlink" title="2.2 何时不该强制 CoT"></a>2.2 何时不该强制 CoT</h3><ol>
+<li>简单分类、抽取、严格短 JSON：多余推理易污染格式。</li>
+<li>已走工具拿到结果：应基于结果总结，而不是再「空想推导」。</li>
+<li>需要稳定 Tool 参数：优先低温 + Schema，而不是长思维链（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#4-Temperature">Temperature</a>）。</li>
+</ol>
+<h3 id="2-3-Self-Consistency（自评一致）"><a href="#2-3-Self-Consistency（自评一致）" class="headerlink" title="2.3 Self-Consistency（自评一致）"></a>2.3 Self-Consistency（自评一致）</h3><p>同一题用 <strong>多样本</strong>（略高 Temperature 或多次采样）各走一遍 CoT，再对最终答案 <strong>投票 &#x2F; 聚合</strong>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">同一 Prompt</span><br><span class="line">    ↓</span><br><span class="line">多次 Inference（不同采样）</span><br><span class="line">    ↓</span><br><span class="line">得到多个「步骤 + 答案」</span><br><span class="line">    ↓</span><br><span class="line">对答案投票 / 规则聚合 → 最终结果</span><br></pre></td></tr></table></figure>
+
+<p>要点：</p>
+<ol>
+<li>依赖「多次 Inference」，成本近似线性放大。</li>
+<li>适合 <strong>有离散标准答案</strong> 的题；开放长文写作不适合简单投票。</li>
+<li>与 Agent：可用于规划选项打分的离线增强，不宜默认挂在每个工具调用前。</li>
+</ol>
+<hr>
+<h2 id="3-Tree-of-Thoughts（ToT）"><a href="#3-Tree-of-Thoughts（ToT）" class="headerlink" title="3. Tree of Thoughts（ToT）"></a>3. Tree of Thoughts（ToT）</h2><p><strong>相对 CoT 的差别</strong>：CoT 基本是一条链；ToT 维护 <strong>多条候选思路（树）</strong>，带扩展、评估、剪枝、回溯。</p>
+<p>工程视角只需抓住：</p>
+<ol>
+<li><strong>状态</strong>：每个节点是一种部分方案或中间结论。</li>
+<li><strong>扩展</strong>：从节点生成若干下一步。</li>
+<li><strong>评估</strong>：启发式或再调模型打分，差的剪掉。</li>
+<li><strong>停止</strong>：找到可行解、深度上限、或预算耗尽。</li>
+</ol>
+<p>成本：远高于单次 CoT；适合 <strong>搜索空间大、单步难判对错</strong> 的难题。Agent 里若已有外部搜索 &#x2F; 仿真 &#x2F; 测试工具，往往用工具探索比纯 Prompt ToT 更划算。</p>
+<hr>
+<h2 id="4-问题拆解：Least-to-Most-与-Prompt-Decomposition"><a href="#4-问题拆解：Least-to-Most-与-Prompt-Decomposition" class="headerlink" title="4. 问题拆解：Least-to-Most 与 Prompt Decomposition"></a>4. 问题拆解：Least-to-Most 与 Prompt Decomposition</h2><h3 id="4-1-Least-to-Most-Prompting"><a href="#4-1-Least-to-Most-Prompting" class="headerlink" title="4.1 Least-to-Most Prompting"></a>4.1 Least-to-Most Prompting</h3><p>把难题拆成 <strong>由易到难、有依赖</strong> 的子问题：先解决简单子题，再把答案喂给下一题。</p>
+<p>适合：复合问答、多约束规划、需要先澄清定义再计算。</p>
+<h3 id="4-2-Prompt-Decomposition"><a href="#4-2-Prompt-Decomposition" class="headerlink" title="4.2 Prompt Decomposition"></a>4.2 Prompt Decomposition</h3><p>把一个大 Prompt &#x2F; 大任务拆成 <strong>多个子 Prompt 或子目标</strong>，各自输入输出更窄。</p>
+<p>与 Least-to-Most 的关系：Least-to-Most 强调 <strong>难度递进与依赖</strong>；Decomposition 强调 <strong>职责拆分</strong>（可并行的子任务不必强行串成由易到难）。</p>
+<p>拆解时要写清：</p>
+<ol>
+<li>子问题列表与依赖边</li>
+<li>每个子问题的输入来自哪里（用户 &#x2F; 上一子结果 &#x2F; 工具）</li>
+<li><strong>失败回退</strong>：子步失败是重试、换策略，还是向用户追问</li>
+</ol>
+<hr>
+<h2 id="5-Prompt-Chaining（提示链）"><a href="#5-Prompt-Chaining（提示链）" class="headerlink" title="5. Prompt Chaining（提示链）"></a>5. Prompt Chaining（提示链）</h2><p><strong>Prompt Chaining</strong>：上一步模型（或规则）的输出，经清洗 &#x2F; 校验后，成为下一步 Prompt 的输入。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Prompt A → 输出 A</span><br><span class="line">    ↓ 校验 / 抽取</span><br><span class="line">Prompt B（含输出 A）→ 输出 B</span><br><span class="line">    ↓</span><br><span class="line">…</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-1-与-Tool-Calling-多轮的区别"><a href="#5-1-与-Tool-Calling-多轮的区别" class="headerlink" title="5.1 与 Tool Calling 多轮的区别"></a>5.1 与 Tool Calling 多轮的区别</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>Prompt Chaining</th>
+<th>Tool Calling 多轮</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>中间步骤主要是</td>
+<td>再调模型（或规则）</td>
+<td>应用执行外部工具</td>
+</tr>
+<tr>
+<td>真值来源</td>
+<td>仍偏模型生成</td>
+<td>工具返回的事实</td>
+</tr>
+<tr>
+<td>协议</td>
+<td>自管消息与字段</td>
+<td>Schema → Invocation → Result（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">第四篇</a>）</td>
+</tr>
+</tbody></table>
+<p>可以组合：链的某一步触发 Tool，工具结果再进入下一环 Prompt。</p>
+<h3 id="5-2-中间结果校验、短路、重试"><a href="#5-2-中间结果校验、短路、重试" class="headerlink" title="5.2 中间结果校验、短路、重试"></a>5.2 中间结果校验、短路、重试</h3><ol>
+<li><strong>校验</strong>：格式、必填字段、业务规则；失败不要盲目喂给下一步。</li>
+<li><strong>短路</strong>：已够回答用户则停止，避免为链式而链式。</li>
+<li><strong>重试</strong>：区分「可重试错误」（解析失败）与「需换策略」（任务不可解）。</li>
+</ol>
+<hr>
+<h2 id="6-技术选型表"><a href="#6-技术选型表" class="headerlink" title="6. 技术选型表"></a>6. 技术选型表</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>优先手段</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>形态对齐、短任务</td>
+<td>Zero &#x2F; Few-shot</td>
+<td>格式硬需求叠加 Schema</td>
+</tr>
+<tr>
+<td>多步推理、有标准答案</td>
+<td>CoT；难题可加 Self-Consistency</td>
+<td>看清 Token 预算</td>
+</tr>
+<tr>
+<td>大搜索、多候选方案</td>
+<td>ToT 或外部搜索工具</td>
+<td>纯 ToT 最贵</td>
+</tr>
+<tr>
+<td>复合题、依赖清晰</td>
+<td>Least-to-Most &#x2F; Decomposition</td>
+<td>先画依赖再写 Prompt</td>
+</tr>
+<tr>
+<td>多阶段流水线</td>
+<td>Prompt Chaining</td>
+<td>每环校验；真值步骤用 Tool</td>
+</tr>
+</tbody></table>
+<p><strong>按 Agent 步骤类型：</strong></p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>推荐</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>规划</td>
+<td>短 CoT 或结构化计划；必要时 Decomposition</td>
+</tr>
+<tr>
+<td>执行（工具参数）</td>
+<td>Zero&#x2F;Few + 严格 Format；低温；少散文推理</td>
+</tr>
+<tr>
+<td>总结</td>
+<td>Zero-shot + 可读约束；依据 Context&#x2F;工具结果</td>
+</tr>
+</tbody></table>
+<p>探索（想方案）与执行（填参数）不要混在同一温度、同一松紧契约里。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>示例策略</strong>：Zero-shot 靠指令；Few-shot 靠示范对齐形态。</p>
+<p><strong>推理链</strong>：CoT 换可解释步骤；Self-Consistency 用多样本投票，成本高。</p>
+<p><strong>ToT</strong>：树状搜索，贵；有外部工具时优先工具探索。</p>
+<p><strong>拆解</strong>：Least-to-Most（由易到难）与 Decomposition（职责拆分）常一起用。</p>
+<p><strong>Chaining</strong>：多步 Prompt 编排；与 Tool 多轮互补，中间必须校验。</p>
+<p><strong>选型</strong>：按场景与 Agent 步骤选，而不是默认「越复杂越聪明」。</p>
+<p><strong>系列导航：</strong></p>
+<ul>
+<li>Prompt Engineering：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）推理与编排</a>（本篇）</li>
+<li>LLM 基础：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+</ul>
+<p>下一篇：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">Prompt Engineering（三）· 工程化闭环</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Prompt/" rel="tag"># Prompt</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/" rel="prev" title="AI-Agent工程学习-Prompt Engineering(一)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Prompt Engineering(一)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/" rel="next" title="AI-Agent工程学习-Prompt Engineering(三)">
+                  AI-Agent工程学习-Prompt Engineering(三) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
