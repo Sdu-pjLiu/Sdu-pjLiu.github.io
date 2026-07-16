@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">24</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -391,7 +391,7 @@
 <p>与 Structured Output 的关系：Invocation 的参数用 Schema Validation；Result &#x2F; Error 的格式也建议固定，便于下一轮模型与日志解析。</p>
 <h3 id="6-6-对-Agent-的影响"><a href="#6-6-对-Agent-的影响" class="headerlink" title="6.6 对 Agent 的影响"></a>6.6 对 Agent 的影响</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">感知（user / 多模态）</span><br><span class="line">  → 决策（Chat Completion ± tools）</span><br><span class="line">  → 行动（执行 Tool Invocation）</span><br><span class="line">  → 观察（Tool Result / Error 写回）</span><br><span class="line">  → 再决策 …</span><br></pre></td></tr></table></figure>
 
-<p>没有可靠的 Schema、Validation 与 Error Handling，Agent 只是「会说话的脚本」；有了闭环，才进入可编排的系统（后续篇：ReAct、规划、记忆等）。</p>
+<p>没有可靠的 Schema、Validation 与 Error Handling，Agent 只是「会说话的脚本」；有了闭环，才进入可编排的系统（见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）</a>：ReAct、规划、记忆等）。</p>
 <hr>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Chat Completion</strong>：以 messages 为合同的主调用入口；一次调用 ≈ 一次（轮）Inference。</p>
 <p><strong>Message Role</strong>：在<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89">第三篇</a>三角色之上，用 <strong>tool</strong> 消息承载执行结果。</p>
@@ -406,7 +406,7 @@
 </ul>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">（一）（二）模型如何表示与生成</span><br><span class="line">（三）认名：角色、训练阶段、幻觉、延迟</span><br><span class="line">（四）调用：Chat Completion → Structured Output → Tool Calling 闭环</span><br><span class="line">    ↓</span><br><span class="line">Prompt Engineering：怎么写可控 Prompt / 怎么推 / 怎么版本评测</span><br></pre></td></tr></table></figure>
 
-<p>LLM 基础学习到此收口。下一步进入平级模块 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">Prompt Engineering（一）</a>：在工具闭环之上把输入合同写稳；其后是推理编排与 Prompt 工程化，再往后才是 Agent 编排（ReAct、多步规划、记忆实现等）。</p>
+<p>LLM 基础学习到此收口。下一步进入平级模块 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">Prompt Engineering（一）</a>：在工具闭环之上把输入合同写稳；Prompt 工程化之后进入 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）</a>（闭环、推理与规划、记忆&#x2F;Runtime、评测）。</p>
 
     </div>
 

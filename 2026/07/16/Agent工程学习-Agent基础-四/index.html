@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Agent 轨迹级评测（相对 Prompt 评测的增量）与 Research Agent 实践地图 L0–L2，阶段收口。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Agent基础(四)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Agent 轨迹级评测（相对 Prompt 评测的增量）与 Research Agent 实践地图 L0–L2，阶段收口。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-16T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-16T06:15:11.454Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/","path":"2026/07/16/Agent工程学习-Agent基础-四/","title":"AI-Agent工程学习-Agent基础(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Agent基础(四) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%AF%84%E6%B5%8B%E5%88%86%E5%B1%82%EF%BC%9A%E8%8A%82%E7%82%B9-%E2%86%92-%E8%BD%A8%E8%BF%B9-%E2%86%92-%E4%BB%BB%E5%8A%A1-%E2%86%92-%E5%AE%89%E5%85%A8"><span class="nav-number">1.</span> <span class="nav-text">1. 评测分层：节点 → 轨迹 → 任务 → 安全</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8"><span class="nav-number">2.</span> <span class="nav-text">2. 增量指标字典</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Judge-Human-Rubric%EF%BC%9AAgent-%E5%9C%BA%E6%99%AF%E5%B7%AE%E5%9C%A8%E5%93%AA"><span class="nav-number">3.</span> <span class="nav-text">3. Judge &#x2F; Human &#x2F; Rubric：Agent 场景差在哪</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Research-Agent-%E5%9C%B0%E5%9B%BE"><span class="nav-number">4.</span> <span class="nav-text">4. Research Agent 地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">5.</span> <span class="nav-text">5. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%98%B6%E6%AE%B5%E6%94%B6%E5%8F%A3%EF%BC%9A%E5%BA%94%E8%83%BD%E5%9B%9E%E7%AD%94%E7%9A%84-8-%E9%97%AE"><span class="nav-number">6.</span> <span class="nav-text">6. 阶段收口：应能回答的 8 问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Agent基础(四) | 我的记录小站">
+      <meta itemprop="description" content="Agent 轨迹级评测（相对 Prompt 评测的增量）与 Research Agent 实践地图 L0–L2，阶段收口。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Agent基础(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-16 14:00:00 / 修改时间：14:15:11" itemprop="dateCreated datePublished" datetime="2026-07-16T14:00:00+08:00">2026-07-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Agent 轨迹级评测（相对 Prompt 评测的增量）与 Research Agent 实践地图 L0–L2，阶段收口。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 基础（三）</a>：把「好不好」从单次 Completion 升级到整条轨迹，并用 Research Agent 把一～三串成地图。</p>
+<span id="more"></span>
+<h2 id="1-评测分层：节点-→-轨迹-→-任务-→-安全"><a href="#1-评测分层：节点-→-轨迹-→-任务-→-安全" class="headerlink" title="1. 评测分层：节点 → 轨迹 → 任务 → 安全"></a>1. 评测分层：节点 → 轨迹 → 任务 → 安全</h2><p><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/#2-Prompt-Evaluation%EF%BC%88%E8%AF%84%E6%B5%8B%EF%BC%89">Prompt Evaluation</a> 已覆盖：黄金集、规则校验、LLM-as-Judge、人工抽检、离线&#x2F;线上。本篇 <strong>不重讲</strong>，只升级对象。</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>评什么</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>节点</strong></td>
+<td>单步 Prompt &#x2F; 工具参数</td>
+<td>Schema 合法率（回链 PE 三）</td>
+</tr>
+<tr>
+<td><strong>轨迹</strong></td>
+<td>循环是否健康</td>
+<td>平均步数、重复工具率、假完成</td>
+</tr>
+<tr>
+<td><strong>任务</strong></td>
+<td>最终是否达验收</td>
+<td>Task Success Rate</td>
+</tr>
+<tr>
+<td><strong>安全</strong></td>
+<td>有害 &#x2F; 越权</td>
+<td>禁调工具拦截率</td>
+</tr>
+</tbody></table>
+<p>发版时：节点级沿用各 Template 的黄金集；Agent 级另建 <strong>Scenario 集</strong>（同一问题 + 工具桩 &#x2F; fixture）。回归固定：模型版本 + Prompt versions + Tool Schema versions（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/#1-Versioning-%E4%B8%8E-Registry">PE 三 Registry</a>）。</p>
+<hr>
+<h2 id="2-增量指标字典"><a href="#2-增量指标字典" class="headerlink" title="2. 增量指标字典"></a>2. 增量指标字典</h2><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>工程口径</th>
+<th>怎么算</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Task Success Rate</strong></td>
+<td>达验收标准的比例</td>
+<td>黄金任务通过数 &#x2F; 总数</td>
+</tr>
+<tr>
+<td><strong>Hallucination Rate</strong></td>
+<td>无依据断言占比</td>
+<td>无 Observation 支撑的断言 &#x2F; 总断言（接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89">幻觉</a>）</td>
+</tr>
+<tr>
+<td><strong>Tool Accuracy</strong></td>
+<td>工具用得对不对</td>
+<td>可拆：选型准确 · 参数合法 · 结果被正确使用</td>
+</tr>
+</tbody></table>
+<p>可选补充：</p>
+<ol>
+<li><strong>Avg Steps &#x2F; Cost per Success</strong>：成功一单平均步数与 Token（接多次 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#1-2-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D">Completion 累加</a>）</li>
+<li><strong>Tool Error Recovery Rate</strong>：工具失败后是否换策略而非空转</li>
+<li><strong>Unnecessary Tool Calls</strong>：无增益的重复调用</li>
+</ol>
+<p>工具侧协议仍以 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">Tool Calling 闭环</a> 为准：参数错先算节点失败，再归因 Schema 或 Prompt。</p>
+<hr>
+<h2 id="3-Judge-Human-Rubric：Agent-场景差在哪"><a href="#3-Judge-Human-Rubric：Agent-场景差在哪" class="headerlink" title="3. Judge &#x2F; Human &#x2F; Rubric：Agent 场景差在哪"></a>3. Judge &#x2F; Human &#x2F; Rubric：Agent 场景差在哪</h2><p>细节回链 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/#2-Prompt-Evaluation%EF%BC%88%E8%AF%84%E6%B5%8B%EF%BC%89">PE 三 2.1–2.2</a>。Agent 增量：</p>
+<ol>
+<li><p><strong>LLM-as-Judge</strong>：可对报告结构、依据引用打分；Judge Prompt 也要 version；防与任务模型「同家族同错」。</p>
+</li>
+<li><p><strong>Human Evaluation</strong>：专业正确性、品牌口径、安全——仍要用 Rubric，适合黄金集与线上抽检。</p>
+</li>
+<li><p><strong>Rubric</strong>：为开放任务写可打分量规，例如 Research：</p>
+<ul>
+<li>是否覆盖问题</li>
+<li>关键事实是否可指向某次 Observation</li>
+<li>是否区分事实与推测</li>
+<li>结构是否完整</li>
+<li>无依据断言扣分</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="4-Research-Agent-地图"><a href="#4-Research-Agent-地图" class="headerlink" title="4. Research Agent 地图"></a>4. Research Agent 地图</h2><p>能力流水线：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">输入问题</span><br><span class="line">  ↓</span><br><span class="line">任务 / 目标拆解（Planner）</span><br><span class="line">  ↓</span><br><span class="line">搜索（Tools）</span><br><span class="line">  ↓</span><br><span class="line">分析（对比、去重、标不确定）</span><br><span class="line">  ↓</span><br><span class="line">生成报告（Writer + 轻量 Reflection）</span><br></pre></td></tr></table></figure>
+
+<p>组件映射（对应本系列一～三）：</p>
+<table>
+<thead>
+<tr>
+<th>流水线步骤</th>
+<th>理论组件</th>
+<th>推荐模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>输入问题</td>
+<td>Goal + 验收 Rubric</td>
+<td>—</td>
+</tr>
+<tr>
+<td>任务拆解</td>
+<td>Planner + DAG</td>
+<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#2-%E8%A7%84%E5%88%92%E5%BC%8F-Agent%EF%BC%88Plan-and-Execute-%E5%8F%8A%E8%A7%84%E5%88%92%E6%8A%80%E6%B3%95%EF%BC%89">规划式 &#x2F; Hierarchical</a></td>
+</tr>
+<tr>
+<td>搜索</td>
+<td>Tools + Trace</td>
+<td>叶子 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#1-ReAct%EF%BC%88Reason-Act%EF%BC%89">ReAct</a></td>
+</tr>
+<tr>
+<td>分析</td>
+<td>Working state + Reflection</td>
+<td>可选 Self-Refine</td>
+</tr>
+<tr>
+<td>成稿</td>
+<td>Procedural 模板 + Format</td>
+<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/#5-Prompt-Chaining%EF%BC%88%E6%8F%90%E7%A4%BA%E9%93%BE%EF%BC%89">Chaining</a> 分章节</td>
+</tr>
+<tr>
+<td>全程</td>
+<td>Runtime Budget &#x2F; 停止 &#x2F; Checkpoint</td>
+<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">Runtime 治理</a></td>
+</tr>
+</tbody></table>
+<p>默认组合（再写一遍）：<strong>Hierarchical&#x2F;DAG + 叶子 ReAct + 成稿轻量 Reflection</strong>。</p>
+<hr>
+<h2 id="5-实践阶梯-L0-→-L2"><a href="#5-实践阶梯-L0-→-L2" class="headerlink" title="5. 实践阶梯 L0 → L2"></a>5. 实践阶梯 L0 → L2</h2><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>做什么</th>
+<th>证明你会了什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L0</strong></td>
+<td>2～3 个 mock search；手写 while + Tool 协议走通 Loop</td>
+<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/#5-Agent-Loop">Agent Loop</a></td>
+</tr>
+<tr>
+<td><strong>L1</strong></td>
+<td>真搜索 + Planner 出 3～5 步静态计划</td>
+<td>规划式执行</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>空结果 &#x2F; 冲突时改 query 或 Replan</td>
+<td>Dynamic Planning</td>
+</tr>
+</tbody></table>
+<p>再进阶（本阶段不强制）：跨会话 Memory、Checkpoint 续跑、完整评测流水线。</p>
+<p><strong>验收四条（Research 最小成功定义）：</strong></p>
+<ol>
+<li>报告中关键事实能指向某次 Observation（防假完成 &#x2F; 幻觉）。</li>
+<li>在步数 &#x2F; Token 预算内结束（不空转）。</li>
+<li>工具失败有可见 Recovery，不假装成功。</li>
+<li>同一问题两次跑：结构稳定（Prompt &#x2F; Schema 版本固定）。</li>
+</ol>
+<hr>
+<h2 id="6-阶段收口：应能回答的-8-问"><a href="#6-阶段收口：应能回答的-8-问" class="headerlink" title="6. 阶段收口：应能回答的 8 问"></a>6. 阶段收口：应能回答的 8 问</h2><ol>
+<li>Agent 五件套各负责什么？缺 Runtime 会怎样？</li>
+<li>Thought &#x2F; Action &#x2F; Observation &#x2F; Reflection 各产出什么？</li>
+<li>ReAct 与 Plan-and-Execute 如何选型？</li>
+<li>Reflection 与 Self-Refine 差在哪？</li>
+<li>记忆四层分别解决什么？RAG 是工具还是预注入？</li>
+<li>为何 Checkpoint 对长任务重要？</li>
+<li>Task Success &#x2F; Hallucination &#x2F; Tool Accuracy 如何落到可计算定义？</li>
+<li>Research Agent 如何把 Planner、搜索 Tool、Memory、Rubric 串成一条管线？</li>
+</ol>
+<p>答不上的回对应篇重读。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>评测</strong>：节点回链 PE 三；本篇补轨迹与任务指标。</p>
+<p><strong>指标</strong>：Success、幻觉率（无依据断言）、Tool Accuracy；旁路看步数与成本。</p>
+<p><strong>Research</strong>：问题 → 拆解 → 搜索 → 分析 → 报告；映射一～三组件。</p>
+<p><strong>实践</strong>：L0 闭环 → L1 静态计划 → L2 重规划；四条验收门禁。</p>
+<p><strong>Agent 基础系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a>（本篇）</li>
+</ul>
+<p><strong>前置：</strong></p>
+<ul>
+<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a></li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">LLM 基础：算与调</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）（二）（三）：写、推、管</span><br><span class="line">    ↓</span><br><span class="line">Agent 基础（一）～（四）：闭环、模式、记忆/Runtime、评测与实践地图</span><br><span class="line">    ↓</span><br><span class="line">下一模块：Agent 实现与框架编排（本篇不展开）</span><br></pre></td></tr></table></figure>
+
+<p>Agent 基础理论到此收口。下一步进入 <strong>实现与框架</strong>（工作流引擎、状态机、具体 SDK 等），在理论选型之上把 L0–L2 做成可维护的工程系统。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-Agent基础(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Agent基础(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
