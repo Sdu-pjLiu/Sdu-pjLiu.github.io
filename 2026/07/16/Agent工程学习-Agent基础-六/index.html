@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Skill 深化、MCP 认名、权限沙箱、Subagent；Agent 基础收口。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Agent基础(六)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Skill 深化、MCP 认名、权限沙箱、Subagent；Agent 基础收口。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-16T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-16T08:25:56.067Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/","path":"2026/07/16/Agent工程学习-Agent基础-六/","title":"AI-Agent工程学习-Agent基础(六)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Agent基础(六) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Skill-%E6%B7%B1%E5%8C%96%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">2.</span> <span class="nav-text">1. Skill 深化与边界</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%8E-Tool-Template-RAG-%E5%AE%8C%E6%95%B4%E5%AF%B9%E7%85%A7%EF%BC%88%E5%A4%8D%E4%B9%A0%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 与 Tool &#x2F; Template &#x2F; RAG 完整对照（复习）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E7%BC%96%E5%86%99%E4%B8%8E%E8%AF%84%E6%B5%8B"><span class="nav-number">2.3.</span> <span class="nav-text">1.3 编写与评测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-MCP-%E5%A4%96%E9%83%A8%E8%83%BD%E5%8A%9B%E6%80%BB%E7%BA%BF%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">2. MCP &#x2F; 外部能力总线（认名）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%9D%83%E9%99%90%E3%80%81%E6%B2%99%E7%AE%B1%E4%B8%8E%E5%AE%A1%E6%89%B9%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">3. 权限、沙箱与审批档</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%89%E6%A1%A3%E5%AE%A1%E6%89%B9"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 三档审批</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%B2%99%E7%AE%B1%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 沙箱（认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Subagent-%E4%B8%8E-Agent-as-Tool"><span class="nav-number">5.</span> <span class="nav-text">4. Subagent 与 Agent-as-Tool</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Environment-%E6%89%A9%E5%B1%95%E8%AE%A4%E5%90%8D%EF%BC%88%E5%8D%8A%E8%8A%82%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. Environment 扩展认名（半节）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Hooks%EF%BC%88%E8%AE%A4%E5%90%8D%E5%8D%8A%E8%8A%82%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. Hooks（认名半节）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">8.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E9%98%B6%E6%AE%B5%E6%94%B6%E5%8F%A3%EF%BC%9A%E5%BA%94%E8%83%BD%E5%9B%9E%E7%AD%94%E7%9A%84-12-%E9%97%AE"><span class="nav-number">9.</span> <span class="nav-text">7. 阶段收口：应能回答的 12 问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Agent基础(六) | 我的记录小站">
+      <meta itemprop="description" content="Skill 深化、MCP 认名、权限沙箱、Subagent；Agent 基础收口。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Agent基础(六)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-16 16:00:00 / 修改时间：16:25:56" itemprop="dateCreated datePublished" datetime="2026-07-16T16:00:00+08:00">2026-07-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Skill 深化、MCP 认名、权限沙箱、Subagent；Agent 基础收口。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent 基础（五）</a>：工程坑有手册之后，补齐 <strong>能力组件与安全边界</strong>，并收口本系列。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>一～五已覆盖：闭环、规划模式、记忆&#x2F;Runtime（含 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">Skill 认名（三）§1.4</a>）、评测、工程坑（含能力膨胀治理）。</p>
+<p>本篇 <strong>深化 Skill 边界</strong>，并补齐 MCP、权限&#x2F;沙箱、Subagent；接 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">PE 四 · Injection</a> 的数据边界。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">LLM（决策）</span><br><span class="line">  + Tools（函数 / 副作用动作）     ← LLM 四 Tool Calling</span><br><span class="line">  + Skills（按需程序性知识包）     ← 三认名 / 六深化</span><br><span class="line">  + Knowledge / RAG（事实检索）    ← 三已讲</span><br><span class="line">  + MCP（可选外部能力总线）        ← 本篇认名</span><br><span class="line">  + Runtime（权限 / 沙箱 / Budget / Hooks）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="1-Skill-深化与边界"><a href="#1-Skill-深化与边界" class="headerlink" title="1. Skill 深化与边界"></a>1. Skill 深化与边界</h2><p>若未读 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">（三）§1.4</a>，请先回读认名（Skill 是什么、最小结构、Skill≠Tool）。</p>
+<h3 id="1-1-与-Tool-Template-RAG-完整对照（复习）"><a href="#1-1-与-Tool-Template-RAG-完整对照（复习）" class="headerlink" title="1.1 与 Tool &#x2F; Template &#x2F; RAG 完整对照（复习）"></a>1.1 与 Tool &#x2F; Template &#x2F; RAG 完整对照（复习）</h3><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>解决什么</th>
+<th>典型载体</th>
+<th>是否改世界</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Tool</strong></td>
+<td>模型可发起、Runtime 执行的动作</td>
+<td>JSON Schema + 函数</td>
+<td>是（查询&#x2F;写入）</td>
+</tr>
+<tr>
+<td><strong>Skill</strong></td>
+<td>教 Agent「这类任务怎么做」</td>
+<td>程序性文档包（按需注入 Context）</td>
+<td>否（指导如何用 Tool）</td>
+</tr>
+<tr>
+<td><strong>Prompt Template</strong></td>
+<td>某一步的输入合同</td>
+<td>Registry 版本化模板</td>
+<td>否</td>
+</tr>
+<tr>
+<td><strong>RAG 文档</strong></td>
+<td>事实与材料</td>
+<td>向量库 Chunk</td>
+<td>否</td>
+</tr>
+</tbody></table>
+<p>能力目录过大时的 L0&#x2F;L1&#x2F;L2 治理见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#1-%E8%83%BD%E5%8A%9B%E8%86%A8%E8%83%80%EF%BC%88Tools%E3%80%81Skills%E3%80%81Procedural%EF%BC%89">（五）§1</a>；本篇讲 <strong>生命周期与编写评测</strong>。</p>
+<h3 id="1-2-生命周期"><a href="#1-2-生命周期" class="headerlink" title="1.2 生命周期"></a>1.2 生命周期</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">发现（目录 / 检索）</span><br><span class="line">  → 选择（模型或 Runtime 路由）</span><br><span class="line">  → 注入 Context（body 进入本轮可见区）</span><br><span class="line">  → 执行中引用（配合 Tool Invocation）</span><br><span class="line">  →（可选）卸载或摘要（释放窗位）</span><br></pre></td></tr></table></figure>
+
+<p>与 Procedural 层：Skill 是 Procedural 的 <strong>可版本、可发现、可注入</strong> 产品形态（认名见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">三 §1.4</a>）。</p>
+<h3 id="1-3-编写与评测"><a href="#1-3-编写与评测" class="headerlink" title="1.3 编写与评测"></a>1.3 编写与评测</h3><ol>
+<li><strong>description</strong> 决定会不会被误选——与 Tool Schema 的 <code>description</code> 同等重要。</li>
+<li>安全写法见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#4-%E7%A8%8B%E5%BA%8F%E6%80%A7%E6%96%87%E6%A1%A3%E6%80%8E%E4%B9%88%E5%86%99%EF%BC%88Skill--Template-%E8%B5%84%E4%BA%A7%EF%BC%89">PE 四</a>。</li>
+<li>变更后回归 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8">Tool Accuracy</a> 与 Unnecessary Tool Calls。</li>
+</ol>
+<hr>
+<h2 id="2-MCP-外部能力总线（认名）"><a href="#2-MCP-外部能力总线（认名）" class="headerlink" title="2. MCP &#x2F; 外部能力总线（认名）"></a>2. MCP &#x2F; 外部能力总线（认名）</h2><p><strong>为何需要：</strong> 工具与资源不应全写死在 Agent 单进程；团队&#x2F;第三方能力宜通过标准总线接入。</p>
+<p><strong>MCP 三件套认名：</strong></p>
+<table>
+<thead>
+<tr>
+<th>MCP 概念</th>
+<th>工程映射</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Tools</strong></td>
+<td>可调用动作（对齐 Tool Schema）</td>
+</tr>
+<tr>
+<td><strong>Resources</strong></td>
+<td>可读资源（文件、URI 内容——不一定是函数）</td>
+</tr>
+<tr>
+<td><strong>Prompts</strong></td>
+<td>可复用提示模板（与 PE Registry 思想相近）</td>
+</tr>
+</tbody></table>
+<p>与 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">LLM 四 Tool Calling</a>：<strong>MCP 提供能力描述与接入；执行闭环仍是 Invocation → 应用执行 → Result 写回</strong>。MCP 不替代 Runtime 校验与权限。</p>
+<p>本系列不写具体 SDK；实现模块再讲连接、鉴权与部署。</p>
+<hr>
+<h2 id="3-权限、沙箱与审批档"><a href="#3-权限、沙箱与审批档" class="headerlink" title="3. 权限、沙箱与审批档"></a>3. 权限、沙箱与审批档</h2><p>扩 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">（三）Runtime · HITL &#x2F; Guardrails</a>：</p>
+<h3 id="3-1-三档审批"><a href="#3-1-三档审批" class="headerlink" title="3.1 三档审批"></a>3.1 三档审批</h3><table>
+<thead>
+<tr>
+<th>档位</th>
+<th>含义</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>自动</strong></td>
+<td>只读、幂等、低风险</td>
+<td>查天气、读公开文档</td>
+</tr>
+<tr>
+<td><strong>确认</strong></td>
+<td>有副作用或外联</td>
+<td>写文件、发 HTTP、改库</td>
+</tr>
+<tr>
+<td><strong>禁止</strong></td>
+<td>不可自动执行</td>
+<td>读密钥、任意 shell、未授权网络</td>
+</tr>
+</tbody></table>
+<p>Prompt 写「禁止」不能替代 <strong>禁止档</strong>——须 Runtime 硬拦（回链 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#2-2-Prompt-%E4%B8%8D%E8%83%BD%E5%8D%95%E7%8B%AC%E6%89%9B%E5%AE%89%E5%85%A8">PE 四</a>）。</p>
+<h3 id="3-2-沙箱（认名）"><a href="#3-2-沙箱（认名）" class="headerlink" title="3.2 沙箱（认名）"></a>3.2 沙箱（认名）</h3><p>隔离 <strong>文件系统、网络、进程</strong> 的可见范围；缩小 Action Space 的实际破坏面。与 HITL 组合：沙箱内自动，越界须确认。</p>
+<hr>
+<h2 id="4-Subagent-与-Agent-as-Tool"><a href="#4-Subagent-与-Agent-as-Tool" class="headerlink" title="4. Subagent 与 Agent-as-Tool"></a>4. Subagent 与 Agent-as-Tool</h2><p>扩 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-%E5%A4%9A-Agent%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%8C%E5%8D%8A%E8%8A%82%EF%BC%89">（三）多 Agent 认名</a>：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Subagent &#x2F; Agent-as-Tool</strong></td>
+<td>主 Agent 委派子任务；子 Agent 有 <strong>独立 Context</strong></td>
+</tr>
+<tr>
+<td><strong>Handoff</strong></td>
+<td>专员做完交下一专员</td>
+</tr>
+</tbody></table>
+<p>要点：</p>
+<ol>
+<li><strong>Context Isolation</strong>（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-7-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E4%B8%8E-Agent">LLM 一 5.7</a>）：子任务 Trace 不要无限灌回主窗。</li>
+<li><strong>Handoff 必带</strong>（回链<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#4-Runtime-%E6%97%81%E8%B7%AF%E5%9D%91%EF%BC%88%E7%9F%AD%EF%BC%89">五 §4</a>）：Goal 摘要、已完成&#x2F;未完成、硬规则引用。</li>
+<li><strong>默认策略</strong>：单 Agent + Skill + 分层规划做稳，再考虑多 Agent——避免过早拆角色丢上下文。</li>
+</ol>
+<hr>
+<h2 id="5-Environment-扩展认名（半节）"><a href="#5-Environment-扩展认名（半节）" class="headerlink" title="5. Environment 扩展认名（半节）"></a>5. Environment 扩展认名（半节）</h2><p>除搜索、DB、HTTP 外，常见扩展：</p>
+<table>
+<thead>
+<tr>
+<th>形态</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Code Interpreter</strong></td>
+<td>执行代码片段；Observation 可很大</td>
+</tr>
+<tr>
+<td><strong>Browser &#x2F; Computer Use</strong></td>
+<td>UI 操作；Action Space 与风险面扩大</td>
+</tr>
+</tbody></table>
+<p>共性：权限档要上移；Tool Result 须裁剪再写回（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">五 §2</a>）；Injection 风险更高（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#1-%E6%94%BB%E5%87%BB%E9%9D%A2%EF%BC%9A%E8%B0%81%E5%9C%A8%E5%BE%80-Context-%E9%87%8C%E5%A1%9E%E3%80%8C%E5%81%87%E6%8C%87%E4%BB%A4%E3%80%8D">PE 四</a>）。</p>
+<hr>
+<h2 id="6-Hooks（认名半节）"><a href="#6-Hooks（认名半节）" class="headerlink" title="6. Hooks（认名半节）"></a>6. Hooks（认名半节）</h2><p>Runtime 在关键节点插入逻辑，<strong>不</strong>改 LLM 协议：</p>
+<table>
+<thead>
+<tr>
+<th>钩子</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>工具执行前</td>
+<td>参数校验、权限档判断</td>
+</tr>
+<tr>
+<td>压缩前</td>
+<td>校验不可摘要字段是否保留</td>
+</tr>
+<tr>
+<td>步数&#x2F;预算</td>
+<td>死循环检测、强制停止</td>
+</tr>
+</tbody></table>
+<p>字段级 API 与框架绑定留给 <strong>实现与框架</strong> 模块。</p>
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>Skill 与 Tool 各解决什么问题？加载 Skill 时 Context 发生什么变化？</li>
+<li>MCP Tools 与 Resources 差在哪？</li>
+<li>写文件应属哪一档？为何不能只靠 Prompt 禁止？</li>
+<li>何时用 Subagent，而不是再往 System 塞一个 Skill？</li>
+</ol>
+<hr>
+<h2 id="7-阶段收口：应能回答的-12-问"><a href="#7-阶段收口：应能回答的-12-问" class="headerlink" title="7. 阶段收口：应能回答的 12 问"></a>7. 阶段收口：应能回答的 12 问</h2><ol>
+<li>Agent 五件套各负责什么？（一）</li>
+<li>ReAct 与 Plan-and-Execute 如何选型？（二）</li>
+<li>记忆四层与 RAG 双挂法？（三）</li>
+<li>Task Success &#x2F; Tool Accuracy 如何定义？（四）</li>
+<li>Context 何时压缩？硬规则能否摘要？（五）</li>
+<li>Skill 最小结构有哪些字段？（三 §1.4）</li>
+<li>Skill 与 Tool、Template、RAG 各解决什么？（三认名 + 本篇 §1.1 复习）</li>
+<li>MCP 三件套如何映射到工程概念？</li>
+<li>自动&#x2F;确认&#x2F;禁止三档各举一例？</li>
+<li>Subagent 为何需要 Context 隔离？</li>
+<li>网页与 Tool Result 为何不能当 system？（PE 四）</li>
+<li>并行 Tool Call 对 State 有什么要求？（LLM 四 §7）</li>
+</ol>
+<p>答不上的回对应篇重读。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Skill</strong>：深化生命周期与编写评测；认名见（三）§1.4；≠ Tool。</p>
+<p><strong>MCP</strong>：外部能力总线；Tools&#x2F;Resources&#x2F;Prompts；执行仍走 Tool Calling 闭环。</p>
+<p><strong>权限沙箱</strong>：自动&#x2F;确认&#x2F;禁止三档 + 隔离；与 HITL、Injection 防御配合。</p>
+<p><strong>Subagent</strong>：委派 + Context 隔离；默认单 Agent + Skill 优先。</p>
+<p><strong>Environment 扩展</strong>：代码&#x2F;浏览器等放大风险与 Observation 体积。</p>
+<p><strong>Hooks</strong>：Runtime 扩展点；实现模块展开。</p>
+<p><strong>Agent 基础系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a>（本篇）</li>
+</ul>
+<p><strong>前置：</strong></p>
+<ul>
+<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LLM（一）～（四，含调用韧性）</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四，含 Injection）</span><br><span class="line">    ↓</span><br><span class="line">Agent（一）闭环 →（二）模式 →（三）记忆/Runtime（含 Skill 认名）</span><br><span class="line">    →（四）评测/Research →（五）工程坑 →（六）Skill 深化与架构</span><br><span class="line">    ↓</span><br><span class="line">下一模块：Agent 实现与框架编排</span><br></pre></td></tr></table></figure>
+
+<p>Agent 基础到此收口。下一步进入 <strong>实现与框架</strong>（工作流引擎、状态机、MCP&#x2F;Skill 落地、具体 SDK 等），在理论选型、排障清单与能力部件图之上把 L0–L2 做成可维护的工程系统。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/" rel="prev" title="AI-Agent工程学习-Agent基础(五)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Agent基础(五)
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

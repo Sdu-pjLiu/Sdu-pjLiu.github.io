@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Skills&#x2F;Tools 膨胀、Context 压缩时机、记忆故障模式与 Runtime 旁路坑；Skill 认名见（三）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Agent基础(五)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Skills&#x2F;Tools 膨胀、Context 压缩时机、记忆故障模式与 Runtime 旁路坑；Skill 认名见（三）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-16T07:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-16T08:25:56.067Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/","path":"2026/07/16/Agent工程学习-Agent基础-五/","title":"AI-Agent工程学习-Agent基础(五)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Agent基础(五) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%83%BD%E5%8A%9B%E8%86%A8%E8%83%80%EF%BC%88Tools%E3%80%81Skills%E3%80%81Procedural%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">1. 能力膨胀（Tools、Skills、Procedural）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E9%97%AE%E9%A2%98%E7%8E%B0%E8%B1%A1"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 问题现象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%88%86%E5%B1%82%EF%BC%9A%E5%A7%8B%E7%BB%88%E5%9C%A8%E7%AA%97-%E7%9B%AE%E5%BD%95-%E6%8C%89%E9%9C%80%E5%8A%A0%E8%BD%BD"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 分层：始终在窗 &#x2F; 目录 &#x2F; 按需加载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E6%B2%BB%E7%90%86%E7%AD%96%E7%95%A5"><span class="nav-number">2.3.</span> <span class="nav-text">1.3 治理策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E6%8F%8F%E8%BF%B0%E8%B4%A8%E9%87%8F%E4%B8%8E%E5%9B%9E%E5%BD%92"><span class="nav-number">2.4.</span> <span class="nav-text">1.4 描述质量与回归</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5-%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">2.5.</span> <span class="nav-text">1.5 自学检查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88"><span class="nav-number">3.</span> <span class="nav-text">2. Context 生命周期：何时压缩、压什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E4%B8%8E%E5%B7%B2%E5%AD%A6%E7%9A%84%E5%88%86%E5%B7%A5"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 与已学的分工</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 触发条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%8E%8B-%E4%B8%8D%E5%8E%8B%E6%B8%85%E5%8D%95"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 压 &#x2F; 不压清单</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E5%8E%8B%E7%BC%A9%E5%90%8E%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">3.4.</span> <span class="nav-text">2.4 压缩后一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E5%8E%8B%E7%BC%A9-vs-%E6%A3%80%E7%B4%A2-vs-%E9%9A%94%E7%A6%BB"><span class="nav-number">3.5.</span> <span class="nav-text">2.5 压缩 vs 检索 vs 隔离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">3.6.</span> <span class="nav-text">2.6 自学检查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%AE%B0%E5%BF%86%E6%95%85%E9%9A%9C%E6%89%8B%E5%86%8C"><span class="nav-number">4.</span> <span class="nav-text">3. 记忆故障手册</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%A4%B1%E8%B4%A5%E6%A8%A1%E5%BC%8F%E5%AD%97%E5%85%B8"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 失败模式字典</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%9C%80%E5%B0%8F%E5%86%99%E5%85%A5%E7%AD%96%E7%95%A5"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 最小写入策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E4%B8%8E%E8%AF%84%E6%B5%8B%E6%8C%82%E9%92%A9"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 与评测挂钩</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">4.4.</span> <span class="nav-text">3.4 自学检查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Runtime-%E6%97%81%E8%B7%AF%E5%9D%91%EF%BC%88%E7%9F%AD%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. Runtime 旁路坑（短）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%8E%92%E9%9A%9C%E5%86%B3%E7%AD%96%E6%A0%91"><span class="nav-number">6.</span> <span class="nav-text">5. 排障决策树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%98%B6%E6%AE%B5%E6%94%B6%E5%8F%A3%EF%BC%9A%E5%BA%94%E8%83%BD%E5%9B%9E%E7%AD%94%E7%9A%84-10-%E9%97%AE"><span class="nav-number">7.</span> <span class="nav-text">6. 阶段收口：应能回答的 10 问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5%EF%BC%88%E6%9C%AC%E7%AF%87%E7%BB%BC%E5%90%88%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">自学检查（本篇综合）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Agent基础(五) | 我的记录小站">
+      <meta itemprop="description" content="Skills&#x2F;Tools 膨胀、Context 压缩时机、记忆故障模式与 Runtime 旁路坑；Skill 认名见（三）。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Agent基础(五)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-16 15:00:00 / 修改时间：16:25:56" itemprop="dateCreated datePublished" datetime="2026-07-16T15:00:00+08:00">2026-07-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Skills/Tools 膨胀、Context 压缩时机、记忆故障模式与 Runtime 旁路坑；Skill 认名见（三）。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">Agent 基础（四）</a>：会选型、会评测之后，补三类高频工程坑。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>一～四已覆盖：闭环与 State、推理&#x2F;规划模式、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">记忆四层与 Runtime</a>、轨迹评测与 Research 地图。</p>
+<p>本篇只回答三件事：</p>
+<ol>
+<li><strong>能力目录</strong>（Tools &#x2F; Skills &#x2F; <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-%E8%AE%B0%E5%BF%86%EF%BC%9A%E5%B7%A5%E7%A8%8B%E5%9B%9B%E5%B1%82%EF%BC%88%E4%B8%8D%E6%98%AF%E6%A8%A1%E5%9E%8B%E8%B6%85%E8%83%BD%E5%8A%9B%EF%BC%89">Procedural</a>）膨胀时怎么管</li>
+<li><strong>Context 何时压缩</strong>、压什么、如何与 State 对齐</li>
+<li><strong>记忆写错 &#x2F; 读脏</strong>时有哪些失败模式</li>
+</ol>
+<p>回链：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/#7-%E5%85%B8%E5%9E%8B%E5%A4%B1%E8%B4%A5%E6%A8%A1%E5%BC%8F">失败模式（一）</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8">轨迹指标（四）</a>。</p>
+<hr>
+<h2 id="1-能力膨胀（Tools、Skills、Procedural）"><a href="#1-能力膨胀（Tools、Skills、Procedural）" class="headerlink" title="1. 能力膨胀（Tools、Skills、Procedural）"></a>1. 能力膨胀（Tools、Skills、Procedural）</h2><p><strong>Skill 认名</strong>见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">（三）§1.4</a>；结构深化与 MCP 见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#1-Skill-%E6%B7%B1%E5%8C%96%E4%B8%8E%E8%BE%B9%E7%95%8C">（六）§1</a>。本篇只讲目录过大时如何治理。</p>
+<p>产品侧常叫 Skills；协议侧是 Tools；工程层落在 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-%E8%AE%B0%E5%BF%86%EF%BC%9A%E5%B7%A5%E7%A8%8B%E5%9B%9B%E5%B1%82%EF%BC%88%E4%B8%8D%E6%98%AF%E6%A8%A1%E5%9E%8B%E8%B6%85%E8%83%BD%E5%8A%9B%EF%BC%89">Procedural</a>。三者膨胀时症状相同。</p>
+<h3 id="1-1-问题现象"><a href="#1-1-问题现象" class="headerlink" title="1.1 问题现象"></a>1.1 问题现象</h3><ol>
+<li>选型准确率下降：无关工具被反复点名。</li>
+<li>System &#x2F; tools 列表本身占满窗，挤掉 Goal 与硬规则（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-4-Context-%E5%A2%9E%E5%A4%A7%E7%9A%84%E9%97%AE%E9%A2%98">Lost in the Middle</a>）。</li>
+<li>描述相似 → 参数幻觉、「假调用」增多。</li>
+</ol>
+<h3 id="1-2-分层：始终在窗-目录-按需加载"><a href="#1-2-分层：始终在窗-目录-按需加载" class="headerlink" title="1.2 分层：始终在窗 &#x2F; 目录 &#x2F; 按需加载"></a>1.2 分层：始终在窗 &#x2F; 目录 &#x2F; 按需加载</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">L0 始终在窗：硬规则 + 本任务 Goal + 小核心工具集</span><br><span class="line">L1 目录摘要：技能/工具「名 + 一句何时用」（可检索）</span><br><span class="line">L2 按需加载：选中后才注入完整 Skill **body**（步骤正文，见[三 §1.4](/2026/07/15/Agent工程学习-Agent基础-三/#1-4-Skill-认名（Procedural-的产品形态）)）/ 细 Schema</span><br></pre></td></tr></table></figure>
+
+<p>原则：<strong>目录可以大，同时可见的 Action Space 必须小</strong>。L0 建议控制在少量核心工具；其余走 L1→L2。</p>
+<h3 id="1-3-治理策略"><a href="#1-3-治理策略" class="headerlink" title="1.3 治理策略"></a>1.3 治理策略</h3><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>适用</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>按任务类型裁剪白名单</td>
+<td>任务类型清晰</td>
+<td>要维护路由表</td>
+</tr>
+<tr>
+<td>元工具（如 find_skill &#x2F; list_tools）</td>
+<td>技能库大</td>
+<td>多一轮；需防空转</td>
+</tr>
+<tr>
+<td>Progressive disclosure（先目录后全文）</td>
+<td>Skill 类资产多</td>
+<td>描述「何时用&#x2F;不用」必须写清</td>
+</tr>
+<tr>
+<td>拆专员 &#x2F; Handoff</td>
+<td>领域互斥</td>
+<td>交接触上下文（见 §4）</td>
+</tr>
+</tbody></table>
+<h3 id="1-4-描述质量与回归"><a href="#1-4-描述质量与回归" class="headerlink" title="1.4 描述质量与回归"></a>1.4 描述质量与回归</h3><p>每条 Tool &#x2F; Skill 至少写清：<strong>何时用 &#x2F; 何时不用</strong>。Schema 糊 → 选错或参数幻觉；执行前仍做 Validation（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#4-%E5%B7%A5%E5%85%B7%E6%B2%BB%E7%90%86%EF%BC%88%E7%90%86%E8%AE%BA%E7%BA%A7%EF%BC%89">工具治理（三）</a>）。</p>
+<p>加技能后要用轨迹指标回归是否变差（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8">（四）</a>）：</p>
+<ul>
+<li><strong>Tool Accuracy（选型）</strong> 是否掉点</li>
+<li><strong>Unnecessary Tool Calls</strong> 是否上升</li>
+</ul>
+<h3 id="1-5-自学检查"><a href="#1-5-自学检查" class="headerlink" title="1.5 自学检查"></a>1.5 自学检查</h3><ol>
+<li>为何「目录可以很大」不等于「全部塞进本次 tools 列表」？</li>
+<li>加了一批 Skills 后，优先看哪两个指标？</li>
+</ol>
+<hr>
+<h2 id="2-Context-生命周期：何时压缩、压什么"><a href="#2-Context-生命周期：何时压缩、压什么" class="headerlink" title="2. Context 生命周期：何时压缩、压什么"></a>2. Context 生命周期：何时压缩、压什么</h2><h3 id="2-1-与已学的分工"><a href="#2-1-与已学的分工" class="headerlink" title="2.1 与已学的分工"></a>2.1 与已学的分工</h3><table>
+<thead>
+<tr>
+<th>已学</th>
+<th>负责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-7-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E4%B8%8E-Agent">LLM 一 · 5.7</a></td>
+<td>压缩 &#x2F; 摘要 &#x2F; 滑动窗 &#x2F; 检索（手法认名）</td>
+</tr>
+<tr>
+<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/#4-%E7%BB%84%E8%A3%85%E9%A1%BA%E5%BA%8F%E4%B8%8E%E5%86%B2%E7%AA%81%E4%BC%98%E5%85%88%E7%BA%A7">PE 一 · 4.3</a></td>
+<td>预算不够时先砍什么</td>
+</tr>
+<tr>
+<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#2-2-Memory-Compression">（三）· 2.2</a></td>
+<td>硬规则不可摘要</td>
+</tr>
+</tbody></table>
+<p>本篇补：<strong>触发条件</strong> + 与 Working state &#x2F; Checkpoint 对齐。</p>
+<h3 id="2-2-触发条件"><a href="#2-2-触发条件" class="headerlink" title="2.2 触发条件"></a>2.2 触发条件</h3><table>
+<thead>
+<tr>
+<th>触发</th>
+<th>示例阈值（可调）</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>窗口水位</td>
+<td>输入占用 &gt; 60%～70% 预算</td>
+<td>压缩冷 Trace &#x2F; 旧 Observation</td>
+</tr>
+<tr>
+<td>步数 &#x2F; 阶段边界</td>
+<td>每 K 步或 Planner 阶段结束</td>
+<td>阶段摘要 + 更新 Working state</td>
+</tr>
+<tr>
+<td>单次 Observation 过大</td>
+<td>Tool Result 超 Token 阈值</td>
+<td><strong>先裁剪再写回</strong></td>
+</tr>
+<tr>
+<td>阶段切换</td>
+<td>搜索 → 分析 → 成稿</td>
+<td>隔离：成稿不带原始网页全文</td>
+</tr>
+<tr>
+<td>预算告急</td>
+<td>剩余 steps &#x2F; tokens 低于阈值</td>
+<td>强制压缩 + 禁止新开大检索</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-压-不压清单"><a href="#2-3-压-不压清单" class="headerlink" title="2.3 压 &#x2F; 不压清单"></a>2.3 压 &#x2F; 不压清单</h3><table>
+<thead>
+<tr>
+<th>必须保留（全文或结构化字段）</th>
+<th>可压成摘要</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Goal、验收标准、安全&#x2F;权限硬规则</td>
+<td>冗长 Thought</td>
+</tr>
+<tr>
+<td>工具白名单要点、未完成副作用记录</td>
+<td>早期成功的 Tool 原文</td>
+</tr>
+<tr>
+<td>当前 open[] &#x2F; 关键实体 ID</td>
+<td>重复历史轮次</td>
+</tr>
+<tr>
+<td>Checkpoint 恢复所需字段</td>
+<td>已完成节点的详细 Observation</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-压缩后一致性"><a href="#2-4-压缩后一致性" class="headerlink" title="2.4 压缩后一致性"></a>2.4 压缩后一致性</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Compress(messages)</span><br><span class="line">  → 同步更新 Working state（Goal / open / done / budget）</span><br><span class="line">  → 写一条「压缩事件」进 Trace（可审计）</span><br><span class="line">  → 再进入下一轮 Reason</span><br></pre></td></tr></table></figure>
+
+<p>风险：摘要丢掉禁止事项 → 行为漂移（回链<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#2-2-Memory-Compression">（三）</a>）。</p>
+<p>旁注：中途无差别重写大段历史，可能影响 Prompt &#x2F; KV Cache 命中；长任务优先 <strong>追加摘要 + 滑动丢掉原文</strong>，少做全量重写。</p>
+<h3 id="2-5-压缩-vs-检索-vs-隔离"><a href="#2-5-压缩-vs-检索-vs-隔离" class="headerlink" title="2.5 压缩 vs 检索 vs 隔离"></a>2.5 压缩 vs 检索 vs 隔离</h3><table>
+<thead>
+<tr>
+<th>手段</th>
+<th>何时优先</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sliding &#x2F; 摘要压缩</td>
+<td>单会话轨迹变长</td>
+</tr>
+<tr>
+<td>Retrieval 再注入</td>
+<td>事实在外存，不必常驻</td>
+</tr>
+<tr>
+<td>Context Isolation</td>
+<td>多阶段 &#x2F; 多角色，避免串味</td>
+</tr>
+</tbody></table>
+<h3 id="2-6-自学检查"><a href="#2-6-自学检查" class="headerlink" title="2.6 自学检查"></a>2.6 自学检查</h3><ol>
+<li>列出至少三种应触发压缩的条件。</li>
+<li>压缩后若不同步 Working state，续跑时最容易丢什么？</li>
+</ol>
+<hr>
+<h2 id="3-记忆故障手册"><a href="#3-记忆故障手册" class="headerlink" title="3. 记忆故障手册"></a>3. 记忆故障手册</h2><p>分层定义回链<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-%E8%AE%B0%E5%BF%86%EF%BC%9A%E5%B7%A5%E7%A8%8B%E5%9B%9B%E5%B1%82%EF%BC%88%E4%B8%8D%E6%98%AF%E6%A8%A1%E5%9E%8B%E8%B6%85%E8%83%BD%E5%8A%9B%EF%BC%89">（三）§1</a>，此处只谈失败模式。</p>
+<h3 id="3-1-失败模式字典"><a href="#3-1-失败模式字典" class="headerlink" title="3.1 失败模式字典"></a>3.1 失败模式字典</h3><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>症状</th>
+<th>防护</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>写污染</strong></td>
+<td>幻觉当事实入库，后续越用越错</td>
+<td>写入需 Observation &#x2F; 用户确认；高风险字段 HITL</td>
+</tr>
+<tr>
+<td><strong>脏读 &#x2F; 过期</strong></td>
+<td>旧偏好或旧事实盖住新结论</td>
+<td>时间戳 + 来源优先级；冲突显式规则</td>
+</tr>
+<tr>
+<td><strong>检索噪声</strong></td>
+<td>Top-K 挤掉当前 Instruction</td>
+<td>注入限额；低相关先砍（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/#4-3-Context-%E8%86%A8%E8%83%80%E6%97%B6%E5%85%88%E7%A0%8D%E4%BB%80%E4%B9%88">PE 一 4.3</a>）</td>
+</tr>
+<tr>
+<td><strong>摘要漂移</strong></td>
+<td>压缩丢掉硬约束</td>
+<td>不可摘要字段；压缩后校验清单</td>
+</tr>
+<tr>
+<td><strong>Checkpoint 误用</strong></td>
+<td>用故事日志当运行态续跑</td>
+<td>Checkpoint &#x3D; 可恢复 state；Trace &#x3D; 复盘</td>
+</tr>
+<tr>
+<td><strong>偏好越权</strong></td>
+<td>「用户说过」突破安全边界</td>
+<td>偏好不得覆盖 system 硬规则</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-最小写入策略"><a href="#3-2-最小写入策略" class="headerlink" title="3.2 最小写入策略"></a>3.2 最小写入策略</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">候选记忆</span><br><span class="line">  → 是否有 Observation / 用户确认支撑？</span><br><span class="line">  → 字段级权限（事实 / 偏好 / 流程）</span><br><span class="line">  → 写入外存或仅会话</span><br><span class="line">  → 冲突检测</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-与评测挂钩"><a href="#3-3-与评测挂钩" class="headerlink" title="3.3 与评测挂钩"></a>3.3 与评测挂钩</h3><p><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8">Hallucination Rate（四）</a> 可归因：未检索 &#x2F; 检索错 &#x2F; <strong>记忆脏</strong>。跨会话任务宜固定「污染记忆」fixture 做回归。</p>
+<h3 id="3-4-自学检查"><a href="#3-4-自学检查" class="headerlink" title="3.4 自学检查"></a>3.4 自学检查</h3><ol>
+<li>写污染与脏读差在哪一环？</li>
+<li>为何偏好字段不能覆盖安全硬规则？</li>
+</ol>
+<hr>
+<h2 id="4-Runtime-旁路坑（短）"><a href="#4-Runtime-旁路坑（短）" class="headerlink" title="4. Runtime 旁路坑（短）"></a>4. Runtime 旁路坑（短）</h2><p>与前三节咬合的最小门禁（细节回链<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/#5-3-%E5%81%9C%E6%AD%A2%E6%9D%A1%E4%BB%B6">（一）停止条件</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">（三）Runtime</a>）：</p>
+<ol>
+<li><strong>工具死循环</strong>：同一 tool + 同参连续 N 次 → 打断并换策略。</li>
+<li><strong>假完成</strong>：无 Observation 支撑禁止标 Success。</li>
+<li><strong>澄清循环</strong>：Ask User 次数设上限，超限则停止或降级。</li>
+<li><strong>重规划上限</strong>：避免每步推翻地图（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#2-4-Dynamic-Planning%EF%BC%88%E9%87%8D%E8%A7%84%E5%88%92%EF%BC%89">（二）Dynamic Planning</a>）。</li>
+<li><strong>Handoff 必带</strong>：Goal 摘要 + 已完成&#x2F;未完成 + 硬规则引用（多 Agent 认名级）。</li>
+</ol>
+<hr>
+<h2 id="5-排障决策树"><a href="#5-排障决策树" class="headerlink" title="5. 排障决策树"></a>5. 排障决策树</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">行为不对</span><br><span class="line">  ├─ 选错工具/技能？ → §1 缩小 Action Space / 按需加载</span><br><span class="line">  ├─ 像忘了约束？ → §2 查是否被压缩或 Lost in the Middle</span><br><span class="line">  ├─ 像记错事实？ → §3 查写入依据与冲突规则</span><br><span class="line">  └─ 空转/假完成？ → §4 +（一）停止条件 /（四）轨迹指标</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-阶段收口：应能回答的-10-问"><a href="#6-阶段收口：应能回答的-10-问" class="headerlink" title="6. 阶段收口：应能回答的 10 问"></a>6. 阶段收口：应能回答的 10 问</h2><ol>
+<li>Agent 五件套各负责什么？缺 Runtime 会怎样？（一）</li>
+<li>ReAct 与 Plan-and-Execute 如何选型？（二）</li>
+<li>记忆四层分别解决什么？RAG 是工具还是预注入？（三）</li>
+<li>Task Success &#x2F; Hallucination &#x2F; Tool Accuracy 如何落到可计算定义？（四）</li>
+<li>Research Agent 默认组合是什么？（四）</li>
+<li>能力目录很大时，L0 &#x2F; L1 &#x2F; L2 各放什么？</li>
+<li>列出三种 Context 压缩触发条件；哪些字段不可摘要？</li>
+<li>压缩后为何必须同步 Working state？</li>
+<li>写污染与 Checkpoint 误用如何防护？</li>
+<li>排障时「选错工具 &#x2F; 忘约束 &#x2F; 记错事实」分别先查哪一节？</li>
+</ol>
+<p>答不上的回对应篇重读。</p>
+<hr>
+<h2 id="自学检查（本篇综合）"><a href="#自学检查（本篇综合）" class="headerlink" title="自学检查（本篇综合）"></a>自学检查（本篇综合）</h2><ol>
+<li>用一句话区分：裁剪 Action Space vs Progressive disclosure。</li>
+<li>单次 Tool Result 过大时，应先压缩历史还是先裁剪 Result？</li>
+<li>加 Skills 后 Tool Accuracy 下降，优先改描述还是继续往 System 塞全文？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>能力膨胀</strong>：目录可大，同时可见工具集要小；L0 核心 + L1 目录 + L2 按需；用选型与无效调用指标回归。</p>
+<p><strong>Context 生命周期</strong>：按水位 &#x2F; 步数 &#x2F; Result 大小 &#x2F; 阶段切换触发；硬规则与运行态字段不压；压缩后同步 State 并记 Trace。</p>
+<p><strong>记忆故障</strong>：防写污染、脏读、噪声、摘要漂移、Checkpoint 误用、偏好越权；写入要有依据。</p>
+<p><strong>Runtime 旁路</strong>：死循环、假完成、澄清与重规划上限、Handoff 带齐字段。</p>
+<p><strong>Agent 基础系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a>（本篇）</li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a></li>
+</ul>
+<p><strong>前置：</strong></p>
+<ul>
+<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Agent 基础（一）～（四）：闭环、模式、记忆/Runtime、评测</span><br><span class="line">    ↓</span><br><span class="line">（五）工程坑：能力膨胀、压缩、记忆故障</span><br><span class="line">    ↓</span><br><span class="line">（六）能力组件与安全边界</span><br></pre></td></tr></table></figure>
+
+<p>工程坑手册到此收口。下一篇：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">Agent 基础（六）· 能力组件与安全边界</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/" rel="prev" title="AI-Agent工程学习-Agent基础(四)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Agent基础(四)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/" rel="next" title="AI-Agent工程学习-Agent基础(六)">
+                  AI-Agent工程学习-Agent基础(六) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
