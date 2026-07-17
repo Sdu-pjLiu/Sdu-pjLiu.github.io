@@ -27,7 +27,7 @@
 <meta property="og:description" content="Skills&#x2F;Tools 膨胀、Context 压缩时机、记忆故障模式与 Runtime 旁路坑；Skill 认名见（三）。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T07:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-16T08:25:56.067Z">
+<meta property="article:modified_time" content="2026-07-17T04:27:20.661Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -213,9 +213,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2026-07-16 15:00:00 / 修改时间：16:25:56" itemprop="dateCreated datePublished" datetime="2026-07-16T15:00:00+08:00">2026-07-16</time>
+      <time title="创建时间：2026-07-16 15:00:00" itemprop="dateCreated datePublished" datetime="2026-07-16T15:00:00+08:00">2026-07-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-17 12:27:20" itemprop="dateModified" datetime="2026-07-17T12:27:20+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -287,7 +293,7 @@
 <td>交接触上下文（见 §4）</td>
 </tr>
 </tbody></table>
-<h3 id="1-4-描述质量与回归"><a href="#1-4-描述质量与回归" class="headerlink" title="1.4 描述质量与回归"></a>1.4 描述质量与回归</h3><p>每条 Tool &#x2F; Skill 至少写清：<strong>何时用 &#x2F; 何时不用</strong>。Schema 糊 → 选错或参数幻觉；执行前仍做 Validation（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#4-%E5%B7%A5%E5%85%B7%E6%B2%BB%E7%90%86%EF%BC%88%E7%90%86%E8%AE%BA%E7%BA%A7%EF%BC%89">工具治理（三）</a>）。</p>
+<h3 id="1-4-描述质量与回归"><a href="#1-4-描述质量与回归" class="headerlink" title="1.4 描述质量与回归"></a>1.4 描述质量与回归</h3><p>每条 Tool &#x2F; Skill 至少写清：<strong>何时用 &#x2F; 何时不用</strong>。Schema 描述含糊 → 选错工具或参数幻觉；执行前仍做 Validation（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#4-%E5%B7%A5%E5%85%B7%E6%B2%BB%E7%90%86%EF%BC%88%E7%90%86%E8%AE%BA%E7%BA%A7%EF%BC%89">工具治理（三）</a>）。</p>
 <p>加技能后要用轨迹指标回归是否变差（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8">（四）</a>）：</p>
 <ul>
 <li><strong>Tool Accuracy（选型）</strong> 是否掉点</li>
@@ -462,6 +468,7 @@
 <li><strong>重规划上限</strong>：避免每步推翻地图（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#2-4-Dynamic-Planning%EF%BC%88%E9%87%8D%E8%A7%84%E5%88%92%EF%BC%89">（二）Dynamic Planning</a>）。</li>
 <li><strong>Handoff 必带</strong>：Goal 摘要 + 已完成&#x2F;未完成 + 硬规则引用（多 Agent 认名级）。</li>
 </ol>
+<p>正向设计（可机检合同、验证门、优雅收尾）见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering（一）</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/">（二）</a>。</p>
 <hr>
 <h2 id="5-排障决策树"><a href="#5-排障决策树" class="headerlink" title="5. 排障决策树"></a>5. 排障决策树</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">行为不对</span><br><span class="line">  ├─ 选错工具/技能？ → §1 缩小 Action Space / 按需加载</span><br><span class="line">  ├─ 像忘了约束？ → §2 查是否被压缩或 Lost in the Middle</span><br><span class="line">  ├─ 像记错事实？ → §3 查写入依据与冲突规则</span><br><span class="line">  └─ 空转/假完成？ → §4 +（一）停止条件 /（四）轨迹指标</span><br></pre></td></tr></table></figure>
 
@@ -504,7 +511,7 @@
 <li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
 <li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
 </ul>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Agent 基础（一）～（四）：闭环、模式、记忆/Runtime、评测</span><br><span class="line">    ↓</span><br><span class="line">（五）工程坑：能力膨胀、压缩、记忆故障</span><br><span class="line">    ↓</span><br><span class="line">（六）能力组件与安全边界</span><br></pre></td></tr></table></figure>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Agent 基础（一）～（四）：闭环、模式、记忆/Runtime、评测</span><br><span class="line">    ↓</span><br><span class="line">（五）工程坑：能力膨胀、压缩、记忆故障</span><br><span class="line">    ↓</span><br><span class="line">（六）能力组件与安全边界</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）～（三）</span><br></pre></td></tr></table></figure>
 
 <p>工程坑手册到此收口。下一篇：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">Agent 基础（六）· 能力组件与安全边界</a>。</p>
 

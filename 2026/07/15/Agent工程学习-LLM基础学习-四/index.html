@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -369,7 +369,7 @@
 </ol>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">tools = [</span><br><span class="line">  &#123;</span><br><span class="line">    name: &quot;search_docs&quot;,</span><br><span class="line">    description: &quot;在知识库中按关键词检索&quot;,</span><br><span class="line">    parameters: &#123; … JSON Schema … &#125;</span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
 
-<p>Schema 写糊（描述含糊、缺必填、同名冲突）→ 选错工具或参数幻觉（见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89">第三篇</a>）。</p>
+<p>Schema 写得含糊（描述不清、缺必填、同名冲突）→ 选错工具或参数幻觉（见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89">第三篇</a>）。</p>
 <h3 id="6-3-Tool-Invocation（工具调用意图）"><a href="#6-3-Tool-Invocation（工具调用意图）" class="headerlink" title="6.3 Tool Invocation（工具调用意图）"></a>6.3 Tool Invocation（工具调用意图）</h3><p><strong>Tool Invocation</strong> &#x3D; 模型在某次 Completion 中返回的「请执行：工具名 + 参数」。</p>
 <p>注意：</p>
 <ol>

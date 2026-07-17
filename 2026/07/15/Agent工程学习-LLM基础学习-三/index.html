@@ -136,7 +136,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">1. 消息角色（Message Roles）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%8E-Context-Window-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 与 Context Window 的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E8%AE%AD%E7%BB%83%E9%98%B6%E6%AE%B5%E8%AE%A4%E5%90%8D%EF%BC%9APretrain-SFT-RLHF"><span class="nav-number">2.</span> <span class="nav-text">2. 训练阶段认名：Pretrain &#x2F; SFT &#x2F; RLHF</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Pretrain%EF%BC%88%E9%A2%84%E8%AE%AD%E7%BB%83%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Pretrain（预训练）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-SFT%EF%BC%88Supervised-Fine-Tuning%EF%BC%8C%E7%9B%91%E7%9D%A3%E5%BE%AE%E8%B0%83%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 SFT（Supervised Fine-Tuning，监督微调）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-RLHF-Alignment%EF%BC%88%E5%AF%B9%E9%BD%90%EF%BC%8C%E8%AE%A4%E5%90%8D%E5%8D%B3%E5%8F%AF%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 RLHF &#x2F; Alignment（对齐，认名即可）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Instruction-Following-%E4%B8%8E-Hallucination"><span class="nav-number">3.</span> <span class="nav-text">3. Instruction Following 与 Hallucination</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Instruction-Following%EF%BC%88%E6%8C%87%E4%BB%A4%E9%81%B5%E5%BE%AA%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Instruction Following（指令遵循）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 Hallucination（幻觉）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E4%B8%8E%E7%BA%A6%E6%9D%9F%E8%A7%A3%E7%A0%81%EF%BC%88%E6%80%BB%E8%A7%88%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">4. 结构化输出与约束解码（总览）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%BB%B6%E8%BF%9F%E4%B8%8E%E5%90%9E%E5%90%90%E7%9B%B8%E5%85%B3%E5%90%8D%E8%AF%8D%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">5. 延迟与吞吐相关名词（可选）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%88%E6%A8%A1%E5%9E%8B%E4%BE%A7%E6%94%B6%E5%8F%A3%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">总结（模型侧收口）</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">1. 消息角色（Message Roles）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%8E-Context-Window-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 与 Context Window 的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E8%AE%AD%E7%BB%83%E9%98%B6%E6%AE%B5%E8%AE%A4%E5%90%8D%EF%BC%9APretrain-SFT-RLHF"><span class="nav-number">2.</span> <span class="nav-text">2. 训练阶段认名：Pretrain &#x2F; SFT &#x2F; RLHF</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Pretrain%EF%BC%88%E9%A2%84%E8%AE%AD%E7%BB%83%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Pretrain（预训练）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-SFT%EF%BC%88Supervised-Fine-Tuning%EF%BC%8C%E7%9B%91%E7%9D%A3%E5%BE%AE%E8%B0%83%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 SFT（Supervised Fine-Tuning，监督微调）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-RLHF-Alignment%EF%BC%88%E5%AF%B9%E9%BD%90%EF%BC%8C%E8%AE%A4%E5%90%8D%E5%8D%B3%E5%8F%AF%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 RLHF &#x2F; Alignment（对齐，认名即可）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Instruction-Following-%E4%B8%8E-Hallucination"><span class="nav-number">3.</span> <span class="nav-text">3. Instruction Following 与 Hallucination</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Instruction-Following%EF%BC%88%E6%8C%87%E4%BB%A4%E9%81%B5%E5%BE%AA%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Instruction Following（指令遵循）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 Hallucination（幻觉）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E4%B8%8E%E7%BA%A6%E6%9D%9F%E8%A7%A3%E7%A0%81%EF%BC%88%E6%80%BB%E8%A7%88%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">4. 结构化输出与约束解码（总览）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%BB%B6%E8%BF%9F%E4%B8%8E%E5%90%9E%E5%90%90%E7%9B%B8%E5%85%B3%E5%90%8D%E8%AF%8D%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">5. 延迟与吞吐相关名词（可选）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%83%A8%E7%BD%B2%E4%B8%8E%E6%88%90%E6%9C%AC%E8%AE%A4%E5%90%8D%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">6. 部署与成本认名（可选）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%88%E6%A8%A1%E5%9E%8B%E4%BE%A7%E6%94%B6%E5%8F%A3%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">总结（模型侧收口）</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">30</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -321,7 +321,7 @@
 </tr>
 </tbody></table>
 <hr>
-<h2 id="4-结构化输出与约束解码（总览）"><a href="#4-结构化输出与约束解码（总览）" class="headerlink" title="4. 结构化输出与约束解码（总览）"></a>4. 结构化输出与约束解码（总览）</h2><p>Agent 经常要模型输出 <strong>可解析的结构</strong>（JSON、XML、特定 schema），而不是散文。约束由软到硬大致三层：</p>
+<h2 id="4-结构化输出与约束解码（总览）"><a href="#4-结构化输出与约束解码（总览）" class="headerlink" title="4. 结构化输出与约束解码（总览）"></a>4. 结构化输出与约束解码（总览）</h2><p>Agent 经常要模型输出 <strong>可解析的结构</strong>（JSON、XML、特定 schema），而不是无固定字段的自由文本。约束由软到硬大致三层：</p>
 <ol>
 <li><strong>Prompt 约束</strong>：在 system &#x2F; user 里写清格式并给示例，配合低温；偶发漏括号、多废话。</li>
 <li><strong>JSON Mode &#x2F; response_format</strong>：API 要求输出合法 JSON；仍可能不符合业务字段。</li>
@@ -357,6 +357,29 @@
 </tbody></table>
 <p>Agent 体感：工具多、轮次多 → 多次 Inference 叠加；历史长 → Prefill &#x2F; TTFT 变差。优化仍优先减 Context、减轮次，而不是先调采样参数。</p>
 <hr>
+<h2 id="6-部署与成本认名（可选）"><a href="#6-部署与成本认名（可选）" class="headerlink" title="6. 部署与成本认名（可选）"></a>6. 部署与成本认名（可选）</h2><p>读模型卡、选部署形态或控 Agent 费用时常见（认名即可，不展开训练）：</p>
+<table>
+<thead>
+<tr>
+<th>名词</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>MoE（Mixture of Experts）</strong></td>
+<td>按 Token 路由到部分「专家」子网络；影响延迟与计费体感，不等于「参数量越大一定越慢」。</td>
+</tr>
+<tr>
+<td><strong>量化（Quantization）</strong></td>
+<td>用更低精度存算权重（如 INT8&#x2F;FP8）；降显存与成本，可能损精度。</td>
+</tr>
+<tr>
+<td><strong>模型路由 &#x2F; 级联</strong></td>
+<td>小模型分流简单请求，大模型攻坚难例；与 Agent <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-1-Budget">Budget</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/#3-%E5%8F%8C%E5%B1%82%E9%A2%84%E7%AE%97%EF%BC%9A%E7%A1%AC%E9%A1%B6%E4%B8%8E%E8%BD%AF%E4%BB%BB%E5%8A%A1%E9%A2%84%E7%AE%97">Loop Engineering 双层预算</a> 同一类成本治理。</td>
+</tr>
+</tbody></table>
+<p>调用侧已学：<strong>Prompt Caching（前缀缓存）</strong>、<strong>API 限流与重试</strong>见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#7-%E8%B0%83%E7%94%A8%E9%9F%A7%E6%80%A7%EF%BC%88Agent-%E7%9B%B8%E5%85%B3%EF%BC%89">第四篇 §7</a>。</p>
+<hr>
 <h2 id="总结（模型侧收口）"><a href="#总结（模型侧收口）" class="headerlink" title="总结（模型侧收口）"></a>总结（模型侧收口）</h2><p><strong>本篇（模型 &#x2F; 产品认名）：</strong></p>
 <ul>
 <li><strong>消息角色</strong>：system &#x2F; user &#x2F; assistant 构成 Chat Context；tool 角色见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#2-Message-Role%EF%BC%88%E5%A4%8D%E4%B9%A0%E4%B8%8E%E6%89%A9%E5%B1%95%EF%BC%89">第四篇</a>。</li>
@@ -364,6 +387,7 @@
 <li><strong>Instruction Following &#x2F; Hallucination</strong>：听指令 vs 内容是否属实。</li>
 <li><strong>结构化输出</strong>：仅总览软→硬三层；细节见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-Structured-Output%EF%BC%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89">第四篇</a>。</li>
 <li><strong>TTFT &#x2F; Prefill &#x2F; Decode &#x2F; Throughput</strong>：用来读懂「为什么慢」。</li>
+<li><strong>MoE &#x2F; 量化 &#x2F; 模型路由</strong>：部署与成本认名；调用韧性见第四篇。</li>
 </ul>
 <p><strong>系列主链：</strong></p>
 <ul>
@@ -372,7 +396,7 @@
 <li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）模型侧认名</a>（本篇）</li>
 <li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）调用侧：Chat API &#x2F; Streaming &#x2F; Structured &#x2F; Tool 闭环</a></li>
 </ul>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">（一）文本 → Tokenization → Embedding → Transformer</span><br><span class="line">（二）→ Logits → 采样 → Token；KV Cache；停止条件</span><br><span class="line">（三）消息角色；训练阶段；指令遵循与幻觉；结构化总览；延迟</span><br><span class="line">（四）Chat Completion → Structured Output → Tool Calling 闭环</span><br></pre></td></tr></table></figure>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">（一）文本 → Tokenization → Embedding → Transformer</span><br><span class="line">（二）→ Logits → 采样 → Token；KV Cache；停止条件</span><br><span class="line">（三）消息角色；训练阶段；指令遵循与幻觉；结构化总览；延迟；部署/成本认名</span><br><span class="line">（四）Chat Completion → Structured Output → Tool Calling 闭环</span><br></pre></td></tr></table></figure>
 
 <p>到这里，<strong>模型侧名词级认名</strong>可以收口。下一步读<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>：把消息列表真正送进 Chat Completion，并学会结构化输出与 Tool Calling 全闭环。工具闭环与 Prompt 工程之后，进入 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）</a>（Loop、规划、记忆与评测）。</p>
 
