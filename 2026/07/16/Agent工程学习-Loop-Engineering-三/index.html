@@ -27,7 +27,7 @@
 <meta property="og:description" content="Loop 反模式、与 Agent 组件拼装、轨迹指标回归、实践阶梯；学习路径收口。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T14:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T07:27:36.433Z">
+<meta property="article:modified_time" content="2026-07-17T11:04:49.980Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -135,7 +135,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8F%8D%E6%A8%A1%E5%BC%8F%E5%AD%97%E5%85%B8"><span class="nav-number">1.</span> <span class="nav-text">1. 反模式字典</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%8E-Agent-%E7%BB%84%E4%BB%B6%E6%8B%BC%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">2. 与 Agent 组件拼装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%94%A8%E8%BD%A8%E8%BF%B9%E6%8C%87%E6%A0%87%E5%9B%9E%E5%BD%92-Loop"><span class="nav-number">3.</span> <span class="nav-text">3. 用轨迹指标回归 Loop</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">4.</span> <span class="nav-text">4. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E9%98%B6%E6%AE%B5%E6%94%B6%E5%8F%A3%EF%BC%9A%E5%BA%94%E8%83%BD%E5%9B%9E%E7%AD%94%E7%9A%84-12-%E9%97%AE"><span class="nav-number">5.</span> <span class="nav-text">5. 阶段收口：应能回答的 12 问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5%EF%BC%88%E6%9C%AC%E7%AF%87%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">自学检查（本篇）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8F%8D%E6%A8%A1%E5%BC%8F%E5%AD%97%E5%85%B8"><span class="nav-number">1.</span> <span class="nav-text">1. 反模式字典</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%8E-Agent-%E7%BB%84%E4%BB%B6%E6%8B%BC%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">2. 与 Agent 组件拼装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%94%A8%E8%BD%A8%E8%BF%B9%E6%8C%87%E6%A0%87%E5%9B%9E%E5%BD%92-Loop"><span class="nav-number">3.</span> <span class="nav-text">3. 用轨迹指标回归 Loop</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">4.</span> <span class="nav-text">4. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">5.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -158,7 +158,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -221,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 15:27:36" itemprop="dateModified" datetime="2026-07-17T15:27:36+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-17 19:04:49" itemprop="dateModified" datetime="2026-07-17T19:04:49+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -422,28 +422,7 @@
 </tbody></table>
 <p>Research &#x2F; 编码 Agent 都适用同一阶梯：先有客观门，再谈复杂规划。</p>
 <hr>
-<h2 id="5-阶段收口：应能回答的-12-问"><a href="#5-阶段收口：应能回答的-12-问" class="headerlink" title="5. 阶段收口：应能回答的 12 问"></a>5. 阶段收口：应能回答的 12 问</h2><ol>
-<li>LE 与 Agent（一）Loop 语义差在哪？</li>
-<li>好 Contract 至少具备哪三态？</li>
-<li>验证门信任梯度是什么？</li>
-<li>为何 Checker 宜只读？</li>
-<li>内环 &#x2F; 验证环 &#x2F; 外环各管什么？</li>
-<li>硬顶与软任务预算如何配合？</li>
-<li>压缩后为何要 forward remaining？</li>
-<li>优雅收尾最少留下什么？</li>
-<li>无进展三种出路？</li>
-<li>列出三种 Loop 反模式及改法。</li>
-<li>假完成率如何接到 Runtime 门禁？</li>
-<li>L0→L2 各证明什么？</li>
-</ol>
-<p>答不上的回 LE（一）（二）或对应 Agent 篇。</p>
-<hr>
-<h2 id="自学检查（本篇）"><a href="#自学检查（本篇）" class="headerlink" title="自学检查（本篇）"></a>自学检查（本篇）</h2><ol>
-<li>「有验证无上限」为何仍会烧预算？</li>
-<li>拼装图里 Contract 与 Skill 谁先谁后？</li>
-<li>L1 与 L2 的分水岭是什么？</li>
-</ol>
-<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Loop Engineering · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>反模式</strong>：无合同、仅靠自评结束循环、无硬顶、不收尾、压缩丢治理。</p>
 <p><strong>拼装</strong>：LE 规定停下方式；Skill&#x2F;Tools&#x2F;Memory&#x2F;Runtime 提供能力与闸门。</p>
 <p><strong>回归</strong>：轨迹指标进门禁与发版 checklist。</p>
@@ -462,7 +441,7 @@
 </ul>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">LLM（一）～（四）[+ 部署/成本认名]</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四）</span><br><span class="line">    ↓</span><br><span class="line">Agent（一）～（六）</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）合同/门 →（二）嵌套环/预算 →（三）反模式与收口</span><br><span class="line">    ↓</span><br><span class="line">LangChain（一）～（六）：create_agent + Middleware 实现层</span><br><span class="line">    ↓</span><br><span class="line">下一模块：LangGraph（编排）→ Deep Agents（厚 harness）</span><br></pre></td></tr></table></figure>
 
-<p>Loop Engineering（理论与选型）到此收口。下一模块：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">LangChain（一）· 定位、Messages 与 Model</a>——用官方 <code>create_agent</code> harness 把合同、验证门与双层预算落到可运行的 Agent 实现。</p>
+<p>Loop Engineering（理论与选型）到此收口。<strong>下一篇</strong>：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Loop Engineering · 自检与面试</a>。下一模块：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">LangChain（一）· 定位、Messages 与 Model</a>——用官方 <code>create_agent</code> harness 把合同、验证门与双层预算落到可运行的 Agent 实现。</p>
 
     </div>
 
@@ -484,8 +463,8 @@
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/" rel="next" title="AI-Agent工程学习-LangChain(一)">
-                  AI-Agent工程学习-LangChain(一) <i class="fa fa-angle-right"></i>
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-Loop Engineering(自检与面试)">
+                  AI-Agent工程学习-Loop Engineering(自检与面试) <i class="fa fa-angle-right"></i>
                 </a>
             </div>
           </div>

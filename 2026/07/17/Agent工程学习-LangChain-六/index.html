@@ -27,7 +27,7 @@
 <meta property="og:description" content="Middleware hooks 与内置对照、自定义示意、LangSmith、实践阶梯；LangChain 收口并指向 LangGraph。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-17T02:30:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T07:27:36.433Z">
+<meta property="article:modified_time" content="2026-07-17T11:04:49.981Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="LangChain">
@@ -136,7 +136,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Harness-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E-Hooks"><span class="nav-number">2.</span> <span class="nav-text">1. Harness 生命周期与 Hooks</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Hooks-%E8%AE%A4%E5%90%8D"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 Hooks 认名</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%86%85%E7%BD%AE-Middleware-%E2%86%94-%E7%90%86%E8%AE%BA%E5%9B%9E%E9%93%BE"><span class="nav-number">3.</span> <span class="nav-text">2. 内置 Middleware ↔ 理论回链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%87%AA%E5%AE%9A%E4%B9%89-Middleware%EF%BC%88%E6%9C%80%E5%B0%8F%E7%A4%BA%E6%84%8F%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. 自定义 Middleware（最小示意）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. LangSmith（轻量）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">6.</span> <span class="nav-text">5. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%BE%B9%E7%95%8C%E4%B8%8E%E4%B8%8B%E4%B8%80%E6%A8%A1%E5%9D%97"><span class="nav-number">7.</span> <span class="nav-text">6. 边界与下一模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">8.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Harness-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E-Hooks"><span class="nav-number">2.</span> <span class="nav-text">1. Harness 生命周期与 Hooks</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Hooks-%E8%AE%A4%E5%90%8D"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 Hooks 认名</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%86%85%E7%BD%AE-Middleware-%E2%86%94-%E7%90%86%E8%AE%BA%E5%9B%9E%E9%93%BE"><span class="nav-number">3.</span> <span class="nav-text">2. 内置 Middleware ↔ 理论回链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%87%AA%E5%AE%9A%E4%B9%89-Middleware%EF%BC%88%E6%9C%80%E5%B0%8F%E7%A4%BA%E6%84%8F%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. 自定义 Middleware（最小示意）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. LangSmith（轻量）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">6.</span> <span class="nav-text">5. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%BE%B9%E7%95%8C%E4%B8%8E%E4%B8%8B%E4%B8%80%E6%A8%A1%E5%9D%97"><span class="nav-number">7.</span> <span class="nav-text">6. 边界与下一模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">8.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -216,7 +216,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2026-07-17 10:30:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T10:30:00+08:00">2026-07-17</time>
+      <time title="创建时间：2026-07-17 10:30:00 / 修改时间：19:04:49" itemprop="dateCreated datePublished" datetime="2026-07-17T10:30:00+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -431,13 +431,7 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">LLM → Prompt → Agent → Loop Engineering</span><br><span class="line">        ↓</span><br><span class="line">LangChain（一）Messages/Model</span><br><span class="line">    →（二）LCEL →（三）Prompt/Tools →（四）RAG</span><br><span class="line">    →（五）create_agent →（六）Middleware（本篇）</span><br><span class="line">        ↓</span><br><span class="line">LangGraph（一）～（六）：StateGraph 编排 Runtime</span><br><span class="line">        ↓</span><br><span class="line">后续模块：Deep Agents（厚 harness）</span><br></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
-<li>Middleware 与「再写一个外层 while」差在哪？</li>
-<li>HITL 为什么通常要配 checkpointer？</li>
-<li>Summarization 与 LE「压缩丢合同」如何同时防？</li>
-<li>L0&#x2F;L1&#x2F;L2 各证明什么？何时才需要 Deep Agents？</li>
-</ol>
-<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangChain · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Middleware</strong>：扩展 harness 的主机制；hooks 插在模型&#x2F;工具前后。</p>
 <p><strong>内置</strong>：压缩、HITL、重试、限次、PII、Todo——对齐理论 Runtime &#x2F; LE。</p>
 <p><strong>自定义</strong>：确定性闸门优先生 middleware。</p>
@@ -454,7 +448,7 @@
 <li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">（六）Middleware 与收口</a>（本篇）</li>
 </ul>
 <p><strong>前置：</strong> <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/">LE（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent（五）（六）</a></p>
-<p>LangChain（实现层）到此收口。下一模块：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">LangGraph（一）· 定位与 Graph 基础</a>——在 <code>create_agent</code> 节点之外，用 StateGraph 做确定性编排、持久化与中断&#x2F;恢复。</p>
+<p>LangChain（实现层）到此收口。<strong>下一篇</strong>：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangChain · 自检与面试</a>。下一模块：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">LangGraph（一）· 定位与 Graph 基础</a>——在 <code>create_agent</code> 节点之外，用 StateGraph 做确定性编排、持久化与中断&#x2F;恢复。</p>
 
     </div>
 
@@ -477,8 +471,8 @@
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/" rel="next" title="AI-Agent工程学习-LangGraph(一)">
-                  AI-Agent工程学习-LangGraph(一) <i class="fa fa-angle-right"></i>
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-LangChain(自检与面试)">
+                  AI-Agent工程学习-LangChain(自检与面试) <i class="fa fa-angle-right"></i>
                 </a>
             </div>
           </div>

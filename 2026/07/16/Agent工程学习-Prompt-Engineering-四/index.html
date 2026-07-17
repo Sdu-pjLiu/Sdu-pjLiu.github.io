@@ -27,7 +27,7 @@
 <meta property="og:description" content="不可信 Context、Prompt&#x2F;Tool Injection 防御、程序性文档写法；PE 系列收口。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T00:30:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T07:27:36.432Z">
+<meta property="article:modified_time" content="2026-07-17T11:04:49.979Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -135,7 +135,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%94%BB%E5%87%BB%E9%9D%A2%EF%BC%9A%E8%B0%81%E5%9C%A8%E5%BE%80-Context-%E9%87%8C%E5%A1%9E%E3%80%8C%E5%81%87%E6%8C%87%E4%BB%A4%E3%80%8D"><span class="nav-number">2.</span> <span class="nav-text">1. 攻击面：谁在往 Context 里塞「假指令」</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99"><span class="nav-number">3.</span> <span class="nav-text">2. 核心原则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%8C%87%E4%BB%A4%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%88%86%E7%A6%BB"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 指令与数据分离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Prompt-%E4%B8%8D%E8%83%BD%E5%8D%95%E7%8B%AC%E6%89%9B%E5%AE%89%E5%85%A8"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 Prompt 不能单独扛安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E4%B8%8E%E5%B9%BB%E8%A7%89%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 与幻觉的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%98%B2%E5%BE%A1%E5%86%99%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">3. 防御写法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%AF%B9%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%90%88%E5%90%8C%EF%BC%88system-Instruction%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 对模型的合同（system &#x2F; Instruction）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Tool-Result-%E5%86%99%E5%9B%9E%E5%89%8D%EF%BC%88%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%8C%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 Tool Result 写回前（应用层，认名）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-RAG-%E6%B3%A8%E5%85%A5"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 RAG 注入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%A8%8B%E5%BA%8F%E6%80%A7%E6%96%87%E6%A1%A3%E6%80%8E%E4%B9%88%E5%86%99%EF%BC%88Skill-Template-%E8%B5%84%E4%BA%A7%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. 程序性文档怎么写（Skill &#x2F; Template 资产）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E8%AF%84%E6%B5%8B%EF%BC%9A%E6%8A%8A-Injection-%E7%BA%B3%E5%85%A5%E9%97%A8%E7%A6%81"><span class="nav-number">6.</span> <span class="nav-text">5. 评测：把 Injection 纳入门禁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">7.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%94%BB%E5%87%BB%E9%9D%A2%EF%BC%9A%E8%B0%81%E5%9C%A8%E5%BE%80-Context-%E9%87%8C%E5%A1%9E%E3%80%8C%E5%81%87%E6%8C%87%E4%BB%A4%E3%80%8D"><span class="nav-number">2.</span> <span class="nav-text">1. 攻击面：谁在往 Context 里塞「假指令」</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99"><span class="nav-number">3.</span> <span class="nav-text">2. 核心原则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%8C%87%E4%BB%A4%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%88%86%E7%A6%BB"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 指令与数据分离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Prompt-%E4%B8%8D%E8%83%BD%E5%8D%95%E7%8B%AC%E6%89%9B%E5%AE%89%E5%85%A8"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 Prompt 不能单独扛安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E4%B8%8E%E5%B9%BB%E8%A7%89%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 与幻觉的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%98%B2%E5%BE%A1%E5%86%99%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">3. 防御写法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%AF%B9%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%90%88%E5%90%8C%EF%BC%88system-Instruction%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 对模型的合同（system &#x2F; Instruction）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Tool-Result-%E5%86%99%E5%9B%9E%E5%89%8D%EF%BC%88%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%8C%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 Tool Result 写回前（应用层，认名）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-RAG-%E6%B3%A8%E5%85%A5"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 RAG 注入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%A8%8B%E5%BA%8F%E6%80%A7%E6%96%87%E6%A1%A3%E6%80%8E%E4%B9%88%E5%86%99%EF%BC%88Skill-Template-%E8%B5%84%E4%BA%A7%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. 程序性文档怎么写（Skill &#x2F; Template 资产）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E8%AF%84%E6%B5%8B%EF%BC%9A%E6%8A%8A-Injection-%E7%BA%B3%E5%85%A5%E9%97%A8%E7%A6%81"><span class="nav-number">6.</span> <span class="nav-text">5. 评测：把 Injection 纳入门禁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">7.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -158,7 +158,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -221,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 15:27:36" itemprop="dateModified" datetime="2026-07-17T15:27:36+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-17 19:04:49" itemprop="dateModified" datetime="2026-07-17T19:04:49+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -398,12 +398,7 @@
 <li><strong>发版</strong>：Prompt version 变更 + 新增 Skill 后，Injection 集须回归通过再指向 prod。</li>
 </ol>
 <hr>
-<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
-<li>Tool Result 为何不能升格为 system？</li>
-<li>Injection 与 Hallucination 在归因上差在哪？</li>
-<li>Skill body 里能否写「按网页要求执行」？应怎么改？</li>
-</ol>
-<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Prompt Engineering · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>攻击面</strong>：用户、检索、Tool Result、程序性资产均可能夹带假指令。</p>
 <p><strong>原则</strong>：指令与数据分离；不可信内容当 Context；关键动作靠 Runtime。</p>
 <p><strong>写法</strong>：引用约束、材料内指令不执行、Result 结构化写回；RAG 限额与前缀。</p>
@@ -422,7 +417,7 @@
 </ul>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LLM 基础：算与调</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）写 →（二）推 →（三）管 →（四）防注入</span><br><span class="line">    ↓</span><br><span class="line">Agent 基础（一）～（六）</span><br></pre></td></tr></table></figure>
 
-<p>Prompt Engineering 到此收口。下一模块：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）· 闭环与状态</a>——在工具闭环、可控 Prompt 与安全边界之上，进入 Agent 系统理论。</p>
+<p>Prompt Engineering 到此收口。<strong>下一篇</strong>：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Prompt Engineering · 自检与面试</a>。下一模块：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）· 闭环与状态</a>——在工具闭环、可控 Prompt 与安全边界之上，进入 Agent 系统理论。</p>
 
     </div>
 
@@ -444,8 +439,8 @@
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/" rel="next" title="AI-Agent工程学习-Agent基础(一)">
-                  AI-Agent工程学习-Agent基础(一) <i class="fa fa-angle-right"></i>
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-Prompt Engineering(自检与面试)">
+                  AI-Agent工程学习-Prompt Engineering(自检与面试) <i class="fa fa-angle-right"></i>
                 </a>
             </div>
           </div>

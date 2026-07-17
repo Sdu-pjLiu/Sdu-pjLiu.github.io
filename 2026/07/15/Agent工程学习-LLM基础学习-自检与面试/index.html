@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="LLM 基础模块学习自检与面试导向问答；含完整推荐回答。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LLM基础学习(自检与面试)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="LLM 基础模块学习自检与面试导向问答；含完整推荐回答。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-15T05:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T11:04:49.978Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LLM">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/","path":"2026/07/15/Agent工程学习-LLM基础学习-自检与面试/","title":"AI-Agent工程学习-LLM基础学习(自检与面试)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LLM基础学习(自检与面试) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">0. 使用说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AD%A6%E4%B9%A0%E8%87%AA%E6%A3%80"><span class="nav-number">2.</span> <span class="nav-text">1. 学习自检</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E8%A1%A8%E7%A4%BA%E4%B8%8E%E5%AE%B9%E9%87%8F%EF%BC%88%E4%B8%80%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 表示与容量（一）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-Transformer-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%80%E4%B8%AA%E5%85%B8%E5%9E%8B-Block-%E5%8C%85%E5%90%AB%E5%93%AA%E4%BA%9B%E9%83%A8%E5%88%86%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">S1. Transformer 是什么？一个典型 Block 包含哪些部分？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%8E%B0%E4%BB%A3%E7%94%9F%E6%88%90%E5%BC%8F-LLM-%E5%A4%9A%E9%87%87%E7%94%A8-Decoder-only%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E5%AE%8C%E6%95%B4-Encoder-Decoder%EF%BC%9F"><span class="nav-number">2.3.</span> <span class="nav-text">S2. 为什么现代生成式 LLM 多采用 Decoder-only，而不是完整 Encoder-Decoder？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S3-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Position-Encoding%EF%BC%9F%E7%BB%9D%E5%AF%B9%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E4%B8%8E-RoPE-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">S3. 为什么需要 Position Encoding？绝对位置编码与 RoPE 有何区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S4-%E8%AF%B7%E8%A7%A3%E9%87%8A-Attention-%E7%9A%84%E5%85%AC%E5%BC%8F%E5%8F%8A%E6%AF%8F%E4%B8%80%E6%AD%A5%E5%90%AB%E4%B9%89%E3%80%82"><span class="nav-number">2.5.</span> <span class="nav-text">S4. 请解释 Attention 的公式及每一步含义。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S5-Q%E3%80%81K%E3%80%81V-%E5%88%86%E5%88%AB%E8%A1%A8%E7%A4%BA%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E4%BD%BF%E7%94%A8%E4%B8%89%E4%B8%AA%E4%B8%8D%E5%90%8C%E6%8A%95%E5%BD%B1%EF%BC%9F"><span class="nav-number">2.6.</span> <span class="nav-text">S5. Q、K、V 分别表示什么？为什么要使用三个不同投影？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S6-Causal-Attention-%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F%E5%AE%83%E4%B8%8E%E8%87%AA%E5%9B%9E%E5%BD%92%E7%94%9F%E6%88%90%E6%9C%89%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">2.7.</span> <span class="nav-text">S6. Causal Attention 解决什么问题？它与自回归生成有什么关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S7-Multi-Head-Attention-%E7%9B%B8%E6%AF%94%E5%8D%95%E5%A4%B4%E6%9C%89%E4%BB%80%E4%B9%88%E4%BB%B7%E5%80%BC%EF%BC%9F"><span class="nav-number">2.8.</span> <span class="nav-text">S7. Multi-Head Attention 相比单头有什么价值？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S8-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%A0%87%E5%87%86-Self-Attention-%E7%9A%84%E5%A4%8D%E6%9D%82%E5%BA%A6%E6%98%AF-O-n-2-%EF%BC%9F%E8%BF%99%E5%B8%A6%E6%9D%A5%E5%93%AA%E4%BA%9B%E5%B7%A5%E7%A8%8B%E5%90%8E%E6%9E%9C%EF%BC%9F"><span class="nav-number">2.9.</span> <span class="nav-text">S8. 为什么标准 Self-Attention 的复杂度是 $O(n^2)$？这带来哪些工程后果？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S9-Tokenization-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%BD%B1%E5%93%8D%E6%A8%A1%E5%9E%8B%E8%83%BD%E5%8A%9B%E3%80%81%E4%B8%8A%E4%B8%8B%E6%96%87%E4%B8%8E-API-%E6%88%90%E6%9C%AC%EF%BC%9F"><span class="nav-number">2.10.</span> <span class="nav-text">S9. Tokenization 为什么会影响模型能力、上下文与 API 成本？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S10-LLM-%E5%86%85%E7%9A%84-Token-Embedding-%E4%B8%8E-RAG-%E4%BD%BF%E7%94%A8%E7%9A%84-Embedding-Model-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">2.11.</span> <span class="nav-text">S10. LLM 内的 Token Embedding 与 RAG 使用的 Embedding Model 有何区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S11-%E4%BD%99%E5%BC%A6%E7%9B%B8%E4%BC%BC%E5%BA%A6%E3%80%81%E5%86%85%E7%A7%AF%E5%92%8C%E6%AC%A7%E6%B0%8F%E8%B7%9D%E7%A6%BB%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%EF%BC%9F"><span class="nav-number">2.12.</span> <span class="nav-text">S11. 余弦相似度、内积和欧氏距离如何选择？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S12-Context-Window-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9C%E7%AA%97%E5%8F%A3%E6%9B%B4%E5%A4%A7%E2%80%9D%E4%B8%8D%E7%AD%89%E4%BA%8E%E2%80%9C%E6%95%88%E6%9E%9C%E4%B8%80%E5%AE%9A%E6%9B%B4%E5%A5%BD%E2%80%9D%EF%BC%9F"><span class="nav-number">2.13.</span> <span class="nav-text">S12. Context Window 是什么？为什么“窗口更大”不等于“效果一定更好”？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S13-Context-Window%E3%80%81Memory%E3%80%81RAG-%E4%B8%8E-Context-Compression-%E5%A6%82%E4%BD%95%E5%8D%8F%E5%90%8C%EF%BC%9F"><span class="nav-number">2.14.</span> <span class="nav-text">S13. Context Window、Memory、RAG 与 Context Compression 如何协同？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E7%94%9F%E6%88%90%E4%B8%8E%E9%87%87%E6%A0%B7%EF%BC%88%E4%BA%8C%EF%BC%89"><span class="nav-number">2.15.</span> <span class="nav-text">1.2 生成与采样（二）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S14-%E4%BB%80%E4%B9%88%E6%98%AF-Inference%EF%BC%9FDecoder-only-%E6%A8%A1%E5%9E%8B%E5%A6%82%E4%BD%95%E8%87%AA%E5%9B%9E%E5%BD%92%E7%94%9F%E6%88%90%EF%BC%9F"><span class="nav-number">2.16.</span> <span class="nav-text">S14. 什么是 Inference？Decoder-only 模型如何自回归生成？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S15-Logits%E3%80%81Softmax-%E4%B8%8E-Token-%E6%A6%82%E7%8E%87%E4%B9%8B%E9%97%B4%E6%98%AF%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">2.17.</span> <span class="nav-text">S15. Logits、Softmax 与 Token 概率之间是什么关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S16-EOS%E3%80%81stop-%E4%B8%8E-max-tokens-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F%E5%A6%82%E4%BD%95%E6%8E%92%E6%9F%A5%E5%9B%9E%E7%AD%94%E8%A2%AB%E6%88%AA%E6%96%AD%EF%BC%9F"><span class="nav-number">2.18.</span> <span class="nav-text">S16. EOS、stop 与 max_tokens 有什么区别？如何排查回答被截断？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S17-Greedy-Decoding-%E4%B8%8E-Sampling-%E7%9A%84%E5%B7%AE%E5%BC%82%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.19.</span> <span class="nav-text">S17. Greedy Decoding 与 Sampling 的差异是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S18-Temperature-%E5%A6%82%E4%BD%95%E6%94%B9%E5%8F%98%E5%88%86%E5%B8%83%EF%BC%9F%E4%BD%8E%E6%B8%A9%E8%83%BD%E5%90%A6%E6%B6%88%E9%99%A4%E5%B9%BB%E8%A7%89%EF%BC%9F"><span class="nav-number">2.20.</span> <span class="nav-text">S18. Temperature 如何改变分布？低温能否消除幻觉？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S19-Top-k-%E7%9A%84%E6%9C%BA%E5%88%B6%E3%80%81%E4%BC%98%E7%82%B9%E5%92%8C%E5%B1%80%E9%99%90%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.21.</span> <span class="nav-text">S19. Top-k 的机制、优点和局限是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S20-Top-p-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E7%A7%B0%E4%B8%BA-Nucleus-Sampling%EF%BC%9F%E4%B8%8E-Top-k-%E6%9C%89%E4%BD%95%E4%B8%8D%E5%90%8C%EF%BC%9F"><span class="nav-number">2.22.</span> <span class="nav-text">S20. Top-p 为什么被称为 Nucleus Sampling？与 Top-k 有何不同？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S21-Temperature%E3%80%81Top-k%E3%80%81Top-p-%E5%90%8C%E6%97%B6%E5%AD%98%E5%9C%A8%E6%97%B6%EF%BC%8C%E5%BA%94%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3%E8%B0%83%E7%94%A8%E9%A1%BA%E5%BA%8F%EF%BC%9F"><span class="nav-number">2.23.</span> <span class="nav-text">S21. Temperature、Top-k、Top-p 同时存在时，应如何理解调用顺序？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S22-KV-Cache-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%BC%93%E5%AD%98-K%E3%80%81V%EF%BC%8C%E8%80%8C%E9%80%9A%E5%B8%B8%E4%B8%8D%E7%BC%93%E5%AD%98%E5%8E%86%E5%8F%B2-Q%EF%BC%9F"><span class="nav-number">2.24.</span> <span class="nav-text">S22. KV Cache 为什么缓存 K、V，而通常不缓存历史 Q？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S23-Prefill-%E4%B8%8E-Decode-%E5%88%86%E5%88%AB%E5%81%9A%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A6%82%E4%BD%95%E5%BD%B1%E5%93%8D-TTFT-%E5%92%8C%E6%80%BB%E5%BB%B6%E8%BF%9F%EF%BC%9F"><span class="nav-number">2.25.</span> <span class="nav-text">S23. Prefill 与 Decode 分别做什么？如何影响 TTFT 和总延迟？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E6%A8%A1%E5%9E%8B%E4%BE%A7%E8%AE%A4%E5%90%8D%EF%BC%88%E4%B8%89%EF%BC%89"><span class="nav-number">2.26.</span> <span class="nav-text">1.3 模型侧认名（三）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S24-system%E3%80%81user%E3%80%81assistant%E3%80%81tool-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%E5%88%86%E5%88%AB%E6%89%BF%E6%8B%85%E4%BB%80%E4%B9%88%E8%81%8C%E8%B4%A3%EF%BC%9F"><span class="nav-number">2.27.</span> <span class="nav-text">S24. system、user、assistant、tool 消息角色分别承担什么职责？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S25-Pretrain%E3%80%81SFT%E3%80%81Chat-Instruct-%E6%A8%A1%E5%9E%8B%E4%B9%8B%E9%97%B4%E6%98%AF%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">2.28.</span> <span class="nav-text">S25. Pretrain、SFT、Chat&#x2F;Instruct 模型之间是什么关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S26-%E4%BB%80%E4%B9%88%E6%98%AF-Instruction-Following%EF%BC%9F%E5%93%AA%E4%BA%9B%E5%9B%A0%E7%B4%A0%E4%BC%9A%E8%AE%A9%E6%A8%A1%E5%9E%8B%E4%B8%8D%E5%90%AC%E6%8C%87%E4%BB%A4%EF%BC%9F"><span class="nav-number">2.29.</span> <span class="nav-text">S26. 什么是 Instruction Following？哪些因素会让模型不听指令？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S27-Hallucination-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88-Temperature-%E9%99%8D%E5%88%B0-0-%E4%BB%8D%E5%8F%AF%E8%83%BD%E5%87%BA%E7%8E%B0%EF%BC%9F"><span class="nav-number">2.30.</span> <span class="nav-text">S27. Hallucination 是什么？为什么 Temperature 降到 0 仍可能出现？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S28-%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E4%BB%8E%E2%80%9C%E8%BD%AF%E7%BA%A6%E6%9D%9F%E2%80%9D%E5%88%B0%E2%80%9C%E7%A1%AC%E7%BA%A6%E6%9D%9F%E2%80%9D%E6%9C%89%E5%93%AA%E4%BA%9B%E5%B1%82%E6%AC%A1%EF%BC%9F"><span class="nav-number">2.31.</span> <span class="nav-text">S28. 结构化输出从“软约束”到“硬约束”有哪些层次？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S29-Latency%E3%80%81TTFT%E3%80%81Throughput-%E4%B8%8E-Batch-%E5%88%86%E5%88%AB%E8%A1%A8%E7%A4%BA%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.32.</span> <span class="nav-text">S29. Latency、TTFT、Throughput 与 Batch 分别表示什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S30-%E4%BB%80%E4%B9%88%E6%98%AF-MoE%EF%BC%9F%E2%80%9C%E6%80%BB%E5%8F%82%E6%95%B0%E6%9B%B4%E5%A4%A7%E2%80%9D%E6%98%AF%E5%90%A6%E4%B8%80%E5%AE%9A%E6%84%8F%E5%91%B3%E7%9D%80%E6%AF%8F-Token-%E6%8E%A8%E7%90%86%E6%9B%B4%E6%85%A2%EF%BC%9F"><span class="nav-number">2.33.</span> <span class="nav-text">S30. 什么是 MoE？“总参数更大”是否一定意味着每 Token 推理更慢？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S31-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1%E6%88%96%E7%BA%A7%E8%81%94%E5%A6%82%E4%BD%95%E5%B8%AE%E5%8A%A9-Agent-%E6%8E%A7%E5%88%B6%E6%88%90%E6%9C%AC%EF%BC%9F%E9%A3%8E%E9%99%A9%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.34.</span> <span class="nav-text">S31. 模型路由或级联如何帮助 Agent 控制成本？风险是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E8%B0%83%E7%94%A8%E4%BE%A7%EF%BC%88%E5%9B%9B%EF%BC%89"><span class="nav-number">2.35.</span> <span class="nav-text">1.4 调用侧（四）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S32-Chat-Completion-%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%90%88%E5%90%8C%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A4%9A%E8%BD%AE%E5%AF%B9%E8%AF%9D%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%EF%BC%9F"><span class="nav-number">2.36.</span> <span class="nav-text">S32. Chat Completion 的输入输出合同是什么？多轮对话如何实现？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S33-Streaming-%E6%94%B9%E5%8F%98%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%8C%E6%B2%A1%E6%9C%89%E6%94%B9%E5%8F%98%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.37.</span> <span class="nav-text">S33. Streaming 改变了什么，没有改变什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S34-Prompt-%E7%BA%A6%E6%9D%9F%E3%80%81JSON-Mode%E3%80%81JSON-Schema%E3%80%81Validation-%E4%B8%8E-Typed-Output-%E5%A6%82%E4%BD%95%E5%88%86%E5%B1%82%EF%BC%9F"><span class="nav-number">2.38.</span> <span class="nav-text">S34. Prompt 约束、JSON Mode、JSON Schema、Validation 与 Typed Output 如何分层？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S35-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E5%9C%A8%E6%B5%81%E5%BC%8F%E5%9C%BA%E6%99%AF%E4%B8%AD%E9%9C%80%E8%A6%81%E7%89%B9%E5%88%AB%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">2.39.</span> <span class="nav-text">S35. 为什么结构化输出在流式场景中需要特别处理？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S36-%E8%AF%B7%E5%AE%8C%E6%95%B4%E6%8F%8F%E8%BF%B0%E4%B8%80%E6%AC%A1-Tool-Calling-%E9%97%AD%E7%8E%AF%E3%80%82"><span class="nav-number">2.40.</span> <span class="nav-text">S36. 请完整描述一次 Tool Calling 闭环。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S37-Tool-Schema-%E6%80%8E%E6%A0%B7%E5%86%99%EF%BC%8C%E6%89%8D%E8%83%BD%E9%99%8D%E4%BD%8E%E9%80%89%E9%94%99%E5%B7%A5%E5%85%B7%E5%92%8C%E5%8F%82%E6%95%B0%E5%B9%BB%E8%A7%89%EF%BC%9F"><span class="nav-number">2.41.</span> <span class="nav-text">S37. Tool Schema 怎样写，才能降低选错工具和参数幻觉？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S38-%E5%A4%9A%E4%B8%AA-Tool-Calls-%E4%BD%95%E6%97%B6%E5%8F%AF%E5%B9%B6%E8%A1%8C%EF%BC%9F%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E9%83%A8%E5%88%86%E5%A4%B1%E8%B4%A5%EF%BC%9F"><span class="nav-number">2.42.</span> <span class="nav-text">S38. 多个 Tool Calls 何时可并行？如何处理部分失败？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S39-Prompt-Caching-%E8%83%BD%E4%BC%98%E5%8C%96%E4%BB%80%E4%B9%88%EF%BC%9F%E6%80%8E%E6%A0%B7%E6%8F%90%E9%AB%98%E5%91%BD%E4%B8%AD%E7%8E%87%EF%BC%9F"><span class="nav-number">2.43.</span> <span class="nav-text">S39. Prompt Caching 能优化什么？怎样提高命中率？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S40-LLM-API-%E7%9A%84%E9%87%8D%E8%AF%95%E7%AD%96%E7%95%A5%E5%BA%94%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%EF%BC%9F"><span class="nav-number">2.44.</span> <span class="nav-text">S40. LLM API 的重试策略应如何设计？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%9D%A2%E8%AF%95%E7%9C%9F%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">2. 面试真题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E8%AF%B7%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E8%BE%93%E5%87%BA%E5%AE%8C%E6%95%B4%E8%AE%B2%E4%B8%80%E9%81%8D-Transformer-Decoder-only-%E7%9A%84%E6%8E%A8%E7%90%86%E9%93%BE%E8%B7%AF%E3%80%82"><span class="nav-number">3.1.</span> <span class="nav-text">I1. 请从输入到输出完整讲一遍 Transformer Decoder-only 的推理链路。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I2-Attention-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%99%A4%E4%BB%A5-sqrt-d-k-%EF%BC%9FMask-%E5%BA%94%E5%9C%A8-Softmax-%E5%89%8D%E8%BF%98%E6%98%AF%E5%90%8E%E5%8A%A0%EF%BC%9F"><span class="nav-number">3.2.</span> <span class="nav-text">I2. Attention 为什么除以 $\sqrt{d_k}$？Mask 应在 Softmax 前还是后加？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I3-Multi-Head-Attention-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E6%95%88%EF%BC%9F%E5%87%8F%E5%B0%91%E5%A4%B4%E6%95%B0%E4%B8%80%E5%AE%9A%E4%BC%9A%E9%99%8D%E4%BD%8E%E6%95%88%E6%9E%9C%E5%90%97%EF%BC%9F"><span class="nav-number">3.3.</span> <span class="nav-text">I3. Multi-Head Attention 为什么有效？减少头数一定会降低效果吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I4-KV-Cache-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AA%E7%BC%93%E5%AD%98-K%E3%80%81V%EF%BC%9F%E5%AE%83%E7%9A%84%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8%E4%B8%8E%E5%93%AA%E4%BA%9B%E5%9B%A0%E7%B4%A0%E6%9C%89%E5%85%B3%EF%BC%9F"><span class="nav-number">3.4.</span> <span class="nav-text">I4. KV Cache 为什么只缓存 K、V？它的显存占用与哪些因素有关？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I5-FlashAttention%E3%80%81KV-Cache-%E5%92%8C-PagedAttention-%E5%88%86%E5%88%AB%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">3.5.</span> <span class="nav-text">I5. FlashAttention、KV Cache 和 PagedAttention 分别解决什么问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I6-Temperature%E3%80%81Top-k%E3%80%81Top-p-%E5%A6%82%E4%BD%95%E5%BD%B1%E5%93%8D%E9%87%87%E6%A0%B7%EF%BC%9F%E4%BA%8B%E5%AE%9E%E9%97%AE%E7%AD%94%E8%AF%A5%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AE%EF%BC%9F"><span class="nav-number">3.6.</span> <span class="nav-text">I6. Temperature、Top-k、Top-p 如何影响采样？事实问答该如何设置？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I7-%E4%B8%BA%E4%BB%80%E4%B9%88-LLM-%E4%BC%9A%E4%BA%A7%E7%94%9F%E5%B9%BB%E8%A7%89%EF%BC%9F%E8%AF%B7%E6%8C%89%E6%A8%A1%E5%9E%8B%E3%80%81%E4%B8%8A%E4%B8%8B%E6%96%87%E5%92%8C%E7%B3%BB%E7%BB%9F%E4%B8%89%E5%B1%82%E5%BD%92%E5%9B%A0%E3%80%82"><span class="nav-number">3.7.</span> <span class="nav-text">I7. 为什么 LLM 会产生幻觉？请按模型、上下文和系统三层归因。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I8-RAG-%E8%83%BD%E5%90%A6%E5%BD%BB%E5%BA%95%E8%A7%A3%E5%86%B3%E5%B9%BB%E8%A7%89%EF%BC%9F%E5%A6%82%E4%BD%95%E8%AF%84%E4%BC%B0%E5%AE%83%E7%A1%AE%E5%AE%9E%E5%9C%A8%E6%94%B9%E5%96%84%E7%AD%94%E6%A1%88%EF%BC%9F"><span class="nav-number">3.8.</span> <span class="nav-text">I8. RAG 能否彻底解决幻觉？如何评估它确实在改善答案？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I9-%E8%AF%B7%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E5%8F%AF%E9%9D%A0%E7%9A%84-Tool-Calling-Loop%EF%BC%8C%E5%B9%B6%E8%AF%B4%E6%98%8E%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E6%AD%BB%E5%BE%AA%E7%8E%AF%E5%92%8C%E9%87%8D%E5%A4%8D%E5%89%AF%E4%BD%9C%E7%94%A8%E3%80%82"><span class="nav-number">3.9.</span> <span class="nav-text">I9. 请设计一个可靠的 Tool Calling Loop，并说明如何避免死循环和重复副作用。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I10-%E4%B8%80%E8%BD%AE%E8%BF%94%E5%9B%9E%E5%A4%9A%E4%B8%AA-Tool-Calls-%E6%97%B6%EF%BC%8C%E4%BD%A0%E5%A6%82%E4%BD%95%E5%86%B3%E5%AE%9A%E5%B9%B6%E8%A1%8C%E8%BF%98%E6%98%AF%E4%B8%B2%E8%A1%8C%EF%BC%9F"><span class="nav-number">3.10.</span> <span class="nav-text">I10. 一轮返回多个 Tool Calls 时，你如何决定并行还是串行？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I11-SSE-%E4%B8%8E-WebSocket-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9FLLM-%E6%96%87%E6%9C%AC%E6%B5%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%9A%E5%B8%B8%E4%BC%98%E5%85%88-SSE%EF%BC%9F"><span class="nav-number">3.11.</span> <span class="nav-text">I11. SSE 与 WebSocket 有什么区别？LLM 文本流为什么通常优先 SSE？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I12-%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA%E4%B8%AD%E9%80%94%E6%96%AD%E7%BA%BF%EF%BC%8C%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E5%86%85%E5%AE%B9%E9%87%8D%E5%A4%8D%E3%80%81%E4%B8%A2%E5%A4%B1%E6%88%96%E5%B7%A5%E5%85%B7%E8%A2%AB%E9%87%8D%E5%A4%8D%E6%89%A7%E8%A1%8C%EF%BC%9F"><span class="nav-number">3.12.</span> <span class="nav-text">I12. 流式输出中途断线，如何避免内容重复、丢失或工具被重复执行？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I13-429%E3%80%815xx%E3%80%81%E8%B6%85%E6%97%B6%E5%92%8C-403-%E5%BA%94%E5%A6%82%E4%BD%95%E5%88%86%E5%88%AB%E5%A4%84%E7%90%86%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%AF%95%E8%A6%81%E5%8A%A0%E9%9A%8F%E6%9C%BA%E6%8A%96%E5%8A%A8%EF%BC%9F"><span class="nav-number">3.13.</span> <span class="nav-text">I13. 429、5xx、超时和 403 应如何分别处理？为什么重试要加随机抖动？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I14-%E5%A6%82%E6%9E%9C-Agent-%E9%A6%96%E5%AD%97%E6%85%A2%E3%80%81%E6%80%BB%E8%80%97%E6%97%B6%E9%95%BF%E3%80%81%E5%90%9E%E5%90%90%E4%BD%8E%EF%BC%8C%E4%BD%A0%E4%BC%9A%E6%80%8E%E6%A0%B7%E5%AE%9A%E4%BD%8D%EF%BC%9F"><span class="nav-number">3.14.</span> <span class="nav-text">I14. 如果 Agent 首字慢、总耗时长、吞吐低，你会怎样定位？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%9D%A2%E7%BB%8F%E4%B8%8E%E9%A2%98%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">参考面经与题库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%AF%BC%E8%88%AA"><span class="nav-number">5.</span> <span class="nav-text">3. 导航</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LLM基础学习(自检与面试) | 我的记录小站">
+      <meta itemprop="description" content="LLM 基础模块学习自检与面试导向问答；含完整推荐回答。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LLM基础学习(自检与面试)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-15 13:00:00" itemprop="dateCreated datePublished" datetime="2026-07-15T13:00:00+08:00">2026-07-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-17 19:04:49" itemprop="dateModified" datetime="2026-07-17T19:04:49+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">LLM 基础模块学习自检与面试导向问答；含完整推荐回答。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>完成 LLM 基础（一）～（四）后，仅仅“看懂名词”还不够。本篇用自检题确认知识是否真正连成体系，再用面试题训练从原理、工程代价到 Agent 落地的完整表达。</p>
+<span id="more"></span>
+
+<h2 id="0-使用说明"><a href="#0-使用说明" class="headerlink" title="0. 使用说明"></a>0. 使用说明</h2><p>建议先遮住“推荐回答”，在 60～120 秒内口述答案，再检查是否同时说清了：<strong>定义、工作机制、工程代价、Agent 场景</strong>。S 题用于逐篇查漏补缺；I 题按真实面试节奏组织，回答时应先给结论，再展开原理，最后补充边界与取舍。</p>
+<hr>
+<h2 id="1-学习自检"><a href="#1-学习自检" class="headerlink" title="1. 学习自检"></a>1. 学习自检</h2><h3 id="1-1-表示与容量（一）"><a href="#1-1-表示与容量（一）" class="headerlink" title="1.1 表示与容量（一）"></a>1.1 表示与容量（一）</h3><h3 id="S1-Transformer-是什么？一个典型-Block-包含哪些部分？"><a href="#S1-Transformer-是什么？一个典型-Block-包含哪些部分？" class="headerlink" title="S1. Transformer 是什么？一个典型 Block 包含哪些部分？"></a>S1. Transformer 是什么？一个典型 Block 包含哪些部分？</h3><p><strong>推荐回答：</strong></p>
+<p>Transformer 是以 Attention 为核心的序列建模架构，能够直接建立任意 Token 间的依赖，并比 RNN 更适合训练阶段的并行计算。输入先经过 Token Embedding 与位置编码，再进入多层 Block。典型 Block 包含 Multi-Head Self-Attention、逐位置 FFN、残差连接和 LayerNorm。Attention 负责聚合上下文，FFN 负责非线性特征变换，残差与归一化保证深层网络的信息传递和训练稳定，最后由 LM Head 映射到词表 Logits。</p>
+<h3 id="S2-为什么现代生成式-LLM-多采用-Decoder-only，而不是完整-Encoder-Decoder？"><a href="#S2-为什么现代生成式-LLM-多采用-Decoder-only，而不是完整-Encoder-Decoder？" class="headerlink" title="S2. 为什么现代生成式 LLM 多采用 Decoder-only，而不是完整 Encoder-Decoder？"></a>S2. 为什么现代生成式 LLM 多采用 Decoder-only，而不是完整 Encoder-Decoder？</h3><p><strong>推荐回答：</strong></p>
+<p>Decoder-only 用统一的“根据左侧上下文预测下一个 Token”目标完成预训练和生成，数据构造简单，可直接利用海量无标注文本；对话、代码补全和 Agent 决策也天然是续写任务。它通过 Causal Attention 保证当前位置看不到未来。Encoder-Decoder 更适合输入输出边界明确的翻译、摘要等条件生成，但链路更复杂。Decoder-only 并非所有任务理论上最优，而是训练目标、扩展规律、推理优化与工程生态共同作用下的主流选择。</p>
+<h3 id="S3-为什么需要-Position-Encoding？绝对位置编码与-RoPE-有何区别？"><a href="#S3-为什么需要-Position-Encoding？绝对位置编码与-RoPE-有何区别？" class="headerlink" title="S3. 为什么需要 Position Encoding？绝对位置编码与 RoPE 有何区别？"></a>S3. 为什么需要 Position Encoding？绝对位置编码与 RoPE 有何区别？</h3><p><strong>推荐回答：</strong></p>
+<p>纯 Self-Attention 对 Token 排列本身不敏感，若只给 Token Embedding，模型难以区分“狗咬人”和“人咬狗”，因此必须注入位置信息。绝对位置编码为每个位置提供固定或可学习向量，直观但对训练长度之外的位置外推较弱。RoPE 则旋转 Q、K，把相对位置信息写入注意力点积，现代 LLM 使用广泛。需要强调：扩大 RoPE 可用范围不等于模型自动获得可靠长文本能力，还受训练分布、注意力成本和信息利用率影响。</p>
+<h3 id="S4-请解释-Attention-的公式及每一步含义。"><a href="#S4-请解释-Attention-的公式及每一步含义。" class="headerlink" title="S4. 请解释 Attention 的公式及每一步含义。"></a>S4. 请解释 Attention 的公式及每一步含义。</h3><p><strong>推荐回答：</strong></p>
+<p>缩放点积注意力写作 $\mathrm{softmax}(QK^T&#x2F;\sqrt{d_k})V$。先用 Q 与所有 K 做点积，得到“当前查询与各位置有多匹配”的分数；除以 $\sqrt{d_k}$ 是为避免维度增大后点积过大，使 Softmax 过度饱和；再加 Causal 或 Padding Mask，经过 Softmax 得到和为 1 的注意力权重；最后按权重加权求和 V，生成上下文化表示。Attention 的本质不是查数据库，而是按学习到的相关性动态聚合信息。</p>
+<h3 id="S5-Q、K、V-分别表示什么？为什么要使用三个不同投影？"><a href="#S5-Q、K、V-分别表示什么？为什么要使用三个不同投影？" class="headerlink" title="S5. Q、K、V 分别表示什么？为什么要使用三个不同投影？"></a>S5. Q、K、V 分别表示什么？为什么要使用三个不同投影？</h3><p><strong>推荐回答：</strong></p>
+<p>Q 表示当前位置“想找什么”，K 表示各位置“可用什么特征被匹配”，V 表示匹配后真正要聚合的内容。三者都由同一输入经过不同可学习线性投影得到。分开投影能让模型把“如何检索”和“传递什么内容”解耦：Q、K 所在空间负责计算相关性，V 所在空间负责承载被汇总的信息。若直接拿原向量同时做三种职责，表达会受限。它们是模型内部表示，不应误解为数据库中的固定查询、键和值。</p>
+<h3 id="S6-Causal-Attention-解决什么问题？它与自回归生成有什么关系？"><a href="#S6-Causal-Attention-解决什么问题？它与自回归生成有什么关系？" class="headerlink" title="S6. Causal Attention 解决什么问题？它与自回归生成有什么关系？"></a>S6. Causal Attention 解决什么问题？它与自回归生成有什么关系？</h3><p><strong>推荐回答：</strong></p>
+<p>Causal Attention 通过上三角 Mask，让位置 $t$ 只能关注自己及之前的 Token，不能偷看未来答案。训练时虽然整段序列可以并行送入模型，每个位置仍只根据左侧预测目标 Token，因此与线上逐 Token 的自回归条件保持一致。推理时新 Token 被追加到末尾，再预测下一 Token。正因为未来内容不会反向改变历史位置已算出的 K、V，历史 K、V 才可被 KV Cache 复用；所以因果掩码、自回归生成和增量推理是一条完整逻辑链。</p>
+<h3 id="S7-Multi-Head-Attention-相比单头有什么价值？"><a href="#S7-Multi-Head-Attention-相比单头有什么价值？" class="headerlink" title="S7. Multi-Head Attention 相比单头有什么价值？"></a>S7. Multi-Head Attention 相比单头有什么价值？</h3><p><strong>推荐回答：</strong></p>
+<p>Multi-Head Attention 把表示维度划分为多个头，每个头使用独立投影，在不同子空间学习关系，例如局部搭配、指代、句法依赖或长距离语义，再拼接并投影回模型维度。它不是简单把同一次计算复制多遍，而是提供多组并行的关注模式。头数也不是越多越好：总维度固定时，头越多则单头维度越小，还会增加调度开销；减少头数可能损失表达，也可能通过 GQA、MQA 换取更小 KV Cache，需要以效果和吞吐实测权衡。</p>
+<h3 id="S8-为什么标准-Self-Attention-的复杂度是-O-n-2-？这带来哪些工程后果？"><a href="#S8-为什么标准-Self-Attention-的复杂度是-O-n-2-？这带来哪些工程后果？" class="headerlink" title="S8. 为什么标准 Self-Attention 的复杂度是 $O(n^2)$？这带来哪些工程后果？"></a>S8. 为什么标准 Self-Attention 的复杂度是 $O(n^2)$？这带来哪些工程后果？</h3><p><strong>推荐回答：</strong></p>
+<p>序列长度为 $n$ 时，每个 Query 都要与 $n$ 个 Key 计算匹配，因此注意力分数矩阵大小为 $n\times n$，时间和中间存储随长度近似平方增长；若计入特征维度，可写为 $O(n^2d)$。这使长 Context 的 Prefill 更慢、显存和带宽压力更大，也限制了批量并发。FlashAttention 主要通过分块和减少 HBM 读写优化 IO，并未把数学复杂度降为线性；Sparse 或 Linear Attention 才通过改变计算模式降低复杂度，但通常带来适用范围或精度取舍。</p>
+<h3 id="S9-Tokenization-为什么会影响模型能力、上下文与-API-成本？"><a href="#S9-Tokenization-为什么会影响模型能力、上下文与-API-成本？" class="headerlink" title="S9. Tokenization 为什么会影响模型能力、上下文与 API 成本？"></a>S9. Tokenization 为什么会影响模型能力、上下文与 API 成本？</h3><p><strong>推荐回答：</strong></p>
+<p>Tokenizer 把文本切成 Token，再映射为 Token ID；模型和 Context Window 实际处理的单位都是 Token，而不是字或词。现代 LLM 多用 BPE、SentencePiece 等子词方案，在词表规模、未知词处理和序列长度之间折中。不同语言、代码和特殊符号的切分效率不同，同样字符数可能产生完全不同的 Token 数。Token 越多，越占上下文、Prefill 越慢、API 费用通常越高。Agent 的历史、Prompt、RAG 片段和工具结果都应按 Token 预算，而不能只按字符数估算。</p>
+<h3 id="S10-LLM-内的-Token-Embedding-与-RAG-使用的-Embedding-Model-有何区别？"><a href="#S10-LLM-内的-Token-Embedding-与-RAG-使用的-Embedding-Model-有何区别？" class="headerlink" title="S10. LLM 内的 Token Embedding 与 RAG 使用的 Embedding Model 有何区别？"></a>S10. LLM 内的 Token Embedding 与 RAG 使用的 Embedding Model 有何区别？</h3><p><strong>推荐回答：</strong></p>
+<p>Token Embedding 是生成模型内部的查表矩阵：Token ID 对应一行向量，作为 Transformer 的逐 Token 输入，并与模型参数联合训练。RAG 使用的 Embedding Model 则把问题、句子或文档块编码成一个适合语义检索的定长向量，供向量数据库比较。二者虽都叫 Embedding，粒度、训练目标和使用接口不同。不能直接拿 LLM 词表中的单 Token 向量代替文档向量；RAG 通常要求查询和文档使用同一或兼容的专用向量模型。</p>
+<h3 id="S11-余弦相似度、内积和欧氏距离如何选择？"><a href="#S11-余弦相似度、内积和欧氏距离如何选择？" class="headerlink" title="S11. 余弦相似度、内积和欧氏距离如何选择？"></a>S11. 余弦相似度、内积和欧氏距离如何选择？</h3><p><strong>推荐回答：</strong></p>
+<p>余弦相似度关注向量夹角，弱化模长影响；内积同时受方向和模长影响；欧氏距离衡量空间中的直线距离，值越小越接近。若向量已做 L2 归一化，余弦排序与内积排序通常等价，欧氏距离也存在单调关系。选择不能凭习惯，应遵循 Embedding Model 的训练目标和官方推荐，并保证入库与查询采用同一度量、同一归一化策略。上线还要用真实检索集评估 Recall@K、排序质量与业务答案，而非只看某个相似度分数。</p>
+<h3 id="S12-Context-Window-是什么？为什么“窗口更大”不等于“效果一定更好”？"><a href="#S12-Context-Window-是什么？为什么“窗口更大”不等于“效果一定更好”？" class="headerlink" title="S12. Context Window 是什么？为什么“窗口更大”不等于“效果一定更好”？"></a>S12. Context Window 是什么？为什么“窗口更大”不等于“效果一定更好”？</h3><p><strong>推荐回答：</strong></p>
+<p>Context Window 是一次推理可共同参与计算的最大 Token 容量，通常由 system、历史消息、用户输入、检索内容以及生成输出共同占用，因此应用要提前为输出预留预算。窗口更大只代表“允许放入更多内容”，不保证模型能稳定利用：长序列会增加 Prefill、KV Cache 和费用，还会产生 Lost in the Middle、噪声干扰与检索重点稀释。工程上应追求放入最相关、可验证的信息，而不是把整库或全部历史无差别塞入窗口。</p>
+<h3 id="S13-Context-Window、Memory、RAG-与-Context-Compression-如何协同？"><a href="#S13-Context-Window、Memory、RAG-与-Context-Compression-如何协同？" class="headerlink" title="S13. Context Window、Memory、RAG 与 Context Compression 如何协同？"></a>S13. Context Window、Memory、RAG 与 Context Compression 如何协同？</h3><p><strong>推荐回答：</strong></p>
+<p>Context Window 是本轮模型可见的工作区；Memory 是跨轮或跨任务持久化的信息；RAG 是按当前问题从外部知识中检索相关片段；Compression 则把冗长历史或工具结果压成更短表示。典型链路是：长期信息存入 Memory 或知识库，当前任务先检索和排序，再把少量结果连同近期消息写入 Context，过长内容做摘要或滑动裁剪。关键事实应保留来源和原文指针，因为压缩可能丢细节；Memory 也只有被检索并重新注入本轮 Context，模型才真正“看见”。</p>
+<h3 id="1-2-生成与采样（二）"><a href="#1-2-生成与采样（二）" class="headerlink" title="1.2 生成与采样（二）"></a>1.2 生成与采样（二）</h3><h3 id="S14-什么是-Inference？Decoder-only-模型如何自回归生成？"><a href="#S14-什么是-Inference？Decoder-only-模型如何自回归生成？" class="headerlink" title="S14. 什么是 Inference？Decoder-only 模型如何自回归生成？"></a>S14. 什么是 Inference？Decoder-only 模型如何自回归生成？</h3><p><strong>推荐回答：</strong></p>
+<p>Inference 是模型训练完成后，使用固定权重处理输入并生成输出的过程，不会在每次聊天时重新学习参数。Decoder-only 模型先对当前 Context 前向计算，经 LM Head 得到词表 Logits，再按解码策略选出一个 Token，把它追加到序列末尾，重复上述过程，直到触发停止条件。训练可并行计算多个位置的损失，而线上 Decode 在逻辑上逐 Token 串行。Agent 一次任务可能包含多轮推理，因此总延迟和费用会按调用次数、输入与输出 Token 累积。</p>
+<h3 id="S15-Logits、Softmax-与-Token-概率之间是什么关系？"><a href="#S15-Logits、Softmax-与-Token-概率之间是什么关系？" class="headerlink" title="S15. Logits、Softmax 与 Token 概率之间是什么关系？"></a>S15. Logits、Softmax 与 Token 概率之间是什么关系？</h3><p><strong>推荐回答：</strong></p>
+<p>Transformer 最后一层的隐藏向量经 LM Head 投影到词表维度，得到每个候选 Token 的原始分数，即 Logits。Logits 可正可负、总和没有约束，本身不是概率。Softmax 通过指数化与归一化把它们变成总和为 1 的概率分布。Temperature 通常先缩放 Logits，Top-k、Top-p 再过滤候选，随后在保留集合上重新归一化和采样。Attention 中也使用 Softmax，但那里归一化的是位置匹配分数，不是下一个 Token 的词表概率。</p>
+<h3 id="S16-EOS、stop-与-max-tokens-有什么区别？如何排查回答被截断？"><a href="#S16-EOS、stop-与-max-tokens-有什么区别？如何排查回答被截断？" class="headerlink" title="S16. EOS、stop 与 max_tokens 有什么区别？如何排查回答被截断？"></a>S16. EOS、stop 与 max_tokens 有什么区别？如何排查回答被截断？</h3><p><strong>推荐回答：</strong></p>
+<p>EOS 是模型生成的特殊结束 Token，表示它认为序列已完成；stop 是调用方配置的字符串或 Token 序列，匹配后由服务端主动停止；max_tokens 或 max_output_tokens 是输出硬上限，到达后即使句子未结束也会截断。排查时应先看响应中的 finish reason，再检查总 Context 是否超限、输出预算是否过小、stop 是否误匹配。结构化输出还要防止 JSON 在中间被截断；不能只把上限无限调大，而应结合任务所需长度、费用和超时合理设置。</p>
+<h3 id="S17-Greedy-Decoding-与-Sampling-的差异是什么？"><a href="#S17-Greedy-Decoding-与-Sampling-的差异是什么？" class="headerlink" title="S17. Greedy Decoding 与 Sampling 的差异是什么？"></a>S17. Greedy Decoding 与 Sampling 的差异是什么？</h3><p><strong>推荐回答：</strong></p>
+<p>Greedy Decoding 每一步选择概率最高的 Token，结果通常更稳定、速度路径简单，但局部最优不保证整段最优，也可能产生重复和僵化表达。Sampling 按概率分布随机抽取，能保留多样性，却使同一 Prompt 的结果波动。Temperature 趋近零时采样近似 Greedy，但具体 API 的 <code>temperature=0</code> 是否直接取 argmax 取决于实现。Agent 的工具参数、分类和结构化步骤偏向低随机；创意候选可提高随机性，再由后续评估或规则筛选。</p>
+<h3 id="S18-Temperature-如何改变分布？低温能否消除幻觉？"><a href="#S18-Temperature-如何改变分布？低温能否消除幻觉？" class="headerlink" title="S18. Temperature 如何改变分布？低温能否消除幻觉？"></a>S18. Temperature 如何改变分布？低温能否消除幻觉？</h3><p><strong>推荐回答：</strong></p>
+<p>Temperature 在 Softmax 前用 $z_i&#x2F;T$ 缩放 Logits。$T&lt;1$ 会放大分数差异，使分布更尖、输出更确定；$T&gt;1$ 会拉平分布，让低概率 Token 更可能被选中；$T\to0$ 时行为接近取最大值。低温适合工具调用和严格格式，但不能消除幻觉，因为最高概率候选仍可能是错误事实，模型目标也不是事实校验。降低幻觉应依赖可靠资料、RAG、工具查询、引用、Schema 与业务校验，温度只是控制随机性而非真实性的旋钮。</p>
+<h3 id="S19-Top-k-的机制、优点和局限是什么？"><a href="#S19-Top-k-的机制、优点和局限是什么？" class="headerlink" title="S19. Top-k 的机制、优点和局限是什么？"></a>S19. Top-k 的机制、优点和局限是什么？</h3><p><strong>推荐回答：</strong></p>
+<p>Top-k 在每一步只保留分数最高的 $k$ 个 Token，其余候选概率置零，再对保留集合归一化并采样。优点是候选规模固定、实现和调参直观，能切掉大词表中的明显长尾。局限是它不适应分布形态：模型很确定时，固定 $k$ 可能保留不必要的低质量项；模型犹豫时，合理候选可能超过 $k$ 却被硬切掉。它控制“候选个数”，Temperature 控制“分布尖锐度”，两者作用不同，可组合但应避免无依据地同时乱调。</p>
+<h3 id="S20-Top-p-为什么被称为-Nucleus-Sampling？与-Top-k-有何不同？"><a href="#S20-Top-p-为什么被称为-Nucleus-Sampling？与-Top-k-有何不同？" class="headerlink" title="S20. Top-p 为什么被称为 Nucleus Sampling？与 Top-k 有何不同？"></a>S20. Top-p 为什么被称为 Nucleus Sampling？与 Top-k 有何不同？</h3><p><strong>推荐回答：</strong></p>
+<p>Top-p 先按概率从高到低排序，选出累计概率达到或刚超过阈值 $p$ 的最小候选集合，再在其中采样；这个动态集合被称为概率“核”，所以又叫 Nucleus Sampling。模型有把握时，少数 Token 就能覆盖 $p$，候选集自动缩小；分布较平时，候选会增多。Top-k 固定数量，Top-p 固定概率质量，因此后者更自适应。实际可先确定任务需要稳定还是多样，再调 Temperature 和 Top-p，并以任务评测而非通用神奇参数决定取值。</p>
+<h3 id="S21-Temperature、Top-k、Top-p-同时存在时，应如何理解调用顺序？"><a href="#S21-Temperature、Top-k、Top-p-同时存在时，应如何理解调用顺序？" class="headerlink" title="S21. Temperature、Top-k、Top-p 同时存在时，应如何理解调用顺序？"></a>S21. Temperature、Top-k、Top-p 同时存在时，应如何理解调用顺序？</h3><p><strong>推荐回答：</strong></p>
+<p>常见概念链路是：先对 Logits 做 Temperature 缩放，再依据 Top-k 或 Top-p 缩小候选集，最后在保留项上 Softmax 归一化并采样。不过不同推理框架可能调整过滤顺序、设置最少保留 Token，API 也可能只暴露部分参数，因此应以厂商文档为准。调参时不要一次改三个旋钮，否则很难归因。可先固定低温满足稳定性，再用 Top-p 去掉概率长尾；对严格工具参数，优先依赖 Schema 约束与校验，而不是只靠采样参数。</p>
+<h3 id="S22-KV-Cache-为什么缓存-K、V，而通常不缓存历史-Q？"><a href="#S22-KV-Cache-为什么缓存-K、V，而通常不缓存历史-Q？" class="headerlink" title="S22. KV Cache 为什么缓存 K、V，而通常不缓存历史 Q？"></a>S22. KV Cache 为什么缓存 K、V，而通常不缓存历史 Q？</h3><p><strong>推荐回答：</strong></p>
+<p>在第 $t$ 个 Decode 步骤，当前 Token 的 $Q_t$ 用来查询从 1 到 $t$ 的所有 K、V；下一步会产生新的 $Q_{t+1}$，历史 Q 不再参与计算，因此没有复用价值。相反，历史位置的 K、V 会被每个后续 Token 反复读取，缓存后可避免重复投影和重算历史状态。KV Cache 用显存换时间，大小随层数、KV 头数、序列长度、批量和数据精度增长。它减少重复计算，但当前 Q 与越来越长的 K 做注意力仍有成本，并非让 Decode 变成常数开销。</p>
+<h3 id="S23-Prefill-与-Decode-分别做什么？如何影响-TTFT-和总延迟？"><a href="#S23-Prefill-与-Decode-分别做什么？如何影响-TTFT-和总延迟？" class="headerlink" title="S23. Prefill 与 Decode 分别做什么？如何影响 TTFT 和总延迟？"></a>S23. Prefill 与 Decode 分别做什么？如何影响 TTFT 和总延迟？</h3><p><strong>推荐回答：</strong></p>
+<p>Prefill 一次处理完整 Prompt，可并行计算各位置并建立初始 KV Cache；输入越长，Prefill 越重，通常直接推高 TTFT。Decode 在此后逐步生成 Token，每一步读取历史 Cache、计算新 Q&#x2F;K&#x2F;V 并追加缓存，逻辑上串行；输出越长，Decode 步数越多，总完成时间越长。Streaming 只能让 Decode 结果尽早展示，不能消除 Prefill。优化时要先区分是首字慢还是生成慢：前者优先压缩输入和利用前缀缓存，后者考虑模型规模、输出长度和推理服务吞吐。</p>
+<h3 id="1-3-模型侧认名（三）"><a href="#1-3-模型侧认名（三）" class="headerlink" title="1.3 模型侧认名（三）"></a>1.3 模型侧认名（三）</h3><h3 id="S24-system、user、assistant、tool-消息角色分别承担什么职责？"><a href="#S24-system、user、assistant、tool-消息角色分别承担什么职责？" class="headerlink" title="S24. system、user、assistant、tool 消息角色分别承担什么职责？"></a>S24. system、user、assistant、tool 消息角色分别承担什么职责？</h3><p><strong>推荐回答：</strong></p>
+<p>system 承载全局身份、硬约束、安全边界和输出契约；user 表达当前需求与用户提供的材料；assistant 是模型此前的回复或本轮返回的工具调用意图；tool 由应用在真实执行工具后写入，携带对应调用 ID、结果或错误。角色本质上会按模型的对话模板序列化进 Context，不是绝对安全权限系统。应用仍需做鉴权与校验。多轮对话也不是模型永久记忆，而是应用把这些消息裁剪、排序后再次提交。</p>
+<h3 id="S25-Pretrain、SFT、Chat-Instruct-模型之间是什么关系？"><a href="#S25-Pretrain、SFT、Chat-Instruct-模型之间是什么关系？" class="headerlink" title="S25. Pretrain、SFT、Chat&#x2F;Instruct 模型之间是什么关系？"></a>S25. Pretrain、SFT、Chat&#x2F;Instruct 模型之间是什么关系？</h3><p><strong>推荐回答：</strong></p>
+<p>Pretrain 在大规模语料上进行下一 Token 预测，学习语言结构和统计知识，得到擅长续写但未必听从指令的 Base 模型。SFT 使用“指令—优质回答”等监督样本继续训练，使模型学会问答格式、助手口吻和任务遵循。之后还可能使用 RLHF、DPO 等偏好对齐方法，进一步优化有用性、安全性与拒答行为。Chat 或 Instruct 模型通常是这些阶段的产物，适合直接接入 Agent；但对齐提高的是行为概率，不代表事实永远正确，也不能替代外部权限控制。</p>
+<h3 id="S26-什么是-Instruction-Following？哪些因素会让模型不听指令？"><a href="#S26-什么是-Instruction-Following？哪些因素会让模型不听指令？" class="headerlink" title="S26. 什么是 Instruction Following？哪些因素会让模型不听指令？"></a>S26. 什么是 Instruction Following？哪些因素会让模型不听指令？</h3><p><strong>推荐回答：</strong></p>
+<p>Instruction Following 是模型按要求完成目标并遵守语言、步骤、格式和禁止事项的能力。失败可能来自模型本身对齐能力不足，也可能是 Prompt 含糊、规则冲突、关键要求埋在长 Context 中、示例与指令不一致，或采样过于发散。Agent 工程中应把硬规则放在高优先级消息，使用明确可检查的字段和失败分支，对输出做 Schema Validation，并通过固定评测集衡量遵循率。不能把所有失败都归因于“模型不够聪明”，输入合同和运行时同样需要排查。</p>
+<h3 id="S27-Hallucination-是什么？为什么-Temperature-降到-0-仍可能出现？"><a href="#S27-Hallucination-是什么？为什么-Temperature-降到-0-仍可能出现？" class="headerlink" title="S27. Hallucination 是什么？为什么 Temperature 降到 0 仍可能出现？"></a>S27. Hallucination 是什么？为什么 Temperature 降到 0 仍可能出现？</h3><p><strong>推荐回答：</strong></p>
+<p>幻觉是模型生成了流畅但错误、无依据或不可验证的内容，例如虚构论文、API 字段、订单状态或声称工具已经执行。LLM 的训练目标是预测高概率 Token，而不是连接实时事实库并验证真伪；数据缺口、过时知识、问题歧义和错误 Context 都会诱发幻觉。Temperature 为 0 只是更稳定地选择最高分候选，若最高分本身错误，结果会稳定地错。缓解需要做来源约束、RAG 或工具查询、引用核验、参数校验，并让模型在证据不足时明确表达不确定。</p>
+<h3 id="S28-结构化输出从“软约束”到“硬约束”有哪些层次？"><a href="#S28-结构化输出从“软约束”到“硬约束”有哪些层次？" class="headerlink" title="S28. 结构化输出从“软约束”到“硬约束”有哪些层次？"></a>S28. 结构化输出从“软约束”到“硬约束”有哪些层次？</h3><p><strong>推荐回答：</strong></p>
+<p>最软的是 Prompt 约定格式和示例，只靠模型遵循，可能多出代码围栏或漏字段；JSON Mode 通常保证语法上是合法 JSON，但不一定满足业务字段；JSON Schema 或 Guided Decoding 在生成时限制可选 Token，使输出更接近指定结构；生成完成后，应用仍要做 Schema Validation，检查类型、必填、枚举和业务规则；最后 SDK 可映射为 Typed Output。模型侧约束负责减少非法生成，应用侧校验负责决定能否被业务信任，两者不能互相替代。</p>
+<h3 id="S29-Latency、TTFT、Throughput-与-Batch-分别表示什么？"><a href="#S29-Latency、TTFT、Throughput-与-Batch-分别表示什么？" class="headerlink" title="S29. Latency、TTFT、Throughput 与 Batch 分别表示什么？"></a>S29. Latency、TTFT、Throughput 与 Batch 分别表示什么？</h3><p><strong>推荐回答：</strong></p>
+<p>Latency 是单次请求耗时，但必须说明测的是首 Token 还是完整响应；TTFT 是请求发出到首个输出 Token 的时间，通常受排队和 Prefill 影响；Throughput 是单位时间处理量，如 tokens&#x2F;s 或 requests&#x2F;s；Batch 将多个请求一起计算以提高设备利用率和总体吞吐，但可能增加单请求等待。在线 Agent 不能只追求吞吐，因为多次模型与工具调用串联后，尾延迟会显著放大。性能评估应同时看 TTFT、输出速度、端到端 P95&#x2F;P99 与并发容量。</p>
+<h3 id="S30-什么是-MoE？“总参数更大”是否一定意味着每-Token-推理更慢？"><a href="#S30-什么是-MoE？“总参数更大”是否一定意味着每-Token-推理更慢？" class="headerlink" title="S30. 什么是 MoE？“总参数更大”是否一定意味着每 Token 推理更慢？"></a>S30. 什么是 MoE？“总参数更大”是否一定意味着每 Token 推理更慢？</h3><p><strong>推荐回答：</strong></p>
+<p>MoE 将部分 FFN 替换为多个专家网络，并由 Router 为每个 Token 选择少数专家执行。模型可以拥有很大的总参数容量，但单个 Token 只激活其中一部分，所以计算量不必与总参数量线性增长。“参数更多一定更慢”因此并不成立，还要看激活参数、专家并行、通信、负载均衡和内存带宽。路由不均会使少数专家拥塞，跨设备专家还会产生 All-to-All 通信。选模型时应比较真实延迟、吞吐、质量和价格，而非只看总参数数字。</p>
+<h3 id="S31-模型路由或级联如何帮助-Agent-控制成本？风险是什么？"><a href="#S31-模型路由或级联如何帮助-Agent-控制成本？风险是什么？" class="headerlink" title="S31. 模型路由或级联如何帮助 Agent 控制成本？风险是什么？"></a>S31. 模型路由或级联如何帮助 Agent 控制成本？风险是什么？</h3><p><strong>推荐回答：</strong></p>
+<p>模型路由根据任务难度、风险、模态或时延目标，把简单分类和改写交给小模型，把复杂推理或关键决策升级到大模型；级联还可以先由小模型尝试，置信不足再升级。这样能降低平均成本和延迟。风险在于路由误判：难题被送入弱模型会静默降质，多次级联也可能增加端到端延迟。工程上应定义可观测的升级条件，对高风险操作直接使用可靠模型，并记录每次路由、质量和成本，用离线集与线上反馈持续校准。</p>
+<h3 id="1-4-调用侧（四）"><a href="#1-4-调用侧（四）" class="headerlink" title="1.4 调用侧（四）"></a>1.4 调用侧（四）</h3><h3 id="S32-Chat-Completion-的输入输出合同是什么？多轮对话如何实现？"><a href="#S32-Chat-Completion-的输入输出合同是什么？多轮对话如何实现？" class="headerlink" title="S32. Chat Completion 的输入输出合同是什么？多轮对话如何实现？"></a>S32. Chat Completion 的输入输出合同是什么？多轮对话如何实现？</h3><p><strong>推荐回答：</strong></p>
+<p>Chat Completion 通常接收 messages、模型名、采样参数，以及可选 tools、response format 等；返回 assistant 文本、结构化内容或 Tool Invocation，并带停止原因和用量信息。一次调用本质上把消息序列放入 Context，执行 Prefill 与 Decode。多轮不是服务端模型天然保留记忆，而是应用保存上一轮 user、assistant、tool 消息，按 Token 预算裁剪后再次提交。生产中还应记录请求 ID、模型版本和参数，以便重放、归因与评测。</p>
+<h3 id="S33-Streaming-改变了什么，没有改变什么？"><a href="#S33-Streaming-改变了什么，没有改变什么？" class="headerlink" title="S33. Streaming 改变了什么，没有改变什么？"></a>S33. Streaming 改变了什么，没有改变什么？</h3><p><strong>推荐回答：</strong></p>
+<p>Streaming 让服务端在 Decode 过程中持续发送增量 chunk，客户端可边接收边渲染，因此降低用户感知的等待时间。它不改变模型的推理结果定义、Context 占用或 Token 费用，也不会缩短首 Token 之前的 Prefill；真正的 TTFT 仍受输入长度、排队与服务负载影响。流式内容可能把 UTF-8 字符、JSON 字段或工具参数拆在多个 chunk 中，客户端必须缓冲并按事件类型组装，不能把半截结构直接解析或执行。</p>
+<h3 id="S34-Prompt-约束、JSON-Mode、JSON-Schema、Validation-与-Typed-Output-如何分层？"><a href="#S34-Prompt-约束、JSON-Mode、JSON-Schema、Validation-与-Typed-Output-如何分层？" class="headerlink" title="S34. Prompt 约束、JSON Mode、JSON Schema、Validation 与 Typed Output 如何分层？"></a>S34. Prompt 约束、JSON Mode、JSON Schema、Validation 与 Typed Output 如何分层？</h3><p><strong>推荐回答：</strong></p>
+<p>Prompt 约束负责用自然语言说明期望结构；JSON Mode 提高语法合法性；JSON Schema 描述字段、类型、必填项、枚举和嵌套关系，部分服务可据此做约束解码；Validation 在应用端对完整结果再次验证；Typed Output 则把校验后的 JSON 转成语言中的类型对象。越靠前越接近生成过程，越靠后越接近业务边界。即便服务宣称严格 Schema，也不能省略权限、范围、金额等业务校验，因为“结构合法”不等于“业务允许”。</p>
+<h3 id="S35-为什么结构化输出在流式场景中需要特别处理？"><a href="#S35-为什么结构化输出在流式场景中需要特别处理？" class="headerlink" title="S35. 为什么结构化输出在流式场景中需要特别处理？"></a>S35. 为什么结构化输出在流式场景中需要特别处理？</h3><p><strong>推荐回答：</strong></p>
+<p>流式传输按 Token 或 chunk 到达，切分边界不等于 JSON 语法边界，一个对象可能暂时缺右括号，字符串和转义符也可能被拆开。若客户端每收到一段就 <code>JSON.parse</code>，会把正常的中间状态误判为失败；若边到边执行工具，还可能使用不完整参数。稳妥做法是区分展示流和控制流：文本可增量展示，结构化结果按事件缓冲，收到完成标记后统一解析、Schema Validation，再执行业务；需要增量 JSON 时则使用专门解析器和明确协议。</p>
+<h3 id="S36-请完整描述一次-Tool-Calling-闭环。"><a href="#S36-请完整描述一次-Tool-Calling-闭环。" class="headerlink" title="S36. 请完整描述一次 Tool Calling 闭环。"></a>S36. 请完整描述一次 Tool Calling 闭环。</h3><p><strong>推荐回答：</strong></p>
+<p>应用先把 Tool Schema 与 messages 发给模型；模型返回工具名、参数和 tool call ID，此时只是 Invocation，工具尚未执行。运行时先做 Schema 与权限校验，再调用真实函数或外部服务；随后把成功 Result 或结构化 Error 以 tool 角色、关联原 call ID 写回消息历史，再次调用模型，让它基于观察生成最终回答或提出下一次调用。闭环必须设置最大步数、超时与副作用确认，不能把模型生成的“已完成”当成执行证据。</p>
+<h3 id="S37-Tool-Schema-怎样写，才能降低选错工具和参数幻觉？"><a href="#S37-Tool-Schema-怎样写，才能降低选错工具和参数幻觉？" class="headerlink" title="S37. Tool Schema 怎样写，才能降低选错工具和参数幻觉？"></a>S37. Tool Schema 怎样写，才能降低选错工具和参数幻觉？</h3><p><strong>推荐回答：</strong></p>
+<p>工具名应稳定且语义明确，description 要说明适用场景与不适用边界，避免多个工具描述高度重叠；参数使用严格 JSON Schema，明确类型、必填、枚举、范围和格式，能由系统补齐的身份信息不要交给模型自由填写。高风险参数还要做应用侧权限和业务校验。Schema 不宜一次暴露过多无关工具，否则选择空间与 Token 成本都会增加。应从失败 Trace 中统计错选、漏参和越权案例，持续优化描述与工具分组，而不是只改 Prompt。</p>
+<h3 id="S38-多个-Tool-Calls-何时可并行？如何处理部分失败？"><a href="#S38-多个-Tool-Calls-何时可并行？如何处理部分失败？" class="headerlink" title="S38. 多个 Tool Calls 何时可并行？如何处理部分失败？"></a>S38. 多个 Tool Calls 何时可并行？如何处理部分失败？</h3><p><strong>推荐回答：</strong></p>
+<p>只有调用之间无数据依赖、无顺序副作用且资源允许时才适合并行，例如同时查询天气和汇率；若 B 的参数依赖 A 的结果，或两个调用会竞争修改同一订单，就应串行或加事务控制。运行时要为每个 Invocation 保留独立 call ID、超时、状态和结果，完成后按稳定规则写回。若 A 成功、B 超时，应分别返回 Result 与 Error，让模型决定重试或降级，不能把整批伪装成全成功，也不应盲目重放已产生副作用的调用。</p>
+<h3 id="S39-Prompt-Caching-能优化什么？怎样提高命中率？"><a href="#S39-Prompt-Caching-能优化什么？怎样提高命中率？" class="headerlink" title="S39. Prompt Caching 能优化什么？怎样提高命中率？"></a>S39. Prompt Caching 能优化什么？怎样提高命中率？</h3><p><strong>推荐回答：</strong></p>
+<p>Prompt Caching 通常复用相同前缀的计算结果或 KV 表示，降低重复 system Prompt、固定工具目录和长公共说明带来的 Prefill 成本与 TTFT。它主要优化输入前缀，不会减少新输出的 Decode 步数。提高命中率要把稳定内容放前面、易变用户输入和工具结果放后面，保持序列化、工具顺序与空白格式稳定，避免每轮重写整个前缀。缓存是否计费、有效期和最小长度由厂商决定，还需防止跨用户错误复用敏感上下文。</p>
+<h3 id="S40-LLM-API-的重试策略应如何设计？"><a href="#S40-LLM-API-的重试策略应如何设计？" class="headerlink" title="S40. LLM API 的重试策略应如何设计？"></a>S40. LLM API 的重试策略应如何设计？</h3><p><strong>推荐回答：</strong></p>
+<p>先按错误分类：429、部分 5xx、网络超时通常可重试，采用带随机抖动的指数退避、最大次数和总时限，并尊重 <code>Retry-After</code>；401、403、请求 Schema 错误通常不可通过原样重试解决。对非流式只读请求重试较安全，流式中断要判断已向用户发送多少内容，避免重复拼接。Tool 或写操作必须使用幂等键、状态查询或补偿机制。达到上限后应降级、切换模型或明确报错，并记录请求 ID、尝试次数和最终原因。</p>
+<hr>
+<h2 id="2-面试真题"><a href="#2-面试真题" class="headerlink" title="2. 面试真题"></a>2. 面试真题</h2><blockquote>
+<p>以下题目按主题归纳、改写自公开面经与题库，用于训练表达，并非逐题对应某一场真实面试；综合参考来源见文末「参考面经与题库」。</p>
+</blockquote>
+<h3 id="I1-请从输入到输出完整讲一遍-Transformer-Decoder-only-的推理链路。"><a href="#I1-请从输入到输出完整讲一遍-Transformer-Decoder-only-的推理链路。" class="headerlink" title="I1. 请从输入到输出完整讲一遍 Transformer Decoder-only 的推理链路。"></a>I1. 请从输入到输出完整讲一遍 Transformer Decoder-only 的推理链路。</h3><p><strong>推荐回答：</strong></p>
+<p>文本先经 Tokenizer 变成 Token ID，再查 Token Embedding，并注入 RoPE 等位置信息。表示依次进入多层 Decoder Block，每层用带 Causal Mask 的 Multi-Head Self-Attention 聚合历史，再经 FFN、残差和归一化。最后一个位置的隐藏向量通过 LM Head 得到词表 Logits，经 Temperature、Top-k 或 Top-p 处理后选出下一个 Token。该 Token 追加回序列，利用 KV Cache 增量 Decode，直到 EOS、stop 或输出上限。</p>
+<h3 id="I2-Attention-为什么除以-sqrt-d-k-？Mask-应在-Softmax-前还是后加？"><a href="#I2-Attention-为什么除以-sqrt-d-k-？Mask-应在-Softmax-前还是后加？" class="headerlink" title="I2. Attention 为什么除以 $\sqrt{d_k}$？Mask 应在 Softmax 前还是后加？"></a>I2. Attention 为什么除以 $\sqrt{d_k}$？Mask 应在 Softmax 前还是后加？</h3><p><strong>推荐回答：</strong></p>
+<p>若 Q、K 各维近似独立且方差相近，点积方差会随维度 $d_k$ 增长；维度大时分数绝对值过大，Softmax 容易饱和，梯度集中在极少位置。除以 $\sqrt{d_k}$ 可把尺度拉回稳定范围。Mask 应在 Softmax 前施加：把不可见位置的 Logit 加上负无穷或足够小的数，使其 Softmax 概率为零。若 Softmax 后才清零，还需重新归一化，否则权重和不为 1，并可能产生错误的信息泄漏。</p>
+<h3 id="I3-Multi-Head-Attention-为什么有效？减少头数一定会降低效果吗？"><a href="#I3-Multi-Head-Attention-为什么有效？减少头数一定会降低效果吗？" class="headerlink" title="I3. Multi-Head Attention 为什么有效？减少头数一定会降低效果吗？"></a>I3. Multi-Head Attention 为什么有效？减少头数一定会降低效果吗？</h3><p><strong>推荐回答：</strong></p>
+<p>多头让模型在不同投影子空间并行学习多种关联模式，再拼接融合，比单一注意力分布表达更丰富。但头数不是独立于总维度的免费增益：总隐藏维固定时，增加头数会缩小单头维度；部分头还可能冗余。减少 Query Head 可能影响能力，但用 GQA 或 MQA 让多个 Query Head 共享较少 KV Head，常能显著减少 KV Cache，并以较小质量损失换吞吐。因此答案应是“不一定”，最终取决于结构、训练补偿和目标任务评测。</p>
+<h3 id="I4-KV-Cache-为什么只缓存-K、V？它的显存占用与哪些因素有关？"><a href="#I4-KV-Cache-为什么只缓存-K、V？它的显存占用与哪些因素有关？" class="headerlink" title="I4. KV Cache 为什么只缓存 K、V？它的显存占用与哪些因素有关？"></a>I4. KV Cache 为什么只缓存 K、V？它的显存占用与哪些因素有关？</h3><p><strong>推荐回答：</strong></p>
+<p>每个新 Token 只需要当前 Q 去查询全部历史 K、V，历史 Q 后续不会再用，因此缓存 Q 没有收益；历史 K、V 会在每个 Decode 步骤重复访问，缓存可避免重算。容量近似与批大小、层数、序列长度、KV Head 数、Head Dimension、K&#x2F;V 两份张量及数据类型字节数成正比。Context 和并发增加会迅速吃满显存。常见优化包括 GQA&#x2F;MQA、KV 量化、分页管理和前缀共享，但都要评估质量、碎片与调度开销。</p>
+<h3 id="I5-FlashAttention、KV-Cache-和-PagedAttention-分别解决什么问题？"><a href="#I5-FlashAttention、KV-Cache-和-PagedAttention-分别解决什么问题？" class="headerlink" title="I5. FlashAttention、KV Cache 和 PagedAttention 分别解决什么问题？"></a>I5. FlashAttention、KV Cache 和 PagedAttention 分别解决什么问题？</h3><p><strong>推荐回答：</strong></p>
+<p>FlashAttention 优化单次注意力计算，通过分块、在线 Softmax 和减少 HBM 往返降低 IO 与中间显存，数学结果基本不变，复杂度仍近似二次。KV Cache 面向自回归 Decode，保存历史 K、V，避免每步重复计算历史投影。PagedAttention 面向服务系统的 KV Cache 内存管理，把逻辑连续序列映射到非连续物理块，减少碎片并支持灵活批处理。三者分别处在算子、增量复用和内存调度层，可以组合使用，不应混为同一种优化。</p>
+<h3 id="I6-Temperature、Top-k、Top-p-如何影响采样？事实问答该如何设置？"><a href="#I6-Temperature、Top-k、Top-p-如何影响采样？事实问答该如何设置？" class="headerlink" title="I6. Temperature、Top-k、Top-p 如何影响采样？事实问答该如何设置？"></a>I6. Temperature、Top-k、Top-p 如何影响采样？事实问答该如何设置？</h3><p><strong>推荐回答：</strong></p>
+<p>Temperature 缩放 Logits，控制概率分布尖锐度；Top-k 固定只留最高的 $k$ 个候选；Top-p 保留累计概率达到阈值的动态最小集合。事实问答通常使用低温和较收敛的候选范围，降低随机波动，但参数没有跨模型通用最优值，应通过评测集调优。更重要的是，采样只能控制输出分散程度，不能验证事实。可靠问答还需接 RAG 或权威工具、要求引用并做冲突检查；否则低温只是让错误答案更稳定。</p>
+<h3 id="I7-为什么-LLM-会产生幻觉？请按模型、上下文和系统三层归因。"><a href="#I7-为什么-LLM-会产生幻觉？请按模型、上下文和系统三层归因。" class="headerlink" title="I7. 为什么 LLM 会产生幻觉？请按模型、上下文和系统三层归因。"></a>I7. 为什么 LLM 会产生幻觉？请按模型、上下文和系统三层归因。</h3><p><strong>推荐回答：</strong></p>
+<p>模型层：目标是 Next-Token Prediction，参数知识可能缺失、过时或被对齐成“倾向回答”；上下文层：问题歧义、RAG 召回错误、资料冲突、长文本关键信息丢失都会让模型依据不足；系统层：工具结果未写回、Schema 含糊、缓存串扰或把模型自述当执行事实，也会制造“系统性幻觉”。治理应先通过 Trace 定位层级，再分别采用更好模型、检索与引用、上下文筛选、工具校验和业务确认。把问题一概归因于温度或 Prompt 不够长是不完整的。</p>
+<h3 id="I8-RAG-能否彻底解决幻觉？如何评估它确实在改善答案？"><a href="#I8-RAG-能否彻底解决幻觉？如何评估它确实在改善答案？" class="headerlink" title="I8. RAG 能否彻底解决幻觉？如何评估它确实在改善答案？"></a>I8. RAG 能否彻底解决幻觉？如何评估它确实在改善答案？</h3><p><strong>推荐回答：</strong></p>
+<p>不能。RAG 只把外部证据送进 Context，仍可能出现召回遗漏、错误文档、切块丢语义、排序不佳、资料过时，以及模型忽略或曲解证据。评估应拆成检索与生成两层：检索看 Recall@K、MRR、命中文档和权限过滤；生成看答案正确性、引用忠实度、证据覆盖率、拒答率与端到端任务成功率。还应加入无答案、冲突证据和过期内容样本。只有能区分“没检到”与“检到却答错”，优化才有明确方向。</p>
+<h3 id="I9-请设计一个可靠的-Tool-Calling-Loop，并说明如何避免死循环和重复副作用。"><a href="#I9-请设计一个可靠的-Tool-Calling-Loop，并说明如何避免死循环和重复副作用。" class="headerlink" title="I9. 请设计一个可靠的 Tool Calling Loop，并说明如何避免死循环和重复副作用。"></a>I9. 请设计一个可靠的 Tool Calling Loop，并说明如何避免死循环和重复副作用。</h3><p><strong>推荐回答：</strong></p>
+<p>模型先基于工具 Schema 返回 Invocation；运行时校验参数、权限和风险，再执行工具，把 Result 或 Error 连同 call ID 写回，继续 Completion，直到得到最终回复。为避免死循环，应设置最大步数、总 Token&#x2F;时间预算、相同调用检测和连续错误熔断；不可恢复错误直接降级或请求用户补充。对写库、付款等副作用工具使用幂等键、执行前确认和执行后状态核验，重试前先查结果。模型只负责提出动作，是否执行与是否成功必须由运行时判定。</p>
+<h3 id="I10-一轮返回多个-Tool-Calls-时，你如何决定并行还是串行？"><a href="#I10-一轮返回多个-Tool-Calls-时，你如何决定并行还是串行？" class="headerlink" title="I10. 一轮返回多个 Tool Calls 时，你如何决定并行还是串行？"></a>I10. 一轮返回多个 Tool Calls 时，你如何决定并行还是串行？</h3><p><strong>推荐回答：</strong></p>
+<p>我会先构建依赖和副作用判断：参数互不依赖、只读且资源隔离的调用可并行；后一步依赖前一步输出，或多个调用修改同一实体时必须串行。并行执行要为每项设置独立超时、重试和 call ID，用 <code>allSettled</code> 类语义收集成功与失败，而不是一个失败取消全部。结果按稳定顺序写回，并明确每项状态。对于已成功的副作用调用，不能因同批其他调用失败而整体重试，除非存在事务或补偿机制。</p>
+<h3 id="I11-SSE-与-WebSocket-有什么区别？LLM-文本流为什么通常优先-SSE？"><a href="#I11-SSE-与-WebSocket-有什么区别？LLM-文本流为什么通常优先-SSE？" class="headerlink" title="I11. SSE 与 WebSocket 有什么区别？LLM 文本流为什么通常优先 SSE？"></a>I11. SSE 与 WebSocket 有什么区别？LLM 文本流为什么通常优先 SSE？</h3><p><strong>推荐回答：</strong></p>
+<p>SSE 基于 HTTP 长连接，主要是服务端向客户端单向推送文本事件，浏览器支持 EventSource、事件 ID 和自动重连，易复用现有鉴权、代理与日志体系；WebSocket 协议升级后提供全双工帧通信，适合双方高频交互、二进制数据和实时打断。LLM 文本生成多数是“一次请求、持续下发 Token”，SSE 模型更贴合且运维简单。若要实时语音、客户端频繁控制或多人协同，则 WebSocket 更合适。选型核心是通信模式，而非谁绝对先进。</p>
+<h3 id="I12-流式输出中途断线，如何避免内容重复、丢失或工具被重复执行？"><a href="#I12-流式输出中途断线，如何避免内容重复、丢失或工具被重复执行？" class="headerlink" title="I12. 流式输出中途断线，如何避免内容重复、丢失或工具被重复执行？"></a>I12. 流式输出中途断线，如何避免内容重复、丢失或工具被重复执行？</h3><p><strong>推荐回答：</strong></p>
+<p>每个流应有 request ID，事件带单调递增序号或 event ID；服务端保存一定期限的已发事件或可恢复状态，客户端重连时携带最后确认 ID，从下一事件续传，并按 ID 去重。若上游模型 API 不支持断点续推，不能假装无损恢复，可选择重放完整回答后由客户端比对，或明确重启生成。工具 Invocation 必须与文本展示分离，只有完整参数校验后才执行，并使用幂等键记录执行状态；重连时先查询状态，禁止仅凭重复事件再次触发副作用。</p>
+<h3 id="I13-429、5xx、超时和-403-应如何分别处理？为什么重试要加随机抖动？"><a href="#I13-429、5xx、超时和-403-应如何分别处理？为什么重试要加随机抖动？" class="headerlink" title="I13. 429、5xx、超时和 403 应如何分别处理？为什么重试要加随机抖动？"></a>I13. 429、5xx、超时和 403 应如何分别处理？为什么重试要加随机抖动？</h3><p><strong>推荐回答：</strong></p>
+<p>429 应尊重 <code>Retry-After</code> 并做限速，网络超时和部分 5xx 可在总时限内指数退避重试；403 通常是权限或策略拒绝，原样重试没有意义，应停止并上报。请求参数错误也应直接修正而非重试。随机抖动可让大量同时失败的实例错开下一次请求，避免“惊群”再次压垮服务。还要设置最大次数、熔断和降级路径。对流式请求及有副作用工具，重试前必须判断已发送内容和执行状态，并依赖幂等设计防重复。</p>
+<h3 id="I14-如果-Agent-首字慢、总耗时长、吞吐低，你会怎样定位？"><a href="#I14-如果-Agent-首字慢、总耗时长、吞吐低，你会怎样定位？" class="headerlink" title="I14. 如果 Agent 首字慢、总耗时长、吞吐低，你会怎样定位？"></a>I14. 如果 Agent 首字慢、总耗时长、吞吐低，你会怎样定位？</h3><p><strong>推荐回答：</strong></p>
+<p>先分解端到端 Trace：排队、网络、Prompt 构建、模型 TTFT、Decode、工具调用和后处理。首字慢重点看输入 Token、Prefill、缓存命中、排队和模型冷启动；首字后输出慢看每 Token Decode、KV Cache 压力和模型规模；总耗时长还可能是输出过长或 Tool Loop 轮数过多；吞吐低则检查 Batch、并发调度、显存碎片与设备利用率。优化前建立 P50&#x2F;P95&#x2F;P99 和 tokens&#x2F;s 基线，避免用 Streaming 的视觉改善掩盖真实计算瓶颈。</p>
+<hr>
+<h2 id="参考面经与题库"><a href="#参考面经与题库" class="headerlink" title="参考面经与题库"></a>参考面经与题库</h2><p>本篇面试题按主题归纳、改写自以下公开面经与题库，非逐题一一对应原帖，请以各平台原文为准：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/854748927663321088">牛客·阿里大模型一面</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/907392666726395904">牛客·百度大模型算法一面</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/872627116062298112">牛客·Moka 二面</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/891322059656052736">牛客·大模型算法面经合集</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/1614815">牛客·AI-Agent 面试题汇总</a></li>
+<li><a target="_blank" rel="noopener" href="https://ac.nowcoder.com/discuss/1624093">牛客·Agent 开发面试题</a></li>
+</ul>
+<hr>
+<h2 id="3-导航"><a href="#3-导航" class="headerlink" title="3. 导航"></a>3. 导航</h2><ul>
+<li><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">LLM 基础学习（一）· 表示与容量</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">LLM 基础学习（二）· 生成与采样</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">LLM 基础学习（三）· 模型侧认名</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">LLM 基础学习（四）· 调用侧</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">下一模块：Prompt Engineering（一）</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">本文永久链接</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/" rel="prev" title="AI-Agent工程学习-LLM基础学习(四)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LLM基础学习(四)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/" rel="next" title="AI-Agent工程学习-Prompt Engineering(一)">
+                  AI-Agent工程学习-Prompt Engineering(一) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

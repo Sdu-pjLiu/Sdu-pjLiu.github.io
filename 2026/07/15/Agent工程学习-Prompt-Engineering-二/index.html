@@ -27,7 +27,7 @@
 <meta property="og:description" content="Prompt 推理与编排：Zero&#x2F;Few-shot、CoT 与 Self-Consistency、Tree of Thoughts、Least-to-Most 与分解、Prompt Chaining，以及选型表。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-15T08:45:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T07:27:36.432Z">
+<meta property="article:modified_time" content="2026-07-17T11:04:49.979Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="Prompt Engineering">
@@ -136,7 +136,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E7%A4%BA%E4%BE%8B%E7%AD%96%E7%95%A5%EF%BC%9AZero-shot-%E4%B8%8E-Few-shot"><span class="nav-number">1.</span> <span class="nav-text">1. 示例策略：Zero-shot 与 Few-shot</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Zero-shot-Prompting"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 Zero-shot Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Few-shot-Prompting"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Few-shot Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%BD%95%E6%97%B6%E7%94%A8%E7%A4%BA%E4%BE%8B%EF%BC%8C%E4%BD%95%E6%97%B6%E6%94%B9%E7%94%A8-Schema-%E5%B7%A5%E5%85%B7"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 何时用示例，何时改用 Schema &#x2F; 工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%8E%A8%E7%90%86%E9%93%BE%EF%BC%9AChain-of-Thought-%E4%B8%8E-Self-Consistency"><span class="nav-number">2.</span> <span class="nav-text">2. 推理链：Chain-of-Thought 与 Self-Consistency</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Chain-of-Thought%EF%BC%88CoT%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Chain-of-Thought（CoT）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E4%BD%95%E6%97%B6%E4%B8%8D%E8%AF%A5%E5%BC%BA%E5%88%B6-CoT"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 何时不该强制 CoT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Self-Consistency%EF%BC%88%E8%87%AA%E8%AF%84%E4%B8%80%E8%87%B4%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Self-Consistency（自评一致）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Tree-of-Thoughts%EF%BC%88ToT%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. Tree of Thoughts（ToT）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E9%97%AE%E9%A2%98%E6%8B%86%E8%A7%A3%EF%BC%9ALeast-to-Most-%E4%B8%8E-Prompt-Decomposition"><span class="nav-number">4.</span> <span class="nav-text">4. 问题拆解：Least-to-Most 与 Prompt Decomposition</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Least-to-Most-Prompting"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Least-to-Most Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Prompt-Decomposition"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 Prompt Decomposition</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Prompt-Chaining%EF%BC%88%E6%8F%90%E7%A4%BA%E9%93%BE%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">5. Prompt Chaining（提示链）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E4%B8%8E-Tool-Calling-%E5%A4%9A%E8%BD%AE%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 与 Tool Calling 多轮的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E4%B8%AD%E9%97%B4%E7%BB%93%E6%9E%9C%E6%A0%A1%E9%AA%8C%E3%80%81%E7%9F%AD%E8%B7%AF%E3%80%81%E9%87%8D%E8%AF%95"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 中间结果校验、短路、重试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%E8%A1%A8"><span class="nav-number">6.</span> <span class="nav-text">6. 技术选型表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E7%A4%BA%E4%BE%8B%E7%AD%96%E7%95%A5%EF%BC%9AZero-shot-%E4%B8%8E-Few-shot"><span class="nav-number">1.</span> <span class="nav-text">1. 示例策略：Zero-shot 与 Few-shot</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Zero-shot-Prompting"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 Zero-shot Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Few-shot-Prompting"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Few-shot Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%BD%95%E6%97%B6%E7%94%A8%E7%A4%BA%E4%BE%8B%EF%BC%8C%E4%BD%95%E6%97%B6%E6%94%B9%E7%94%A8-Schema-%E5%B7%A5%E5%85%B7"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 何时用示例，何时改用 Schema &#x2F; 工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%8E%A8%E7%90%86%E9%93%BE%EF%BC%9AChain-of-Thought-%E4%B8%8E-Self-Consistency"><span class="nav-number">2.</span> <span class="nav-text">2. 推理链：Chain-of-Thought 与 Self-Consistency</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Chain-of-Thought%EF%BC%88CoT%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Chain-of-Thought（CoT）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E4%BD%95%E6%97%B6%E4%B8%8D%E8%AF%A5%E5%BC%BA%E5%88%B6-CoT"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 何时不该强制 CoT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Self-Consistency%EF%BC%88%E8%87%AA%E8%AF%84%E4%B8%80%E8%87%B4%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Self-Consistency（自评一致）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Tree-of-Thoughts%EF%BC%88ToT%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. Tree of Thoughts（ToT）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E9%97%AE%E9%A2%98%E6%8B%86%E8%A7%A3%EF%BC%9ALeast-to-Most-%E4%B8%8E-Prompt-Decomposition"><span class="nav-number">4.</span> <span class="nav-text">4. 问题拆解：Least-to-Most 与 Prompt Decomposition</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Least-to-Most-Prompting"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Least-to-Most Prompting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Prompt-Decomposition"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 Prompt Decomposition</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Prompt-Chaining%EF%BC%88%E6%8F%90%E7%A4%BA%E9%93%BE%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">5. Prompt Chaining（提示链）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E4%B8%8E-Tool-Calling-%E5%A4%9A%E8%BD%AE%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 与 Tool Calling 多轮的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E4%B8%AD%E9%97%B4%E7%BB%93%E6%9E%9C%E6%A0%A1%E9%AA%8C%E3%80%81%E7%9F%AD%E8%B7%AF%E3%80%81%E9%87%8D%E8%AF%95"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 中间结果校验、短路、重试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%E8%A1%A8"><span class="nav-number">6.</span> <span class="nav-text">6. 技术选型表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">7.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -222,7 +222,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 15:27:36" itemprop="dateModified" datetime="2026-07-17T15:27:36+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-17 19:04:49" itemprop="dateModified" datetime="2026-07-17T19:04:49+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -421,6 +421,7 @@
 </tbody></table>
 <p>探索（想方案）与执行（填参数）不要混在同一温度、同一松紧契约里。</p>
 <hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Prompt Engineering · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>示例策略</strong>：Zero-shot 靠指令；Few-shot 靠示范对齐形态。</p>
 <p><strong>推理链</strong>：CoT 换可解释步骤；Self-Consistency 用多样本投票，成本高。</p>
 <p><strong>ToT</strong>：树状搜索，贵；有外部工具时优先工具探索。</p>
