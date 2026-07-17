@@ -27,7 +27,7 @@
 <meta property="og:description" content="Prompt 推理与编排：Zero&#x2F;Few-shot、CoT 与 Self-Consistency、Tree of Thoughts、Least-to-Most 与分解、Prompt Chaining，以及选型表。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-15T08:45:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T04:27:20.661Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.432Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="Prompt Engineering">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -222,7 +222,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 12:27:20" itemprop="dateModified" datetime="2026-07-17T12:27:20+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-17 15:27:36" itemprop="dateModified" datetime="2026-07-17T15:27:36+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -257,6 +257,10 @@
 <li><strong>顺序</strong>：难例或关键约束相关的示例靠近「当前问题」一侧，往往更稳（仍要实测）。</li>
 <li><strong>正反例</strong>：可展示「错误示范 → 正确示范」，但反例要标明「以下为错误，勿模仿」。</li>
 </ol>
+<p><strong>完整 Few-shot 片段（情感分类 + 边界拒答）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">【Instruction】</span><br><span class="line">你是客服质检员。根据用户一句话判断情感：positive / negative / neutral。</span><br><span class="line">仅输出标签，不要解释。若无法判断（如纯符号、乱码），输出 unknown。</span><br><span class="line"></span><br><span class="line">【示例 1】</span><br><span class="line">输入：物流很快，包装完好。</span><br><span class="line">输出：positive</span><br><span class="line"></span><br><span class="line">【示例 2】</span><br><span class="line">输入：等了三天还没发货，客服也不回。</span><br><span class="line">输出：negative</span><br><span class="line"></span><br><span class="line">【示例 3 — 边界拒答】</span><br><span class="line">输入：？？？</span><br><span class="line">输出：unknown</span><br><span class="line"></span><br><span class="line">【以下为错误示范，勿模仿】</span><br><span class="line">输入：物流很快</span><br><span class="line">输出：我觉得是 positive 吧，因为用户语气比较开心……</span><br><span class="line">（错误原因：多余解释，破坏下游解析）</span><br><span class="line"></span><br><span class="line">【当前问题】</span><br><span class="line">输入：&#123;&#123;user_utterance&#125;&#125;</span><br><span class="line">输出：</span><br></pre></td></tr></table></figure>
+
+<p>预期：模型对齐「单标签、无废话」；边界 case 走 <code>unknown</code> 而非强行猜。</p>
 <h3 id="1-3-何时用示例，何时改用-Schema-工具"><a href="#1-3-何时用示例，何时改用-Schema-工具" class="headerlink" title="1.3 何时用示例，何时改用 Schema &#x2F; 工具"></a>1.3 何时用示例，何时改用 Schema &#x2F; 工具</h3><table>
 <thead>
 <tr>
@@ -281,15 +285,19 @@
 <hr>
 <h2 id="2-推理链：Chain-of-Thought-与-Self-Consistency"><a href="#2-推理链：Chain-of-Thought-与-Self-Consistency" class="headerlink" title="2. 推理链：Chain-of-Thought 与 Self-Consistency"></a>2. 推理链：Chain-of-Thought 与 Self-Consistency</h2><h3 id="2-1-Chain-of-Thought（CoT）"><a href="#2-1-Chain-of-Thought（CoT）" class="headerlink" title="2.1 Chain-of-Thought（CoT）"></a>2.1 Chain-of-Thought（CoT）</h3><p>要求模型 <strong>显式写出中间步骤</strong>，再给出结论（「一步步想」或结构化步骤字段）。</p>
 <p>适用：多步算术、逻辑、需要展示依据的分析。</p>
+<p><strong>简短可验证依据式 CoT（不要求暴露完整隐藏思维链）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">【Instruction】</span><br><span class="line">先列出 1～3 条可核对的关键依据（数字或材料片段编号），再给最终答案一行。</span><br><span class="line"></span><br><span class="line">【问题】</span><br><span class="line">仓库 A 有 48 箱，B 有 37 箱；从 A 调 15 箱到 B 后，A 还剩多少箱？</span><br><span class="line"></span><br><span class="line">【期望输出形态】</span><br><span class="line">依据：</span><br><span class="line">1. A 初始 48 箱</span><br><span class="line">2. 调出 15 箱 → 48 − 15</span><br><span class="line">答案：33</span><br></pre></td></tr></table></figure>
+
+<p>要点：依据短、可对照；最终答案单独一行便于规则抽取。Agent 场景里 Observation 已给出真值时，应直接引用工具结果而非再空想推导。</p>
 <p>代价：</p>
 <ol>
-<li>输出 Token 变多 → 延迟与费用上升（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">第二篇 Inference</a>）。</li>
+<li>输出 Token 变多 → 延迟与费用上升（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">第二篇 Inference</a>）。</li>
 <li>步骤本身也可能错，且错得「看起来很认真」。</li>
 </ol>
 <h3 id="2-2-何时不该强制-CoT"><a href="#2-2-何时不该强制-CoT" class="headerlink" title="2.2 何时不该强制 CoT"></a>2.2 何时不该强制 CoT</h3><ol>
 <li>简单分类、抽取、严格短 JSON：多余推理易污染格式。</li>
 <li>已走工具拿到结果：应基于结果总结，而不是再「空想推导」。</li>
-<li>需要稳定 Tool 参数：优先低温 + Schema，而不是长思维链（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#4-Temperature">Temperature</a>）。</li>
+<li>需要稳定 Tool 参数：优先低温 + Schema，而不是长思维链（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#4-Temperature">Temperature</a>）。</li>
 </ol>
 <h3 id="2-3-Self-Consistency（自评一致）"><a href="#2-3-Self-Consistency（自评一致）" class="headerlink" title="2.3 Self-Consistency（自评一致）"></a>2.3 Self-Consistency（自评一致）</h3><p>同一题用 <strong>多样本</strong>（略高 Temperature 或多次采样）各走一遍 CoT，再对最终答案 <strong>投票 &#x2F; 聚合</strong>。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">同一 Prompt</span><br><span class="line">    ↓</span><br><span class="line">多次 Inference（不同采样）</span><br><span class="line">    ↓</span><br><span class="line">得到多个「步骤 + 答案」</span><br><span class="line">    ↓</span><br><span class="line">对答案投票 / 规则聚合 → 最终结果</span><br></pre></td></tr></table></figure>
@@ -422,7 +430,7 @@
 <p><strong>系列导航：</strong></p>
 <ul>
 <li>Prompt Engineering：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）推理与编排</a>（本篇）</li>
-<li>LLM 基础：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+<li>LLM 基础：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
 </ul>
 <p>下一篇：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">Prompt Engineering（三）· 工程化闭环</a>。</p>
 

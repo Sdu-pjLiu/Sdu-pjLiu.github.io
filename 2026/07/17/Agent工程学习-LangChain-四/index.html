@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Document&#x2F;Loader&#x2F;Splitter、VectorStore、Retriever 与 RAG 增强模式；检索封成 Tool 挂进 Agent。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LangChain(四)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Document&#x2F;Loader&#x2F;Splitter、VectorStore、Retriever 与 RAG 增强模式；检索封成 Tool 挂进 Agent。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-17T01:30:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.433Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangChain">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/","path":"2026/07/17/Agent工程学习-LangChain-四/","title":"AI-Agent工程学习-LangChain(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LangChain(四) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Document-%E5%B1%82"><span class="nav-number">2.</span> <span class="nav-text">1. Document 层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Embeddings-VectorStore"><span class="nav-number">3.</span> <span class="nav-text">2. Embeddings + VectorStore</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Retriever-%E4%B8%8E%E5%A2%9E%E5%BC%BA%E6%A8%A1%E5%BC%8F%EF%BC%88%E6%A8%A1%E5%BC%8F%E7%BA%A7%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. Retriever 与增强模式（模式级）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-LCEL-%E9%97%AE%E7%AD%94%E9%93%BE%EF%BC%88%E7%A1%AE%E5%AE%9A%E6%80%A7%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. LCEL 问答链（确定性）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%8C%82%E8%BF%9B-Agent%EF%BC%9Aretrieve-%E5%B0%81%E6%88%90-Tool"><span class="nav-number">6.</span> <span class="nav-text">5. 挂进 Agent：retrieve 封成 Tool</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">7.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LangChain(四) | 我的记录小站">
+      <meta itemprop="description" content="Document&#x2F;Loader&#x2F;Splitter、VectorStore、Retriever 与 RAG 增强模式；检索封成 Tool 挂进 Agent。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LangChain(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-17 09:30:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T09:30:00+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Document/Loader/Splitter、VectorStore、Retriever 与 RAG 增强模式；检索封成 Tool 挂进 Agent。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">LangChain（三）</a>：Tools 齐备之后，补 <strong>检索积木</strong>。现代路径不是「另起一套 RAG Runtime」，而是把检索做成链或 <strong>Tool</strong>，再交给 <code>create_agent</code>。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Document → Split → Embed → VectorStore → Retriever</span><br><span class="line">                              ↓</span><br><span class="line">                    LCEL 问答链  或  @tool(retrieve)</span><br><span class="line">                              ↓</span><br><span class="line">                         create_agent（五）</span><br></pre></td></tr></table></figure>
+
+<p>回链：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">LLM 一 · Embedding &#x2F; Context</a>、<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 三 · RAG 挂法</a>、<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent 五 · Context 压缩</a>。</p>
+<p>复杂多跳编排、多检索器状态机 → <strong>LangGraph</strong>；本篇只到「积木 + 挂 Agent」。</p>
+<hr>
+<h2 id="1-Document-层"><a href="#1-Document-层" class="headerlink" title="1. Document 层"></a>1. Document 层</h2><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Document</strong></td>
+<td><code>page_content</code> + <code>metadata</code></td>
+</tr>
+<tr>
+<td><strong>Loader</strong></td>
+<td>从文件&#x2F;网页&#x2F;API 载入 Document 列表</td>
+</tr>
+<tr>
+<td><strong>TextSplitter</strong></td>
+<td>按长度&#x2F;分隔符切块（控制检索粒度与噪声）</td>
+</tr>
+</tbody></table>
+<p>切块过粗：检索不准；过细：丢失上下文。metadata（来源、章节）供过滤与引用。</p>
+<hr>
+<h2 id="2-Embeddings-VectorStore"><a href="#2-Embeddings-VectorStore" class="headerlink" title="2. Embeddings + VectorStore"></a>2. Embeddings + VectorStore</h2><ol>
+<li>用 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/#4-Embeddings%EF%BC%88%E4%B8%BA%E6%A3%80%E7%B4%A2%E9%93%BA%E5%9E%AB%EF%BC%89">Embedding Model</a> 向量化文本块。</li>
+<li>写入 <strong>VectorStore</strong>（内存 &#x2F; PGVector &#x2F; 云向量库等）。</li>
+<li>查询时：<strong>similarity_search</strong>（或带分数的变体）、可选 <strong>MMR</strong>（多样性，减少近重复块）。</li>
+</ol>
+<p>工程注意：embedding 模型与索引必须成对版本化；换模型常需重建索引。</p>
+<hr>
+<h2 id="3-Retriever-与增强模式（模式级）"><a href="#3-Retriever-与增强模式（模式级）" class="headerlink" title="3. Retriever 与增强模式（模式级）"></a>3. Retriever 与增强模式（模式级）</h2><p><strong>Retriever</strong>：<code>invoke(query) -&gt; list[Document]</code> 的统一检索接口；VectorStore 常 <code>.as_retriever()</code>。</p>
+<p>下列多为 <strong>模式 &#x2F; 集成能力</strong>，不必当成「LangChain 核心必背 API」：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>解决什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Hybrid Search</strong></td>
+<td>关键词 + 向量，兼顾专有名词与语义</td>
+</tr>
+<tr>
+<td><strong>Reranker</strong></td>
+<td>初检多召回，精排压噪声</td>
+</tr>
+<tr>
+<td><strong>Query Expansion</strong></td>
+<td>改写&#x2F;扩展查询，提高召回</td>
+</tr>
+<tr>
+<td><strong>Context Compression</strong></td>
+<td>压缩进窗前的冗余（对齐 Context 治理）</td>
+</tr>
+</tbody></table>
+<p>选型原则：先可测的「检索命中率 &#x2F; 引用正确率」，再堆增强；增强失败时要能降级到朴素 similarity。</p>
+<hr>
+<h2 id="4-LCEL-问答链（确定性）"><a href="#4-LCEL-问答链（确定性）" class="headerlink" title="4. LCEL 问答链（确定性）"></a>4. LCEL 问答链（确定性）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;演示使用 LCEL 组装确定性 RAG 问答链。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># retriever 接收问题并输出 Document 列表，format_docs 再将列表整理成</span></span><br><span class="line"><span class="comment"># 模型可消费的文本；RunnablePassthrough 则把原问题原样送入 prompt。</span></span><br><span class="line"><span class="comment"># 两条支路汇合后，prompt 的输入同时包含检索上下文和用户问题。</span></span><br><span class="line">rag = (</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="string">&quot;context&quot;</span>: retriever | format_docs,</span><br><span class="line">        <span class="string">&quot;question&quot;</span>: RunnablePassthrough(),</span><br><span class="line">    &#125;</span><br><span class="line">    | prompt</span><br><span class="line">    | model</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># invoke 的输入是用户问题，输出是模型基于检索上下文生成的回答。</span></span><br><span class="line">answer = rag.invoke(<span class="string">&quot;什么是 Context Window？&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>适合：问题类型固定、只需「检索 + 生成」、无多步工具决策。对齐 Workflow，而非完整 Agent。</p>
+<hr>
+<h2 id="5-挂进-Agent：retrieve-封成-Tool"><a href="#5-挂进-Agent：retrieve-封成-Tool" class="headerlink" title="5. 挂进 Agent：retrieve 封成 Tool"></a>5. 挂进 Agent：retrieve 封成 Tool</h2><p>Agent 需要「要不要检索、检索什么、检索几次」时，把检索做成工具：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;演示将知识库检索封装为 Agent 工具。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.tools <span class="keyword">import</span> tool</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@tool</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">search_docs</span>(<span class="params">query: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;检索与查询相关的知识库片段。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        query: Agent 根据用户问题生成的检索查询。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        至多四个相关文档片段拼接成的文本。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># retriever 接收自然语言查询并返回按相关性排序的 Document 列表。</span></span><br><span class="line">    <span class="comment"># 限制返回数量可避免工具结果过长，挤占 Agent 后续推理的上下文窗口。</span></span><br><span class="line">    documents = retriever.invoke(query)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;\n\n&quot;</span>.join(</span><br><span class="line">        document.page_content</span><br><span class="line">        <span class="keyword">for</span> document <span class="keyword">in</span> documents[:<span class="number">4</span>]</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 之后：create_agent(model=..., tools=[search_docs, ...])</span></span><br></pre></td></tr></table></figure>
+
+<p>要点：</p>
+<ol>
+<li><strong>description</strong> 写清「何时用 &#x2F; 勿滥用」（防无意义检索烧预算）。</li>
+<li>返回长度设上限，避免单次 Observation 撑爆 Context（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent 五</a>）。</li>
+<li>可机检合同可要求「最终答案必须含引用 metadata」——用结构化输出或后置 Gate（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE 一</a>）。</li>
+</ol>
+<p>中间件注入检索结果（不经 tool call）也是合法模式；本系列默认 <strong>Tool 挂法</strong> 更透明、易 trace。</p>
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>Loader &#x2F; Splitter &#x2F; VectorStore &#x2F; Retriever 各自边界？</li>
+<li>何时用 LCEL RAG 链，何时把 retrieve 做成 Tool？</li>
+<li>Hybrid &#x2F; Rerank &#x2F; Compression 各解决哪类失败？</li>
+<li>检索结果过长时如何与 Context 治理对齐？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Document 层</strong>：载入与切块；metadata 服务过滤与引用。</p>
+<p><strong>索引</strong>：Embeddings + VectorStore；similarity &#x2F; MMR。</p>
+<p><strong>Retriever</strong>：统一检索接口；增强模式按需、可降级。</p>
+<p><strong>两条挂法</strong>：确定性 LCEL 链；或 Tool → <code>create_agent</code>。</p>
+<p><strong>LangChain 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">（一）定位、Messages 与 Model</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/">（二）LCEL 与 Runnable</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">（三）Prompt、Tools 与 Runtime</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">（四）Retrieval 与 RAG 积木</a>（本篇）</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">（五）create_agent 核心闭环</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">（六）Middleware 与收口</a></li>
+</ul>
+<p>下一篇：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">LangChain（五）· create_agent 核心闭环</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangChain/" rel="tag"># LangChain</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-LangChain(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangChain(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/" rel="next" title="AI-Agent工程学习-LangChain(五)">
+                  AI-Agent工程学习-LangChain(五) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

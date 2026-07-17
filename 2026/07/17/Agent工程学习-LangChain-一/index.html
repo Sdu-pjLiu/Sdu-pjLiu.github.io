@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="LangChain 开篇：与 LangGraph&#x2F;Deep Agents 边界、Agent&#x3D;Model+Harness、Messages 与 ChatModel&#x2F;Embeddings。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LangChain(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="LangChain 开篇：与 LangGraph&#x2F;Deep Agents 边界、Agent&#x3D;Model+Harness、Messages 与 ChatModel&#x2F;Embeddings。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-17T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.433Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangChain">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/","path":"2026/07/17/Agent工程学习-LangChain-一/","title":"AI-Agent工程学习-LangChain(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LangChain(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0-1-LangChain-%E6%A8%A1%E5%9D%97%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">0.1 LangChain 模块地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Agent-Model-Harness"><span class="nav-number">3.</span> <span class="nav-text">1. Agent &#x3D; Model + Harness</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Messages%EF%BC%88%E7%8A%B6%E6%80%81%E9%87%8C%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8D%95%E4%BD%8D%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">2. Messages（状态里的基本单位）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-ChatModel%EF%BC%88%E4%B8%BB%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">3. ChatModel（主路径）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%BB%9F%E4%B8%80%E6%8E%A5%E5%8F%A3%E4%B8%8E%E8%B0%83%E7%94%A8"><span class="nav-number">5.1.</span> <span class="nav-text">3.1 统一接口与调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E4%B8%8E%E5%B7%A5%E5%85%B7%E3%80%81%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E7%9A%84%E7%BB%91%E5%AE%9A%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">3.2 与工具、结构化输出的绑定（认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Embeddings%EF%BC%88%E4%B8%BA%E6%A3%80%E7%B4%A2%E9%93%BA%E5%9E%AB%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">4. Embeddings（为检索铺垫）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">7.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LangChain(一) | 我的记录小站">
+      <meta itemprop="description" content="LangChain 开篇：与 LangGraph&#x2F;Deep Agents 边界、Agent&#x3D;Model+Harness、Messages 与 ChatModel&#x2F;Embeddings。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LangChain(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-17 08:00:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T08:00:00+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">LangChain 开篇：与 LangGraph/Deep Agents 边界、Agent=Model+Harness、Messages 与 ChatModel/Embeddings。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/">Loop Engineering（三）</a>：理论与选型齐备之后，进入 <strong>实现层</strong>——用 LangChain 的 <code>create_agent</code> harness 把合同、工具与预算落到可运行代码。</p>
+<span id="more"></span>
+<h2 id="0-本系列在学习路径中的位置"><a href="#0-本系列在学习路径中的位置" class="headerlink" title="0. 本系列在学习路径中的位置"></a>0. 本系列在学习路径中的位置</h2><p><strong>LLM &#x2F; Prompt &#x2F; Agent &#x2F; LE</strong> 负责：模型怎么调用、Prompt 怎么控、Agent 闭环与收敛工程。</p>
+<p><strong>LangChain</strong> 负责：用官方组件把上述概念写成可维护系统——Messages、Model、Tools、RAG 积木、<code>create_agent</code>、Middleware。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">理论路径（LLM → PE → Agent → LE）</span><br><span class="line">        ↓</span><br><span class="line">LangChain（本系列）：Model + Harness 实现</span><br><span class="line">        ↓</span><br><span class="line">LangGraph（编排）→ Deep Agents（厚 harness）</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>产品</th>
+<th>一句话</th>
+<th>本系列深度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td>可定制 harness：<code>create_agent</code> + middleware</td>
+<td><strong>主线</strong></td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>低层编排：状态机、确定性 + Agent 混合</td>
+<td>认名；下一模块</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td>batteries-included（压缩、虚拟 FS、subagent）</td>
+<td>认名；再下一模块</td>
+</tr>
+<tr>
+<td><strong>LangSmith</strong></td>
+<td>trace &#x2F; eval</td>
+<td>轻量接入（见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">六</a>）</td>
+</tr>
+</tbody></table>
+<p>官方入口：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langchain/overview">LangChain overview</a>。</p>
+<hr>
+<h2 id="0-1-LangChain-模块地图"><a href="#0-1-LangChain-模块地图" class="headerlink" title="0.1 LangChain 模块地图"></a>0.1 LangChain 模块地图</h2><p>把 LangChain 看成 <strong>分层组件栈</strong>，而不是「一堆 import 名」：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">输入层     Messages / Prompt（ChatPromptTemplate、system_prompt）</span><br><span class="line">    ↓</span><br><span class="line">模型层     ChatModel / Embeddings</span><br><span class="line">    ↓</span><br><span class="line">能力层     Tools / Retriever / VectorStore</span><br><span class="line">    ↓</span><br><span class="line">组合层     Runnable / LCEL（prompt | model | parser）</span><br><span class="line">    ↓</span><br><span class="line">Agent 层   create_agent（Model + Harness 编译图）</span><br><span class="line">    ↓</span><br><span class="line">扩展层     Middleware（压缩、HITL、重试、护栏…）</span><br><span class="line">    ↓</span><br><span class="line">Runtime    context_schema / checkpointer / store / streaming</span><br><span class="line">    ↓</span><br><span class="line">输出层     structured_response / messages</span><br><span class="line">    ↓</span><br><span class="line">观测层     LangSmith trace / eval</span><br></pre></td></tr></table></figure>
+
+<p>两条主执行路径：</p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>何时用</th>
+<th>典型链路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>确定性 Workflow</strong></td>
+<td>步骤固定、无需模型选路</td>
+<td>Prompt → Runnable → Model → Parser</td>
+</tr>
+<tr>
+<td><strong>Agent Loop</strong></td>
+<td>目标驱动、需选工具</td>
+<td>Messages → Model → ToolNode → Model → Final Answer</td>
+</tr>
+</tbody></table>
+<p><strong>Runnable 统一接口</strong>：<code>create_agent</code> 编译产物、LCEL 链、LangGraph 编译图都支持 <code>invoke</code> &#x2F; <code>stream</code> &#x2F; <code>batch</code>——换编排方式时，调用方接口不变（详见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/">（二）</a>与<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">（五）</a>）。</p>
+<p>本系列六篇与模块地图的对应：</p>
+<table>
+<thead>
+<tr>
+<th>篇</th>
+<th>覆盖模块</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>（一）</td>
+<td>Messages、ChatModel、Embeddings、定位</td>
+</tr>
+<tr>
+<td>（二）</td>
+<td>Runnable &#x2F; LCEL</td>
+</tr>
+<tr>
+<td>（三）</td>
+<td>Prompt、Tools、Runtime Context</td>
+</tr>
+<tr>
+<td>（四）</td>
+<td>Retrieval &#x2F; RAG 积木</td>
+</tr>
+<tr>
+<td>（五）</td>
+<td><code>create_agent</code>、记忆、Streaming</td>
+</tr>
+<tr>
+<td>（六）</td>
+<td>Middleware、LangSmith、收口</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="1-Agent-Model-Harness"><a href="#1-Agent-Model-Harness" class="headerlink" title="1. Agent &#x3D; Model + Harness"></a>1. Agent &#x3D; Model + Harness</h2><p>官方定义：<strong>Agent &#x3D; Model + Harness</strong>。</p>
+<ul>
+<li><strong>Model</strong>：决定下一步说什么、调什么工具。</li>
+<li><strong>Harness</strong>：环绕模型循环的一切——prompt、tools、以及塑造行为的 <strong>middleware</strong>。</li>
+</ul>
+<p><code>create_agent</code> 是高度可配置的 harness：最简只需 <code>model</code> + <code>tools</code>；进阶能力用 middleware 按需叠加（细节见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">五</a>、<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">六</a>）。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">create_agent 返回的是编译后的图（底层 LangGraph）</span><br><span class="line">  → 模型调用 →（可选）工具执行 → 再模型……直至无 tool call 或门禁打断</span><br></pre></td></tr></table></figure>
+
+<p>与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/#5-Agent-Loop">Agent（一）Loop</a> 对齐：Thought&#x2F;Action&#x2F;Observation 在实现上就是「消息历史 + tool_calls + ToolMessage」。</p>
+<p><strong>本系列不手搓 while-True Agent loop</strong>；也不把旧版 <code>AgentExecutor</code> 当主路径。</p>
+<hr>
+<h2 id="2-Messages（状态里的基本单位）"><a href="#2-Messages（状态里的基本单位）" class="headerlink" title="2. Messages（状态里的基本单位）"></a>2. Messages（状态里的基本单位）</h2><p>Chat &#x2F; Agent 的上下文以 <strong>消息列表</strong>传递，不是一整段无结构字符串。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>角色</th>
+<th>常见用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SystemMessage</strong></td>
+<td>系统</td>
+<td>角色、硬规则、长期指令</td>
+</tr>
+<tr>
+<td><strong>HumanMessage</strong></td>
+<td>用户</td>
+<td>任务输入</td>
+</tr>
+<tr>
+<td><strong>AIMessage</strong></td>
+<td>模型</td>
+<td>回复文本；可含 <strong>tool_calls</strong></td>
+</tr>
+<tr>
+<td><strong>ToolMessage</strong></td>
+<td>工具</td>
+<td>某次 tool call 的 Observation</td>
+</tr>
+</tbody></table>
+<p>要点：</p>
+<ol>
+<li><strong>tool_calls</strong>：模型决定调用哪些工具及参数（对齐 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">LLM 四 · Tool Calling</a>）。</li>
+<li><strong>content &#x2F; content_blocks</strong>：文本与多模态块；新接口常读 <code>content_blocks</code>。</li>
+<li>Agent 状态默认含 <code>messages</code>；多轮靠 checkpointer + <code>thread_id</code> 持久化（见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">五</a>）。</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">概念示意：一轮工具调用后的消息列表片段。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.messages <span class="keyword">import</span> AIMessage</span><br><span class="line"><span class="keyword">from</span> langchain.messages <span class="keyword">import</span> HumanMessage</span><br><span class="line"><span class="keyword">from</span> langchain.messages <span class="keyword">import</span> ToolMessage</span><br><span class="line"></span><br><span class="line"><span class="comment"># 顺序对齐 Thought/Action/Observation：用户提问 → 模型发出 tool_calls</span></span><br><span class="line"><span class="comment"># → 工具结果以 ToolMessage 写回；tool_call_id 必须与 AIMessage 中的 id 对齐</span></span><br><span class="line">msgs = [</span><br><span class="line">    HumanMessage(content=<span class="string">&quot;查一下上海天气&quot;</span>),</span><br><span class="line">    AIMessage(</span><br><span class="line">        content=<span class="string">&quot;&quot;</span>,</span><br><span class="line">        tool_calls=[</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="string">&quot;name&quot;</span>: <span class="string">&quot;get_weather&quot;</span>,</span><br><span class="line">                <span class="string">&quot;args&quot;</span>: &#123;<span class="string">&quot;city&quot;</span>: <span class="string">&quot;上海&quot;</span>&#125;,</span><br><span class="line">                <span class="string">&quot;id&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">        ],</span><br><span class="line">    ),</span><br><span class="line">    ToolMessage(content=<span class="string">&quot;晴，25°C&quot;</span>, tool_call_id=<span class="string">&quot;1&quot;</span>),</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="3-ChatModel（主路径）"><a href="#3-ChatModel（主路径）" class="headerlink" title="3. ChatModel（主路径）"></a>3. ChatModel（主路径）</h2><p>现代 Agent <strong>只用 ChatModel</strong>，不用旧式 completion LLM（后者认名即可）。</p>
+<h3 id="3-1-统一接口与调用"><a href="#3-1-统一接口与调用" class="headerlink" title="3.1 统一接口与调用"></a>3.1 统一接口与调用</h3><ul>
+<li>标识串：<code>&quot;provider:model&quot;</code>（如 <code>openai:gpt-4.1-mini</code>、<code>anthropic:claude-sonnet-4-6</code>）。</li>
+<li>也可传入已初始化的模型实例。</li>
+<li>常用方法：<code>invoke</code> &#x2F; <code>ainvoke</code>、<code>stream</code>、<code>batch</code>。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">用统一接口初始化 ChatModel 并完成一次 invoke。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.chat_models <span class="keyword">import</span> init_chat_model</span><br><span class="line"></span><br><span class="line"><span class="comment"># provider:model 标识串可换多家后端，调用方代码保持不变</span></span><br><span class="line">model = init_chat_model(<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>, temperature=<span class="number">0</span>)</span><br><span class="line"><span class="comment"># 输入为消息列表（此处用 role/content 字典简写）；输出为 AIMessage</span></span><br><span class="line">resp = model.invoke(</span><br><span class="line">    [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;用一句话解释 Tool Calling&quot;</span>&#125;],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>（具体 init API 以当前包版本为准；思想是 <strong>一个接口换多家 provider</strong>。）</p>
+<h3 id="3-2-与工具、结构化输出的绑定（认名）"><a href="#3-2-与工具、结构化输出的绑定（认名）" class="headerlink" title="3.2 与工具、结构化输出的绑定（认名）"></a>3.2 与工具、结构化输出的绑定（认名）</h3><table>
+<thead>
+<tr>
+<th>API &#x2F; 能力</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>bind_tools</strong></td>
+<td>把工具 schema 挂到模型，支持原生 tool calling</td>
+</tr>
+<tr>
+<td><strong>with_structured_output</strong></td>
+<td>模型直接吐校验后的结构（Pydantic 等）</td>
+</tr>
+<tr>
+<td>Agent 的 <strong>response_format</strong></td>
+<td>harness 级结构化结果，进 <code>structured_response</code>（见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">五</a>）</td>
+</tr>
+</tbody></table>
+<p>换模型时优先保持 <strong>消息格式 + 工具 schema</strong> 不变，只改 provider 串——这是 LangChain「标准模型接口」的工程收益。</p>
+<p>回链：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">LLM 三 · 消息角色</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#7-%E8%B0%83%E7%94%A8%E9%9F%A7%E6%80%A7%EF%BC%88Agent-%E7%9B%B8%E5%85%B3%EF%BC%89">LLM 四 · 调用韧性</a>。</p>
+<hr>
+<h2 id="4-Embeddings（为检索铺垫）"><a href="#4-Embeddings（为检索铺垫）" class="headerlink" title="4. Embeddings（为检索铺垫）"></a>4. Embeddings（为检索铺垫）</h2><p><strong>Embedding Model</strong>：把文本变成向量，供 VectorStore &#x2F; 相似度检索使用。</p>
+<ul>
+<li>与 ChatModel <strong>分工不同</strong>：Embeddings 不做对话决策，只做语义索引。</li>
+<li>RAG 积木见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">（四）</a>；Agent 侧常见挂法是「retrieve 封成 Tool」。</li>
+</ul>
+<p>旧式 <strong>LLM（completion）</strong>：字符串进字符串出、无消息角色；读旧教程时能认即可，<strong>新 Agent 代码不要用</strong>。</p>
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>LangChain、LangGraph、Deep Agents 各解决什么？本系列主学哪一个？</li>
+<li>Harness 包含哪些，和「只调一次 ChatModel」差在哪？</li>
+<li>AIMessage 的 tool_calls 与 ToolMessage 如何组成一轮 Observation？</li>
+<li>ChatModel 与 Embeddings 各自服务什么链路？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>定位</strong>：LangChain &#x3D; 可定制 Agent harness；底层借 LangGraph；Deep Agents 是预装厚能力。</p>
+<p><strong>公式</strong>：Agent &#x3D; Model + Harness（<code>create_agent</code> + middleware）。</p>
+<p><strong>Messages</strong>：System &#x2F; Human &#x2F; AI &#x2F; Tool；tool_calls 驱动闭环。</p>
+<p><strong>ChatModel</strong>：<code>provider:model</code>、invoke&#x2F;stream、bind_tools &#x2F; structured output。</p>
+<p><strong>Embeddings</strong>：RAG 向量侧；细节到（四）。</p>
+<p><strong>LangChain 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">（一）定位、Messages 与 Model</a>（本篇）</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/">（二）LCEL 与 Runnable</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">（三）Prompt、Tools 与 Runtime</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">（四）Retrieval 与 RAG 积木</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">（五）create_agent 核心闭环</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">（六）Middleware 与收口</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/">LE（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">LLM（四）</a></p>
+<p>下一篇：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/">LangChain（二）· LCEL 与 Runnable</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangChain/" rel="tag"># LangChain</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-Loop Engineering(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Loop Engineering(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-LangChain(二)">
+                  AI-Agent工程学习-LangChain(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

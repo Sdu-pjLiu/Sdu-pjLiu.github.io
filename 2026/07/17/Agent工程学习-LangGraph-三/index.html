@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Checkpointer vs Store、thread_id、多轮续跑与 context_schema；短时与长时记忆两分法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LangGraph(三)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Checkpointer vs Store、thread_id、多轮续跑与 context_schema；短时与长时记忆两分法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-17T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.433Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangGraph">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/","path":"2026/07/17/Agent工程学习-LangGraph-三/","title":"AI-Agent工程学习-LangGraph(三)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LangGraph(三) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Checkpointer-vs-Store"><span class="nav-number">2.</span> <span class="nav-text">1. Checkpointer vs Store</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-thread-id-%E4%B8%8E%E5%A4%9A%E8%BD%AE%E7%BB%AD%E8%B7%91"><span class="nav-number">3.</span> <span class="nav-text">2. thread_id 与多轮续跑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. 故障恢复（认名）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Store%EF%BC%9A%E8%B7%A8-thread-%E9%95%BF%E6%97%B6%E8%AE%B0%E5%BF%86"><span class="nav-number">5.</span> <span class="nav-text">4. Store：跨 thread 长时记忆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-context-schema-%E4%B8%8E-per-run-%E9%85%8D%E7%BD%AE"><span class="nav-number">6.</span> <span class="nav-text">5. context_schema 与 per-run 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-Runtime-%E5%AF%B9%E8%B1%A1%E8%83%BD%E8%AF%BB%E4%BB%80%E4%B9%88"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 Runtime 对象能读什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E4%BD%95%E6%97%B6%E9%9C%80%E8%A6%81-Checkpointer-%E8%BF%98%E6%98%AF-Store"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 何时需要 Checkpointer 还是 Store</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">7.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LangGraph(三) | 我的记录小站">
+      <meta itemprop="description" content="Checkpointer vs Store、thread_id、多轮续跑与 context_schema；短时与长时记忆两分法。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LangGraph(三)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-17 12:00:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T12:00:00+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Checkpointer vs Store、thread_id、多轮续跑与 context_schema；短时与长时记忆两分法。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">LangGraph（二）</a>：State 会合并之后，学 <strong>Persistence</strong>——企业级 Agent Workflow 为何能续跑、恢复、跨会话记东西。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>官方 persistence <strong>两分法</strong>（<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/persistence">Persistence</a>）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Checkpointer  →  单 thread 内图状态快照（短时 / 会话内）</span><br><span class="line">Store         →  跨 thread 的 KV（长时 / 用户级）</span><br></pre></td></tr></table></figure>
+
+<p>多数应用 <strong>两者都用</strong>：checkpointer 管当前对话线程，store 管用户偏好与事实。</p>
+<hr>
+<h2 id="1-Checkpointer-vs-Store"><a href="#1-Checkpointer-vs-Store" class="headerlink" title="1. Checkpointer vs Store"></a>1. Checkpointer vs Store</h2><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Checkpointer</strong></th>
+<th><strong>Store</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存什么</td>
+<td>图 state 快照（checkpoint）</td>
+<td>应用自定义 KV</td>
+</tr>
+<tr>
+<td>作用域</td>
+<td><strong>单个 thread</strong></td>
+<td><strong>跨 thread</strong></td>
+</tr>
+<tr>
+<td>典型用途</td>
+<td>多轮续聊、HITL、故障恢复、time travel</td>
+<td>用户偏好、长期事实</td>
+</tr>
+<tr>
+<td>访问方式</td>
+<td><code>config=&#123;&quot;configurable&quot;: &#123;&quot;thread_id&quot;: ...&#125;&#125;</code></td>
+<td>节点内 Runtime 读写 store</td>
+</tr>
+</tbody></table>
+<p>不要把口语 <strong>Session</strong> 当官方一等概念；会话单元用 <strong><code>thread_id</code></strong> 指代 checkpointer 里的一条线程。</p>
+<hr>
+<h2 id="2-thread-id-与多轮续跑"><a href="#2-thread-id-与多轮续跑" class="headerlink" title="2. thread_id 与多轮续跑"></a>2. thread_id 与多轮续跑</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">用 checkpointer + thread_id 实现同一会话的多轮续跑。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Any</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.checkpoint.memory <span class="keyword">import</span> InMemorySaver</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> END</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> START</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> MessagesState</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> StateGraph</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">echo</span>(<span class="params">state: MessagesState</span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;占位节点：本示例只演示 checkpoint 续跑。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 当前会话状态。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        空 partial update；messages 由 invoke 输入经 add_messages 合并。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># InMemorySaver 仅演示；生产应换持久化 checkpointer 后端。</span></span><br><span class="line">checkpointer = InMemorySaver()</span><br><span class="line">builder = StateGraph(MessagesState)</span><br><span class="line">builder.add_node(<span class="string">&quot;echo&quot;</span>, echo)</span><br><span class="line">builder.add_edge(START, <span class="string">&quot;echo&quot;</span>)</span><br><span class="line">builder.add_edge(<span class="string">&quot;echo&quot;</span>, END)</span><br><span class="line">graph = builder.<span class="built_in">compile</span>(checkpointer=checkpointer)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 同一 thread_id → 加载上次 checkpoint → messages 等状态延续。</span></span><br><span class="line">config = &#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;thread_id&quot;</span>: <span class="string">&quot;thread-abc&quot;</span>&#125;&#125;</span><br><span class="line"></span><br><span class="line">graph.invoke(</span><br><span class="line">    &#123;<span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;我叫小明&quot;</span>&#125;]&#125;,</span><br><span class="line">    config,</span><br><span class="line">)</span><br><span class="line">graph.invoke(</span><br><span class="line">    &#123;<span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;我叫什么？&quot;</span>&#125;]&#125;,</span><br><span class="line">    config,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>同一 <code>thread_id</code> → 加载上次 checkpoint → state（含 messages）延续。</p>
+<p>与 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/#3-%E7%9F%AD%E6%97%B6%E8%AE%B0%E5%BF%86%EF%BC%9Acheckpointer--thread_id">LangChain 五 · checkpointer</a> 同一机制；LangGraph 层可 <strong>自定义图</strong> 并在任意节点间 checkpoint。</p>
+<p>生产环境用 <strong>持久化 checkpointer</strong>（数据库后端），不要只用 <code>InMemorySaver</code>。</p>
+<hr>
+<h2 id="3-故障恢复（认名）"><a href="#3-故障恢复（认名）" class="headerlink" title="3. 故障恢复（认名）"></a>3. 故障恢复（认名）</h2><p>Durable execution：进程崩溃后，从最近 checkpoint <strong>恢复</strong>，已成功节点不必整图重跑（与 superstep 事务配合，见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">四</a>）。</p>
+<p>这是选 LangGraph 相对「单次 invoke ChatModel」的关键增量之一。</p>
+<p>恢复必须同时满足：</p>
+<ol>
+<li>复用同一 <strong>持久化 checkpointer 后端</strong>；</li>
+<li>传回同一 <code>thread_id</code>；</li>
+<li>节点副作用可幂等重放——恢复&#x2F;Interrupt 可能使节点从开头重执行。</li>
+</ol>
+<hr>
+<h2 id="4-Store：跨-thread-长时记忆"><a href="#4-Store：跨-thread-长时记忆" class="headerlink" title="4. Store：跨 thread 长时记忆"></a>4. Store：跨 thread 长时记忆</h2><p>Store 存任意 JSON 可序列化数据；节点通过 <strong>Runtime</strong> 访问（与 LangChain Tool 的 context 同族思想）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Store + context_schema：跨 thread 读写用户级长期偏好。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Any</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.checkpoint.memory <span class="keyword">import</span> InMemorySaver</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> END</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> START</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> MessagesState</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> StateGraph</span><br><span class="line"><span class="keyword">from</span> langgraph.runtime <span class="keyword">import</span> Runtime</span><br><span class="line"><span class="keyword">from</span> langgraph.store.memory <span class="keyword">import</span> InMemoryStore</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Context</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;每次 invoke 传入的运行时环境（如 user_id）。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    user_id: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">store = InMemoryStore()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">save_preference</span>(<span class="params"></span></span><br><span class="line"><span class="params">    state: MessagesState,</span></span><br><span class="line"><span class="params">    runtime: Runtime[Context],</span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;把语言偏好写入 Store（跨 thread 可读）。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 当前会话 state（本节点不改业务字段）。</span></span><br><span class="line"><span class="string">        runtime: 提供 context 与 store；user_id 来自 context。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        空 partial update；长期数据落在 Store 而非 checkpoint。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># namespace 用 user_id 分区，使不同 thread 仍能读到同一用户偏好。</span></span><br><span class="line">    namespace = (runtime.context.user_id, <span class="string">&quot;preferences&quot;</span>)</span><br><span class="line">    runtime.store.put(</span><br><span class="line">        namespace,</span><br><span class="line">        <span class="string">&quot;language&quot;</span>,</span><br><span class="line">        &#123;<span class="string">&quot;language&quot;</span>: <span class="string">&quot;zh-CN&quot;</span>&#125;,</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># context_schema 声明 Runtime 上下文类型；store/checkpointer 在 compile 注入。</span></span><br><span class="line">builder = StateGraph(MessagesState, context_schema=Context)</span><br><span class="line">builder.add_node(<span class="string">&quot;save_preference&quot;</span>, save_preference)</span><br><span class="line">builder.add_edge(START, <span class="string">&quot;save_preference&quot;</span>)</span><br><span class="line">builder.add_edge(<span class="string">&quot;save_preference&quot;</span>, END)</span><br><span class="line">graph = builder.<span class="built_in">compile</span>(checkpointer=InMemorySaver(), store=store)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 换 thread_id 但保持 user_id，仍能读到同一用户的 Store 数据。</span></span><br><span class="line">graph.invoke(</span><br><span class="line">    &#123;<span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;请使用中文&quot;</span>&#125;]&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;thread_id&quot;</span>: <span class="string">&quot;thread-1&quot;</span>&#125;&#125;,</span><br><span class="line">    context=Context(user_id=<span class="string">&quot;user-1&quot;</span>),</span><br><span class="line">)</span><br><span class="line">items = store.search((<span class="string">&quot;user-1&quot;</span>, <span class="string">&quot;preferences&quot;</span>))</span><br></pre></td></tr></table></figure>
+
+<p>与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 三 · Memory 分层</a> 对齐：Checkpointer ≈ Trace&#x2F;Context 会话态；Store ≈ 外部长期记忆的一种实现。</p>
+<p><strong>Store ≠ VectorStore</strong>：Store 的主职责是跨线程持久化任意 KV；可配置语义索引，但不要把它与 RAG 文档向量库直接等同。</p>
+<p>Subgraph 与父图 checkpoint 命名空间交互见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">六</a>。</p>
+<hr>
+<h2 id="5-context-schema-与-per-run-配置"><a href="#5-context-schema-与-per-run-配置" class="headerlink" title="5. context_schema 与 per-run 配置"></a>5. context_schema 与 per-run 配置</h2><p><strong><code>context_schema</code></strong>：每次 invoke 传入的运行时配置（user_id、租户、API 密钥引用等），<strong>不进 state 快照的业务字段</strong> 可放这里。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">演示 context_schema：per-run 配置与 thread 状态分离。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Any</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.checkpoint.memory <span class="keyword">import</span> InMemorySaver</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> END</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> START</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> MessagesState</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> StateGraph</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Context</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;每次 invoke 传入的运行时环境（不进 checkpoint 业务字段）。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    user_id: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">noop</span>(<span class="params">state: MessagesState</span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;占位节点：本示例只演示 context 传参。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 当前会话状态。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        空 partial update。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># context_schema 声明后，invoke(..., context=...) 可注入 user_id 等，</span></span><br><span class="line"><span class="comment"># 而不写入 thread 的 state 快照。</span></span><br><span class="line">builder = StateGraph(MessagesState, context_schema=Context)</span><br><span class="line">builder.add_node(<span class="string">&quot;noop&quot;</span>, noop)</span><br><span class="line">builder.add_edge(START, <span class="string">&quot;noop&quot;</span>)</span><br><span class="line">builder.add_edge(<span class="string">&quot;noop&quot;</span>, END)</span><br><span class="line">graph = builder.<span class="built_in">compile</span>(checkpointer=InMemorySaver())</span><br><span class="line"></span><br><span class="line">config = &#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;thread_id&quot;</span>: <span class="string">&quot;thread-ctx&quot;</span>&#125;&#125;</span><br><span class="line"><span class="comment"># thread_id 选哪条 checkpoint 链；context 是本次运行的环境参数。</span></span><br><span class="line">graph.invoke(</span><br><span class="line">    &#123;<span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;hi&quot;</span>&#125;]&#125;,</span><br><span class="line">    config=config,</span><br><span class="line">    context=Context(user_id=<span class="string">&quot;u-1&quot;</span>),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>区分：</p>
+<ul>
+<li><strong><code>thread_id</code></strong>：哪条会话&#x2F;checkpoint 链</li>
+<li><strong><code>context</code></strong>：本次运行的环境参数</li>
+</ul>
+<h3 id="5-1-Runtime-对象能读什么"><a href="#5-1-Runtime-对象能读什么" class="headerlink" title="5.1 Runtime 对象能读什么"></a>5.1 Runtime 对象能读什么</h3><p>节点函数可注入 <strong><code>Runtime[Context]</code></strong>（或通过 <code>execution_info</code> 读执行元数据）：</p>
+<table>
+<thead>
+<tr>
+<th>访问路径</th>
+<th>读什么</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>runtime.context</code></strong></td>
+<td><code>context_schema</code> 注入的 per-run 值（user_id、租户）</td>
+<td>命名 Store namespace、权限</td>
+</tr>
+<tr>
+<td><strong><code>runtime.store</code></strong></td>
+<td>跨 thread 长期 KV</td>
+<td>用户偏好、共享事实</td>
+</tr>
+<tr>
+<td><strong>stream writer</strong></td>
+<td>自定义进度事件</td>
+<td>UI 进度条（<code>stream_mode=&quot;custom&quot;</code>）</td>
+</tr>
+<tr>
+<td><strong><code>execution_info.node_attempt</code></strong></td>
+<td>当前节点重试次数</td>
+<td>节点级重试与告警</td>
+</tr>
+</tbody></table>
+<p>Store 读写示例见 §4；<code>execution_info</code> 详见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/#7-%E8%8A%82%E7%82%B9%E9%87%8D%E8%AF%95-vs-%E6%95%B4%E5%9B%BE%E9%87%8D%E8%B7%91">（四）</a>。</p>
+<h3 id="5-2-何时需要-Checkpointer-还是-Store"><a href="#5-2-何时需要-Checkpointer-还是-Store" class="headerlink" title="5.2 何时需要 Checkpointer 还是 Store"></a>5.2 何时需要 Checkpointer 还是 Store</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>Checkpointer</th>
+<th>Store</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同一对话继续</td>
+<td>必需</td>
+<td>非必需</td>
+</tr>
+<tr>
+<td>Interrupt &#x2F; Time Travel</td>
+<td>必需</td>
+<td>非必需</td>
+</tr>
+<tr>
+<td>换新 thread 仍记住用户偏好</td>
+<td>非必需</td>
+<td><strong>必需</strong></td>
+</tr>
+<tr>
+<td>会话状态 + 跨会话事实</td>
+<td><strong>两者都用</strong></td>
+<td><strong>两者都用</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>Checkpointer 与 Store 各解决什么？能否只用一个？</li>
+<li>为何用 <code>thread_id</code> 而不是模糊的 Session？</li>
+<li>多轮对话丢失历史，首先查什么？</li>
+<li>user_id 适合放 context 还是 Store 的 namespace？</li>
+<li>Store 与 RAG VectorStore 为什么不能直接画等号？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>两分法</strong>：Checkpointer（thread 内）+ Store（跨 thread）。</p>
+<p><strong>thread_id</strong>：会话&#x2F;checkpoint 指针。</p>
+<p><strong>恢复</strong>：durable execution 依赖持久化 checkpointer。</p>
+<p><strong>Store</strong>：长期 KV；Runtime 读写。</p>
+<p><strong>context_schema</strong>：per-run 配置，与 thread 分离。</p>
+<p><strong>LangGraph 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">（一）定位与 Graph 基础</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">（二）State 与 Reducer</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">（三）Persistence</a>（本篇）</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">（四）执行模型</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">（五）Interrupt 与 LE 对齐</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">（六）模式拼装与收口</a></li>
+</ul>
+<p>下一篇：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">LangGraph（四）· 执行模型</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangGraph/" rel="tag"># LangGraph</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/" rel="prev" title="AI-Agent工程学习-LangGraph(二)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangGraph(二)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/" rel="next" title="AI-Agent工程学习-LangGraph(四)">
+                  AI-Agent工程学习-LangGraph(四) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

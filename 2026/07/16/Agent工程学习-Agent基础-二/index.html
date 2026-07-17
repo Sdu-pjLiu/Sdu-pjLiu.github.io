@@ -27,7 +27,7 @@
 <meta property="og:description" content="Agent 推理与规划：ReAct、规划式（Decomposition&#x2F;DAG&#x2F;Dynamic&#x2F;Hierarchical）、Reflection&#x2F;Self-Refine，以及 Debate&#x2F;Tree Search 认名与选型。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T04:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T04:27:20.661Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.432Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -158,7 +158,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -221,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 12:27:20" itemprop="dateModified" datetime="2026-07-17T12:27:20+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-17 15:27:36" itemprop="dateModified" datetime="2026-07-17T15:27:36+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -243,10 +243,10 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）</a>：在会跑 Loop 的基础上，学习常见推理&#x2F;规划模式与选型。</p>
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）</a>：在会跑 Loop 的基础上，学习常见推理&#x2F;规划模式与选型。</p>
 <span id="more"></span>
 <h2 id="1-ReAct（Reason-Act）"><a href="#1-ReAct（Reason-Act）" class="headerlink" title="1. ReAct（Reason + Act）"></a>1. ReAct（Reason + Act）</h2><p><strong>什么是 ReAct？</strong></p>
-<p>Thought 与 Action 交替；工具结果作为 Observation，再进入下一 Thought。它是 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/#5-Agent-Loop">Agent Loop</a> 最简实用形态。</p>
+<p>Thought 与 Action 交替；工具结果作为 Observation，再进入下一 Thought。它是 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/#5-Agent-Loop">Agent Loop</a> 最简实用形态。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Thought: 需要最新文档版本号</span><br><span class="line">Action:  search(&quot;xxx release notes&quot;)   # 或原生 Tool Invocation</span><br><span class="line">Observation: …</span><br><span class="line">Thought: 已够回答</span><br><span class="line">Action:  Final Answer: …</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-1-与原生-Tool-Calling"><a href="#1-1-与原生-Tool-Calling" class="headerlink" title="1.1 与原生 Tool Calling"></a>1.1 与原生 Tool Calling</h3><p>现代路径优先用 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">Tool Calling</a>：模型输出结构化 Invocation，应用执行后写回 tool 消息。经典 ReAct 用「Thought:&#x2F;Action:」纯文本格式；工程上 <strong>语义相同，协议更硬</strong>。</p>
@@ -302,6 +302,7 @@
 <td>直接写最终长报告（交给 Executor &#x2F; Writer）</td>
 </tr>
 </tbody></table>
+<p><strong>场景片段：</strong> 输入目标「比较三款向量数据库」，工具为搜索与网页读取 → 输出 <code>[搜索官方文档, 提取性能与成本, 交叉验证, 生成对比]</code>。</p>
 <h3 id="2-2-Goal-Decomposition-vs-Task-Decomposition"><a href="#2-2-Goal-Decomposition-vs-Task-Decomposition" class="headerlink" title="2.2 Goal Decomposition vs Task Decomposition"></a>2.2 Goal Decomposition vs Task Decomposition</h3><table>
 <thead>
 <tr>
@@ -321,7 +322,7 @@
 <td>「搜论文 → 摘论据 → 写章节」</td>
 </tr>
 </tbody></table>
-<p>先定 Goal 验收，再拆 Task，后面评测才站得住（见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">本系列（四）</a>）。</p>
+<p>先定 Goal 验收，再拆 Task，后面评测才站得住（见<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">本系列（四）</a>）。</p>
 <h3 id="2-3-DAG-Planning"><a href="#2-3-DAG-Planning" class="headerlink" title="2.3 DAG Planning"></a>2.3 DAG Planning</h3><p>节点 &#x3D; 子任务；边 &#x3D; 依赖。好处：无依赖节点可并行；进度可视。某节点失败 → 影响下游 → 局部重规划。</p>
 <p>Research Agent 常见：多源搜索可并行；「综合成文」依赖搜索完成。</p>
 <h3 id="2-4-Dynamic-Planning（重规划）"><a href="#2-4-Dynamic-Planning（重规划）" class="headerlink" title="2.4 Dynamic Planning（重规划）"></a>2.4 Dynamic Planning（重规划）</h3><p>触发：Observation 与预期不符、发现新约束、预算告急。</p>
@@ -364,6 +365,7 @@
 </tr>
 </tbody></table>
 <p>可用固定 Rubric 驱动何时停止 refine（方法见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/#2-Prompt-Evaluation%EF%BC%88%E8%AF%84%E6%B5%8B%EF%BC%89">PE 三 Evaluation</a>）。</p>
+<p><strong>场景片段：</strong> 初稿「产品 A 最便宜」→ 反馈「缺少价格来源与计费单位」→ 修订稿补充官方链接，并统一为「每百万次查询成本」。</p>
 <hr>
 <h2 id="4-附录认名：Debate-与-Tree-Search"><a href="#4-附录认名：Debate-与-Tree-Search" class="headerlink" title="4. 附录认名：Debate 与 Tree Search"></a>4. 附录认名：Debate 与 Tree Search</h2><p>基础阶段只认名与选型，不展开公式。</p>
 <h3 id="4-1-Debate"><a href="#4-1-Debate" class="headerlink" title="4.1 Debate"></a>4.1 Debate</h3><p>多角色（正方 &#x2F; 反方 &#x2F; 裁判）对同一问题生成对立观点再汇总。需角色 Prompt、发言次序、终止规则。成本高；适合高不确定判断，不适合每步填工具参数。</p>
@@ -425,19 +427,19 @@
 <p><strong>选型</strong>：固定路径用 Workflow；试探路径用 ReAct；长任务用分层规划。</p>
 <p><strong>Agent 基础系列导航：</strong></p>
 <ul>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a>（本篇）</li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a>（本篇）</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a></li>
 </ul>
 <p><strong>前置：</strong></p>
 <ul>
-<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
-<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
+<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
 </ul>
-<p>下一篇：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 基础（三）· 记忆、工具与 Runtime</a>。</p>
+<p>下一篇：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 基础（三）· 记忆、工具与 Runtime</a>。</p>
 
     </div>
 

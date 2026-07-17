@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -303,7 +303,7 @@
 <li>$\mathrm{softmax}(\cdots)$：把分数转成和为 1 的 Attention 权重。</li>
 <li>再与 $V$ 加权求和，得到新的 Token 表示。</li>
 </ol>
-<p><strong>Softmax（补充）</strong>：一种把一组实数变成 <strong>概率分布</strong> 的函数——输出每项在 $(0,1)$，且总和为 1。Attention 里用它把「匹配分数」变成「关注权重」；<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#2-1-Softmax%EF%BC%9A%E4%BB%8E%E5%88%86%E6%95%B0%E5%88%B0%E6%A6%82%E7%8E%87">第二篇</a>选下一个 Token 时，也会对 Logits 做 Softmax 得到词表概率。同一数学工具，两处用途不同。</p>
+<p><strong>Softmax（补充）</strong>：一种把一组实数变成 <strong>概率分布</strong> 的函数——输出每项在 $(0,1)$，且总和为 1。Attention 里用它把「匹配分数」变成「关注权重」；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#2-1-Softmax%EF%BC%9A%E4%BB%8E%E5%88%86%E6%95%B0%E5%88%B0%E6%A6%82%E7%8E%87">第二篇</a>选下一个 Token 时，也会对 Logits 做 Softmax 得到词表概率。同一数学工具，两处用途不同。</p>
 <h3 id="2-5-Multi-Head-Attention"><a href="#2-5-Multi-Head-Attention" class="headerlink" title="2.5 Multi-Head Attention"></a>2.5 Multi-Head Attention</h3><p>不是只算一组 QKV，而是并行多组（多个 head），每组关注不同类型的关系，再拼起来。工程资料里说的 Attention，多数指 <strong>Multi-Head Self-Attention</strong>。</p>
 <h3 id="2-6-Attention-的计算复杂度"><a href="#2-6-Attention-的计算复杂度" class="headerlink" title="2.6 Attention 的计算复杂度"></a>2.6 Attention 的计算复杂度</h3><p>Self-Attention 复杂度为 <strong>O(n²)</strong>，n &#x3D; Token 数量。每个 Token 都要和其他 Token 算关系。</p>
 <p>例如：1000 Token → 1000×1000 次；100000 Token → 100000×100000 次。这是 Context Window 不能无限增大的主因（见<a href="#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">第 5 节</a>）。</p>
@@ -368,6 +368,7 @@
 </tr>
 </tbody></table>
 <p>RAG 检索用的通常是后者，不是把 LLM 词表里的 Token Embedding 直接当检索向量。下文 <strong>Sentence Embedding &#x2F; Document Embedding</strong> 多指 Embedding Model 这一路。</p>
+<p><strong>场景片段：</strong> 输入「如何降低广告成本？」→ Sentence Embedding Model → 向量 <code>[0.12, -0.31, …]</code> → 检索到语义相近文档；此处不是直接使用 LLM 内部 Token Embedding。</p>
 <h3 id="4-4-Embedding-类型（按粒度）"><a href="#4-4-Embedding-类型（按粒度）" class="headerlink" title="4.4 Embedding 类型（按粒度）"></a>4.4 Embedding 类型（按粒度）</h3><p><strong>Token Embedding</strong>：单个 Token → 向量；供 Transformer 使用。</p>
 <p><strong>Sentence Embedding</strong>：一句话 → 一个向量；用于搜索、分类、相似度。</p>
 <p><strong>Document Embedding</strong>：整篇 &#x2F; 大段 → 一个向量；用于知识库等。</p>
@@ -431,6 +432,7 @@
 </tr>
 </tbody></table>
 <p>关系：<code>Memory → 检索相关信息 → 加入 Context Window → LLM 推理</code>。</p>
+<p><strong>场景片段：</strong> 用户偏好「回答使用中文」存入 Memory；新会话检索出该偏好后写入本轮 Context，模型才会稳定输出中文。</p>
 <h3 id="5-6-Context-Window-与-RAG"><a href="#5-6-Context-Window-与-RAG" class="headerlink" title="5.6 Context Window 与 RAG"></a>5.6 Context Window 与 RAG</h3><p>知识库太大，无法整库塞进 Context。做法：只检索 Top-K 相关内容写入窗口（检索与向量化详见 <a href="#4-6-Embedding-%E4%B8%8E-LLM%E3%80%81RAG%E3%80%81Tokenization">4.6</a>）。RAG 是「用检索换 Context 容量」的典型方案。</p>
 <h3 id="5-7-优化方法与-Agent"><a href="#5-7-优化方法与-Agent" class="headerlink" title="5.7 优化方法与 Agent"></a>5.7 优化方法与 Agent</h3><p><strong>常见优化：</strong></p>
 <ul>
@@ -448,7 +450,7 @@
 <p><strong>Context Window</strong>：输入 + 输出共享上限，输出需预留；与 Memory、RAG、压缩策略一起管长任务。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">文本 → Tokenization → Embedding → Transformer（Attention）</span><br><span class="line">                ↑</span><br><span class="line">         全程受 Context Window（输入+输出）限制</span><br></pre></td></tr></table></figure>
 
-<p>系列后续：<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">第二篇</a>讲 Inference &#x2F; 采样 &#x2F; KV Cache；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">第三篇</a>讲消息角色、训练阶段认名、幻觉与结构化总览；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>讲 Chat Completion、Streaming、结构化输出细节与 Tool Calling 闭环。</p>
+<p>系列后续：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">第二篇</a>讲 Inference &#x2F; 采样 &#x2F; KV Cache；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">第三篇</a>讲消息角色、训练阶段认名、幻觉与结构化总览；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>讲 Chat Completion、Streaming、结构化输出细节与 Tool Calling 闭环。</p>
 
     </div>
 

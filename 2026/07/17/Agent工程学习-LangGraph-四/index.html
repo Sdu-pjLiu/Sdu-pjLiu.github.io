@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Superstep、并行 fan-out&#x2F;fan-in、Command 路由、Streaming 与节点重试。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LangGraph(四)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Superstep、并行 fan-out&#x2F;fan-in、Command 路由、Streaming 与节点重试。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-17T04:30:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.434Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangGraph">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/","path":"2026/07/17/Agent工程学习-LangGraph-四/","title":"AI-Agent工程学习-LangGraph(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LangGraph(四) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-Runtime-%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. Runtime 架构与本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Superstep-%E4%B8%8E%E4%BA%8B%E5%8A%A1%E6%84%9F"><span class="nav-number">2.</span> <span class="nav-text">1. Superstep 与事务感</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B9%B6%E8%A1%8C%EF%BC%9AFan-out-Fan-in"><span class="nav-number">3.</span> <span class="nav-text">2. 并行：Fan-out &#x2F; Fan-in</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Send%EF%BC%9A%E8%BF%90%E8%A1%8C%E6%97%B6%E5%8A%A8%E6%80%81%E5%B9%B6%E8%A1%8C"><span class="nav-number">4.</span> <span class="nav-text">3. Send：运行时动态并行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Command%EF%BC%9A%E6%9B%B4%E6%96%B0-%E8%B7%AF%E7%94%B1"><span class="nav-number">5.</span> <span class="nav-text">4. Command：更新 + 路由</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Streaming-%E4%B8%8E%E5%BC%82%E6%AD%A5"><span class="nav-number">6.</span> <span class="nav-text">5. Streaming 与异步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Loop-%E5%AE%89%E5%85%A8%E9%98%80%EF%BC%9Arecursion-limit"><span class="nav-number">7.</span> <span class="nav-text">6. Loop 安全阀：recursion_limit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E8%8A%82%E7%82%B9%E9%87%8D%E8%AF%95-vs-%E6%95%B4%E5%9B%BE%E9%87%8D%E8%B7%91"><span class="nav-number">8.</span> <span class="nav-text">7. 节点重试 vs 整图重跑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">9.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LangGraph(四) | 我的记录小站">
+      <meta itemprop="description" content="Superstep、并行 fan-out&#x2F;fan-in、Command 路由、Streaming 与节点重试。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LangGraph(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-17 12:30:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T12:30:00+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Superstep、并行 fan-out/fan-in、Command 路由、Streaming 与节点重试。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">LangGraph（三）</a>：Persistence 就绪之后，理解图 <strong>如何一步步推进</strong>——超步、并行、流式与重试。</p>
+<span id="more"></span>
+<h2 id="0-Runtime-架构与本篇位置"><a href="#0-Runtime-架构与本篇位置" class="headerlink" title="0. Runtime 架构与本篇位置"></a>0. Runtime 架构与本篇位置</h2><p>LangGraph 的执行语义是 <strong>状态机 + 超步（superstep）</strong>，不是泛化的「消息总线」或「事件驱动框架」。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Scheduler 选出当前 superstep 要跑的 Node(s)</span><br><span class="line">  ↓</span><br><span class="line">各 Node 读 Channels（state 通道）→ 返回 partial update</span><br><span class="line">  ↓</span><br><span class="line">Reducer 合并同键更新 → superstep 边界提交</span><br><span class="line">  ↓</span><br><span class="line">Checkpointer 落盘（若已 compile 注入）</span><br><span class="line">  ↓</span><br><span class="line">下一 superstep 读合并后的 state</span><br></pre></td></tr></table></figure>
+
+<p>旁路能力从 Runtime 引出：</p>
+<table>
+<thead>
+<tr>
+<th>旁路</th>
+<th>触发点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Streaming</strong></td>
+<td>每步 updates &#x2F; messages &#x2F; custom 投影</td>
+</tr>
+<tr>
+<td><strong>Interrupt</strong></td>
+<td>节点内 <code>interrupt()</code> → 挂起并 checkpoint</td>
+</tr>
+<tr>
+<td><strong>Time Travel</strong></td>
+<td><code>get_state_history</code> &#x2F; <code>update_state</code> 分叉</td>
+</tr>
+</tbody></table>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/use-graph-api">Use the graph API</a></p>
+<hr>
+<h2 id="1-Superstep-与事务感"><a href="#1-Superstep-与事务感" class="headerlink" title="1. Superstep 与事务感"></a>1. Superstep 与事务感</h2><ul>
+<li>并行分支在 <strong>同一 superstep</strong> 执行。</li>
+<li>若任一分支抛错，<strong>整 superstep 的状态更新不提交</strong>（事务感）。</li>
+<li>使用 checkpointer 时：已成功 superstep 的结果已落盘；恢复时 <strong>不重做已成功部分</strong>。</li>
+</ul>
+<p>这与「整图从头重跑」不同——企业长任务依赖这一点。</p>
+<hr>
+<h2 id="2-并行：Fan-out-Fan-in"><a href="#2-并行：Fan-out-Fan-in" class="headerlink" title="2. 并行：Fan-out &#x2F; Fan-in"></a>2. 并行：Fan-out &#x2F; Fan-in</h2><p><strong>Fan-out</strong>：从一点到多节点并行（或多路 conditional）。</p>
+<p><strong>Fan-in</strong>：多路汇合；各分支 partial update 经 <strong>Reducer</strong> 合并（见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">二</a>）。</p>
+<p>典型：两路检索（向量 + 关键词）→ 汇合节点 → 生成。</p>
+<p>设计要点：</p>
+<ol>
+<li>并行写 <strong>不同键</strong> 最安全；同键需明确 reducer。</li>
+<li>汇合节点读合并后的 state，不要假设分支执行顺序。</li>
+</ol>
+<hr>
+<h2 id="3-Send：运行时动态并行"><a href="#3-Send：运行时动态并行" class="headerlink" title="3. Send：运行时动态并行"></a>3. Send：运行时动态并行</h2><p>静态 fan-out 的分支数在建图时已知；<strong><code>Send</code></strong> 用于运行时按数据量动态生成 N 个任务，形成 Map-Reduce。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>静态 fan-out</th>
+<th><code>Send</code> 动态并行</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>分支数</td>
+<td>建图时固定</td>
+<td>运行时由 state 决定</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>固定双路检索</td>
+<td>N 篇文档分别摘要、N 个主题分别研究</td>
+</tr>
+<tr>
+<td>汇合</td>
+<td>Reducer</td>
+<td>Reducer</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Send 动态 Map-Reduce：按运行时文档数展开并行摘要任务。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> operator</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> Annotated, TypedDict</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> END, START, StateGraph</span><br><span class="line"><span class="keyword">from</span> langgraph.types <span class="keyword">import</span> Send</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MapState</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;父图共享状态：文档列表与经 reducer 合并的摘要。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    documents: <span class="built_in">list</span>[<span class="built_in">str</span>]</span><br><span class="line">    <span class="comment"># 多路 summarize 写同一键时，用 add 做可结合合并</span></span><br><span class="line">    summaries: Annotated[<span class="built_in">list</span>[<span class="built_in">str</span>], operator.add]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DocumentState</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;单个 Send 任务的输入切片，只需本任务关心的字段。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    document: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">load_documents</span>(<span class="params">state: MapState</span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">list</span>[<span class="built_in">str</span>]]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;装载待处理文档列表。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 当前 MapState（本示例忽略已有值）。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        含 documents 的 partial update。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;documents&quot;</span>: [<span class="string">&quot;doc-a&quot;</span>, <span class="string">&quot;doc-b&quot;</span>, <span class="string">&quot;doc-c&quot;</span>]&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">dispatch</span>(<span class="params">state: MapState</span>) -&gt; <span class="built_in">list</span>[Send]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;按 documents 长度动态生成 Send，形成运行时 fan-out。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    为什么用 Send 而非静态边：分支数在建图时未知，必须由 state 决定。</span></span><br><span class="line"><span class="string">    每个 Send 的第二参是子任务输入；结果写回父图共享键时依赖 reducer。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 已含 documents 的 MapState。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        指向 summarize 节点的 Send 列表。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> [</span><br><span class="line">        Send(<span class="string">&quot;summarize&quot;</span>, &#123;<span class="string">&quot;document&quot;</span>: doc&#125;)</span><br><span class="line">        <span class="keyword">for</span> doc <span class="keyword">in</span> state[<span class="string">&quot;documents&quot;</span>]</span><br><span class="line">    ]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">summarize</span>(<span class="params">state: DocumentState</span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">list</span>[<span class="built_in">str</span>]]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;对单篇文档做摘要；输出写入父图的 summaries 键。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 本任务的 DocumentState。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        单元素列表，供 operator.add 与其他并行结果合并。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;summaries&quot;</span>: [state[<span class="string">&quot;document&quot;</span>][:<span class="number">100</span>]]&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">combine</span>(<span class="params">state: MapState</span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Fan-in 汇合点：读取已合并的 summaries，此处仅示意占位。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 并行分支提交后的 MapState。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        空更新；真实场景可在此生成最终报告。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">builder = StateGraph(MapState)</span><br><span class="line">builder.add_node(<span class="string">&quot;load_documents&quot;</span>, load_documents)</span><br><span class="line">builder.add_node(<span class="string">&quot;summarize&quot;</span>, summarize)</span><br><span class="line">builder.add_node(<span class="string">&quot;combine&quot;</span>, combine)</span><br><span class="line">builder.add_edge(START, <span class="string">&quot;load_documents&quot;</span>)</span><br><span class="line"><span class="comment"># dispatch 返回 Send 列表时，路径参数列出合法目标节点名</span></span><br><span class="line">builder.add_conditional_edges(<span class="string">&quot;load_documents&quot;</span>, dispatch, [<span class="string">&quot;summarize&quot;</span>])</span><br><span class="line">builder.add_edge(<span class="string">&quot;summarize&quot;</span>, <span class="string">&quot;combine&quot;</span>)</span><br><span class="line">builder.add_edge(<span class="string">&quot;combine&quot;</span>, END)</span><br><span class="line">map_graph = builder.<span class="built_in">compile</span>()</span><br></pre></td></tr></table></figure>
+
+<p><code>Send</code> 的每个任务可收到独立输入；结果写回共享键时，必须为该键配置可结合的 reducer。</p>
+<hr>
+<h2 id="4-Command：更新-路由"><a href="#4-Command：更新-路由" class="headerlink" title="4. Command：更新 + 路由"></a>4. Command：更新 + 路由</h2><p>现代写法：节点返回 <strong><code>Command</code></strong>，同时 <strong>更新 state</strong> 并 <strong>指定下一跳</strong>（或结束）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Command 示例：节点内同时更新 state 并指定下一跳（验证门）。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypedDict</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> END, START, StateGraph</span><br><span class="line"><span class="keyword">from</span> langgraph.types <span class="keyword">import</span> Command</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ReviewState</span>(TypedDict, total=<span class="literal">False</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;合同校验门状态：是否通过、状态字、已重试步数。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    contract_ok: <span class="built_in">bool</span></span><br><span class="line">    status: <span class="built_in">str</span></span><br><span class="line">    step_count: <span class="built_in">int</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">retry_agent</span>(<span class="params">state: ReviewState</span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">bool</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;重试/修复分支：示意将合同标记为通过后回到 verify。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 当前 ReviewState。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        将 contract_ok 置为 True 的 partial update。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;contract_ok&quot;</span>: <span class="literal">True</span>&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">verify</span>(<span class="params">state: ReviewState</span>) -&gt; Command:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;验证门：用 Command 一次性写状态并路由。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    为什么用 Command：避免「只返回 dict + 另挂 conditional edge」拆成两处，</span></span><br><span class="line"><span class="string">    治理逻辑（通过/重试）收进同一节点，便于对齐 LE Gate。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 含 contract_ok / step_count 的 ReviewState。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        通过则 goto END；否则累加 step_count 并 goto retry_agent。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> state.get(<span class="string">&quot;contract_ok&quot;</span>):</span><br><span class="line">        <span class="keyword">return</span> Command(update=&#123;<span class="string">&quot;status&quot;</span>: <span class="string">&quot;done&quot;</span>&#125;, goto=END)</span><br><span class="line">    <span class="comment"># total=False 时 step_count 可能缺失，用 get 保证自洽</span></span><br><span class="line">    next_count = state.get(<span class="string">&quot;step_count&quot;</span>, <span class="number">0</span>) + <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> Command(</span><br><span class="line">        update=&#123;<span class="string">&quot;step_count&quot;</span>: next_count&#125;,</span><br><span class="line">        goto=<span class="string">&quot;retry_agent&quot;</span>,</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">command_builder = StateGraph(ReviewState)</span><br><span class="line">command_builder.add_node(<span class="string">&quot;verify&quot;</span>, verify)</span><br><span class="line">command_builder.add_node(<span class="string">&quot;retry_agent&quot;</span>, retry_agent)</span><br><span class="line">command_builder.add_edge(START, <span class="string">&quot;verify&quot;</span>)</span><br><span class="line">command_builder.add_edge(<span class="string">&quot;retry_agent&quot;</span>, <span class="string">&quot;verify&quot;</span>)</span><br><span class="line">command_graph = command_builder.<span class="built_in">compile</span>()</span><br></pre></td></tr></table></figure>
+
+<p>相对「只返回 dict + 单独 conditional edge」：<code>Command</code> 把 <strong>治理逻辑</strong> 收进节点，适合验证门（对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE Gate</a>）。</p>
+<hr>
+<h2 id="5-Streaming-与异步"><a href="#5-Streaming-与异步" class="headerlink" title="5. Streaming 与异步"></a>5. Streaming 与异步</h2><p>LangGraph 与 LangChain Agent 共享 streaming 机制（见 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/#4-streaming">LangChain（五）</a>）。</p>
+<table>
+<thead>
+<tr>
+<th><code>stream_mode</code></th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>values</code></strong></td>
+<td>每步后的完整 state</td>
+</tr>
+<tr>
+<td><strong><code>updates</code></strong></td>
+<td>每个节点产生的局部更新</td>
+</tr>
+<tr>
+<td><strong><code>messages</code></strong></td>
+<td>LLM token + metadata 元组</td>
+</tr>
+<tr>
+<td><strong><code>custom</code></strong></td>
+<td>节点通过 stream writer 发出的进度</td>
+</tr>
+<tr>
+<td><strong><code>checkpoints</code> &#x2F; <code>tasks</code></strong></td>
+<td>checkpoint 事件 &#x2F; task 开始结束（需 checkpointer）</td>
+</tr>
+<tr>
+<td><strong><code>debug</code></strong></td>
+<td>最完整调试信息，体积也最大</td>
+</tr>
+</tbody></table>
+<p>细粒度事件可用 <strong><code>graph.stream_events(..., version=&quot;v2&quot;)</code></strong>（独立 projection，与 <code>stream</code> 的 mode 参数不同）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;Streaming 示意：按 mode 消费节点更新与消息 token。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">LOGGER = logging.getLogger(__name__)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 假定 graph 已 compile、inputs 为合法初始 state</span></span><br><span class="line"><span class="comment"># stream_mode 传列表时，每次产出 (mode, data) 元组，不是 dict</span></span><br><span class="line"><span class="keyword">for</span> mode, data <span class="keyword">in</span> graph.stream(</span><br><span class="line">    inputs,</span><br><span class="line">    stream_mode=[<span class="string">&quot;updates&quot;</span>, <span class="string">&quot;messages&quot;</span>],</span><br><span class="line">):</span><br><span class="line">    <span class="keyword">if</span> mode == <span class="string">&quot;updates&quot;</span>:</span><br><span class="line">        LOGGER.info(<span class="string">&quot;node update: %s&quot;</span>, data)</span><br><span class="line">    <span class="keyword">elif</span> mode == <span class="string">&quot;messages&quot;</span>:</span><br><span class="line">        token, metadata = data</span><br><span class="line">        <span class="keyword">if</span> token.content:</span><br><span class="line">            LOGGER.info(<span class="string">&quot;token: %s&quot;</span>, token.content)</span><br></pre></td></tr></table></figure>
+
+<p>异步 I&#x2F;O 密集图把节点改为 <code>async def</code>，并使用 <strong><code>ainvoke</code> &#x2F; <code>astream</code></strong>。</p>
+<p>UI 进度、可观测、提前取消依赖 streaming；图级比单 Agent 更细，可看到每个 Node 的 state 转移。</p>
+<hr>
+<h2 id="6-Loop-安全阀：recursion-limit"><a href="#6-Loop-安全阀：recursion-limit" class="headerlink" title="6. Loop 安全阀：recursion_limit"></a>6. Loop 安全阀：recursion_limit</h2><p>Loop Graph 必须有业务停止条件，同时设置图级 <strong><code>recursion_limit</code></strong>。它限制一次执行允许的 <strong>superstep 数</strong>；触顶抛出 <code>GraphRecursionError</code>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">recursion_limit 硬顶：限制一次执行的 superstep 数，触顶捕获 GraphRecursionError。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.errors <span class="keyword">import</span> GraphRecursionError</span><br><span class="line"></span><br><span class="line"><span class="comment"># recursion_limit 是 config 顶层键，不要放进 configurable</span></span><br><span class="line"><span class="comment"># 输入：已编译 graph 与初始 inputs；输出：正常结果或优雅中止字典</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    result = graph.invoke(inputs, &#123;<span class="string">&quot;recursion_limit&quot;</span>: <span class="number">20</span>&#125;)</span><br><span class="line"><span class="keyword">except</span> GraphRecursionError:</span><br><span class="line">    <span class="comment"># 触顶说明业务停止条件可能失效；应记录原因而非静默重试抬高上限</span></span><br><span class="line">    result = &#123;</span><br><span class="line">        <span class="string">&quot;status&quot;</span>: <span class="string">&quot;aborted&quot;</span>,</span><br><span class="line">        <span class="string">&quot;reason&quot;</span>: <span class="string">&quot;graph step limit exceeded&quot;</span>,</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意：<code>recursion_limit</code> 是 config <strong>顶层键</strong>，不放进 <code>configurable</code>。</p>
+<p>与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/">LE 双层预算</a> 对齐：</p>
+<ol>
+<li><code>recursion_limit</code> 是最后的 <strong>硬顶保险丝</strong>；</li>
+<li>state 内 <code>remaining_budget</code> &#x2F; <code>step_count</code> 用于提前走「优雅收尾」分支；</li>
+<li>不要只调大上限掩盖无进展循环。</li>
+</ol>
+<hr>
+<h2 id="7-节点重试-vs-整图重跑"><a href="#7-节点重试-vs-整图重跑" class="headerlink" title="7. 节点重试 vs 整图重跑"></a>7. 节点重试 vs 整图重跑</h2><table>
+<thead>
+<tr>
+<th>机制</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>节点重试</strong></td>
+<td>单节点失败重试；<code>runtime.execution_info.node_attempt</code> 等可观测</td>
+</tr>
+<tr>
+<td><strong>Checkpoint 恢复</strong></td>
+<td>进程级失败从最近 checkpoint 续跑</td>
+</tr>
+<tr>
+<td><strong>外层 while 重跑</strong></td>
+<td>简单但浪费；长任务不推荐</td>
+</tr>
+</tbody></table>
+<p>LangChain Middleware 的 ModelRetry&#x2F;ToolRetry 在 <strong>Agent 子图内</strong>；图级仍可在节点外包 retry 策略或使用平台能力。</p>
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>Superstep 失败时，已成功分支的 state 会怎样？</li>
+<li>Fan-in 依赖什么合并并行结果？</li>
+<li><code>Command</code> 相对 conditional edge 多解决什么？</li>
+<li>节点重试与 checkpoint 恢复各适用于什么失败？</li>
+<li><code>Send</code> 与静态 fan-out 的分水岭是什么？</li>
+<li>为什么有业务停止条件后仍应设置 <code>recursion_limit</code>？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Superstep</strong>：并行提交 + 事务感 + checkpoint 边界。</p>
+<p><strong>并行</strong>：Fan-out&#x2F;fan-in + reducer。</p>
+<p><strong>动态并行</strong>：<code>Send</code> 按运行时数据展开 Map-Reduce。</p>
+<p><strong>Command</strong>：state 更新与路由一体。</p>
+<p><strong>Streaming</strong>：event streaming 优先；mode 侧按 values &#x2F; updates &#x2F; messages &#x2F; custom 等选择。</p>
+<p><strong>循环安全</strong>：业务停止条件 + state 预算 + <code>recursion_limit</code> 三层。</p>
+<p><strong>重试</strong>：节点级 vs checkpoint 恢复，勿默认整图重跑。</p>
+<p><strong>LangGraph 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">（一）定位与 Graph 基础</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">（二）State 与 Reducer</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">（三）Persistence</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">（四）执行模型</a>（本篇）</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">（五）Interrupt 与 LE 对齐</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">（六）模式拼装与收口</a></li>
+</ul>
+<p>下一篇：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">LangGraph（五）· Interrupt 与 LE 对齐</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangGraph/" rel="tag"># LangGraph</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-LangGraph(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangGraph(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/" rel="next" title="AI-Agent工程学习-LangGraph(五)">
+                  AI-Agent工程学习-LangGraph(五) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

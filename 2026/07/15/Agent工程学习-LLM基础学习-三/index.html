@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -238,7 +238,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">第一篇</a>、<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">第二篇</a>：补齐读模型说明时常碰到的认名概念（调用侧见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>）</p>
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">第一篇</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">第二篇</a>：补齐读模型说明时常碰到的认名概念（调用侧见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>）</p>
 <span id="more"></span>
 <h2 id="1-消息角色（Message-Roles）"><a href="#1-消息角色（Message-Roles）" class="headerlink" title="1. 消息角色（Message Roles）"></a>1. 消息角色（Message Roles）</h2><p><strong>什么是消息角色？</strong></p>
 <p>Chat 类 API 通常不把整段对话当成「一大坨纯文本」，而是拆成带 <strong>role</strong> 的消息列表。模型按对话模板理解：谁在说、该听谁的约束。</p>
@@ -271,7 +271,7 @@
 <h3 id="1-1-与-Context-Window-的关系"><a href="#1-1-与-Context-Window-的关系" class="headerlink" title="1.1 与 Context Window 的关系"></a>1.1 与 Context Window 的关系</h3><p>每一条消息经 Tokenization 后都占用 Context（见<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">第一篇第 5 节</a>）。多轮对话 &#x3D; 把历史 <code>user</code> &#x2F; <code>assistant</code>（有时还有 <code>system</code>）再次送进同一次 Inference。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123; role: system,    content: &quot;你是…；必须输出 JSON…&quot; &#125;,</span><br><span class="line">  &#123; role: user,      content: &quot;上一轮用户话&quot; &#125;,</span><br><span class="line">  &#123; role: assistant, content: &quot;上一轮模型话&quot; &#125;,</span><br><span class="line">  &#123; role: user,      content: &quot;当前问题&quot; &#125;</span><br><span class="line">]</span><br><span class="line">        ↓</span><br><span class="line">   拼进 Context Window → Inference</span><br></pre></td></tr></table></figure>
 
-<p>对应：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">Context Window（第一篇）</a> → <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">Inference（第二篇）</a>。</p>
+<p>对应：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">Context Window（第一篇）</a> → <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">Inference（第二篇）</a>。</p>
 <h3 id="1-2-对-Agent-的影响"><a href="#1-2-对-Agent-的影响" class="headerlink" title="1.2 对 Agent 的影响"></a>1.2 对 Agent 的影响</h3><ol>
 <li><strong>规则放 system</strong>：工具用法、禁止事项、输出契约，优先放 system，减少每轮重复堆在 user 里（仍占 Token，但职责更清晰）。</li>
 <li><strong>历史要裁剪</strong>：轮数一多就触碰 Context 上限，需摘要 &#x2F; 滑动窗口（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-7-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E4%B8%8E-Agent">第一篇 5.7</a>）。</li>
@@ -279,8 +279,8 @@
 </ol>
 <hr>
 <h2 id="2-训练阶段认名：Pretrain-SFT-RLHF"><a href="#2-训练阶段认名：Pretrain-SFT-RLHF" class="headerlink" title="2. 训练阶段认名：Pretrain &#x2F; SFT &#x2F; RLHF"></a>2. 训练阶段认名：Pretrain &#x2F; SFT &#x2F; RLHF</h2><p>读模型卡、技术报告时，常按阶段描述「这个模型怎么来的」。名词级只需分清目的，不必会训。</p>
-<h3 id="2-1-Pretrain（预训练）"><a href="#2-1-Pretrain（预训练）" class="headerlink" title="2.1 Pretrain（预训练）"></a>2.1 Pretrain（预训练）</h3><p>在大规模语料上做 <strong>下一 Token 预测</strong>（与<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-1-%E8%87%AA%E5%9B%9E%E5%BD%92%EF%BC%88Autoregressive%EF%BC%89%E7%94%9F%E6%88%90">第二篇自回归</a>同一目标），学会语言与世界知识的统计规律。产物多为 <strong>基座模型（Base）</strong>：补全能力强，但不一定「听话聊天」。</p>
-<h3 id="2-2-SFT（Supervised-Fine-Tuning，监督微调）"><a href="#2-2-SFT（Supervised-Fine-Tuning，监督微调）" class="headerlink" title="2.2 SFT（Supervised Fine-Tuning，监督微调）"></a>2.2 SFT（Supervised Fine-Tuning，监督微调）</h3><p>用「指令 → 优质回答」等高质量示范数据继续训练，让模型学会 <strong>按指令行事、对话格式、助手口吻</strong>。Chat 模型多经过 SFT。<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">第二篇 Inference</a>表里的「SFT」即指这一阶段。</p>
+<h3 id="2-1-Pretrain（预训练）"><a href="#2-1-Pretrain（预训练）" class="headerlink" title="2.1 Pretrain（预训练）"></a>2.1 Pretrain（预训练）</h3><p>在大规模语料上做 <strong>下一 Token 预测</strong>（与<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-1-%E8%87%AA%E5%9B%9E%E5%BD%92%EF%BC%88Autoregressive%EF%BC%89%E7%94%9F%E6%88%90">第二篇自回归</a>同一目标），学会语言与世界知识的统计规律。产物多为 <strong>基座模型（Base）</strong>：补全能力强，但不一定「听话聊天」。</p>
+<h3 id="2-2-SFT（Supervised-Fine-Tuning，监督微调）"><a href="#2-2-SFT（Supervised-Fine-Tuning，监督微调）" class="headerlink" title="2.2 SFT（Supervised Fine-Tuning，监督微调）"></a>2.2 SFT（Supervised Fine-Tuning，监督微调）</h3><p>用「指令 → 优质回答」等高质量示范数据继续训练，让模型学会 <strong>按指令行事、对话格式、助手口吻</strong>。Chat 模型多经过 SFT。<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89">第二篇 Inference</a>表里的「SFT」即指这一阶段。</p>
 <h3 id="2-3-RLHF-Alignment（对齐，认名即可）"><a href="#2-3-RLHF-Alignment（对齐，认名即可）" class="headerlink" title="2.3 RLHF &#x2F; Alignment（对齐，认名即可）"></a>2.3 RLHF &#x2F; Alignment（对齐，认名即可）</h3><p><strong>RLHF（Reinforcement Learning from Human Feedback）</strong> 等：用人类（或 AI）偏好信号，进一步让输出更符合「有用、无害、诚实」等目标。还有 DPO 等同类思想的不同算法，产品文案里常统称 <strong>Alignment（对齐）</strong>。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Pretrain（会补全、有知识）</span><br><span class="line">    ↓</span><br><span class="line">SFT（会按指令聊天）</span><br><span class="line">    ↓</span><br><span class="line">RLHF / 其他对齐（更符合偏好与安全策略）</span><br><span class="line">    ↓</span><br><span class="line">你调用的 Chat / Instruct 模型</span><br></pre></td></tr></table></figure>
 
@@ -291,7 +291,7 @@
 <ol>
 <li><strong>模型是否经过 SFT &#x2F; 对齐</strong>（<a href="#2-%E8%AE%AD%E7%BB%83%E9%98%B6%E6%AE%B5%E8%AE%A4%E5%90%8D%EF%BC%9APretrain-SFT-RLHF">本节第 2 节</a>）。</li>
 <li><strong>Prompt &#x2F; system 是否写清</strong>（<a href="#1-%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%EF%BC%88Message-Roles%EF%BC%89">消息角色</a>）。</li>
-<li><strong>Temperature 等是否过「活」</strong>（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#4-Temperature">第二篇</a>）：工具参数、JSON 宜低温。</li>
+<li><strong>Temperature 等是否过「活」</strong>（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#4-Temperature">第二篇</a>）：工具参数、JSON 宜低温。</li>
 <li><strong>Context 是否被挤爆或 Lost in the Middle</strong>（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-4-Context-%E5%A2%9E%E5%A4%A7%E7%9A%84%E9%97%AE%E9%A2%98">第一篇</a>）：关键指令被淹没会「听不见」。</li>
 </ol>
 <h3 id="3-2-Hallucination（幻觉）"><a href="#3-2-Hallucination（幻觉）" class="headerlink" title="3.2 Hallucination（幻觉）"></a>3.2 Hallucination（幻觉）</h3><p>模型生成了 <strong>听起来合理、但事实错误或无依据</strong> 的内容：编造引用、假 API 字段、不存在的论文等。</p>
@@ -327,7 +327,7 @@
 <li><strong>JSON Mode &#x2F; response_format</strong>：API 要求输出合法 JSON；仍可能不符合业务字段。</li>
 <li><strong>Schema &#x2F; Guided Decoding</strong>：生成时只允许符合语法或 JSON Schema 的 Token；更适合严格表单与 Tool 参数。</li>
 </ol>
-<p>与<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#3-Decoding-Strategy%EF%BC%88%E8%A7%A3%E7%A0%81%E7%AD%96%E7%95%A5%EF%BC%89">第二篇</a>关系：约束作用在解码可选 Token 集合上，和 Top-k &#x2F; Top-p「截断候选」同一类思想。</p>
+<p>与<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#3-Decoding-Strategy%EF%BC%88%E8%A7%A3%E7%A0%81%E7%AD%96%E7%95%A5%EF%BC%89">第二篇</a>关系：约束作用在解码可选 Token 集合上，和 Top-k &#x2F; Top-p「截断候选」同一类思想。</p>
 <p><strong>展开</strong>：JSON Output、JSON Schema、Schema Validation、Typed Output，以及它们与 Tool 参数的关系，见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#5-Structured-Output%EF%BC%88%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%EF%BC%89">第四篇 Structured Output</a>。本篇只建立「软→硬」心智模型即可。</p>
 <hr>
 <h2 id="5-延迟与吞吐相关名词（可选）"><a href="#5-延迟与吞吐相关名词（可选）" class="headerlink" title="5. 延迟与吞吐相关名词（可选）"></a>5. 延迟与吞吐相关名词（可选）</h2><p>部署或读性能文档时常见：</p>
@@ -344,7 +344,7 @@
 </tr>
 <tr>
 <td><strong>TTFT（Time To First Token）</strong></td>
-<td>发出请求到收到 <strong>第一个</strong> 输出 Token 的时间；与 <strong>Prefill</strong> 强相关（<a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#7-2-Prefill-%E4%B8%8E-Decode">第二篇 7.2</a>）。</td>
+<td>发出请求到收到 <strong>第一个</strong> 输出 Token 的时间；与 <strong>Prefill</strong> 强相关（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#7-2-Prefill-%E4%B8%8E-Decode">第二篇 7.2</a>）。</td>
 </tr>
 <tr>
 <td><strong>Throughput</strong></td>
@@ -356,6 +356,7 @@
 </tr>
 </tbody></table>
 <p>Agent 体感：工具多、轮次多 → 多次 Inference 叠加；历史长 → Prefill &#x2F; TTFT 变差。优化仍优先减 Context、减轮次，而不是先调采样参数。</p>
+<p><strong>场景片段：</strong> 输入 20K Token 文档；2.4 秒后出现首字，8 秒后完成回答 → TTFT &#x3D; 2.4 秒，整请求 Latency &#x3D; 8 秒。</p>
 <hr>
 <h2 id="6-部署与成本认名（可选）"><a href="#6-部署与成本认名（可选）" class="headerlink" title="6. 部署与成本认名（可选）"></a>6. 部署与成本认名（可选）</h2><p>读模型卡、选部署形态或控 Agent 费用时常见（认名即可，不展开训练）：</p>
 <table>
@@ -375,9 +376,10 @@
 </tr>
 <tr>
 <td><strong>模型路由 &#x2F; 级联</strong></td>
-<td>小模型分流简单请求，大模型攻坚难例；与 Agent <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-1-Budget">Budget</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/#3-%E5%8F%8C%E5%B1%82%E9%A2%84%E7%AE%97%EF%BC%9A%E7%A1%AC%E9%A1%B6%E4%B8%8E%E8%BD%AF%E4%BB%BB%E5%8A%A1%E9%A2%84%E7%AE%97">Loop Engineering 双层预算</a> 同一类成本治理。</td>
+<td>小模型分流简单请求，大模型攻坚难例；与 Agent <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-1-Budget">Budget</a>、<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/#3-%E5%8F%8C%E5%B1%82%E9%A2%84%E7%AE%97%EF%BC%9A%E7%A1%AC%E9%A1%B6%E4%B8%8E%E8%BD%AF%E4%BB%BB%E5%8A%A1%E9%A2%84%E7%AE%97">Loop Engineering 双层预算</a> 同一类成本治理。</td>
 </tr>
 </tbody></table>
+<p><strong>场景片段：</strong> 100 个客服问题中 90 个为常见问答、10 个需复杂推理 → 路由输出：90 个交小模型，10 个升级到大模型。</p>
 <p>调用侧已学：<strong>Prompt Caching（前缀缓存）</strong>、<strong>API 限流与重试</strong>见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#7-%E8%B0%83%E7%94%A8%E9%9F%A7%E6%80%A7%EF%BC%88Agent-%E7%9B%B8%E5%85%B3%EF%BC%89">第四篇 §7</a>。</p>
 <hr>
 <h2 id="总结（模型侧收口）"><a href="#总结（模型侧收口）" class="headerlink" title="总结（模型侧收口）"></a>总结（模型侧收口）</h2><p><strong>本篇（模型 &#x2F; 产品认名）：</strong></p>
@@ -392,13 +394,13 @@
 <p><strong>系列主链：</strong></p>
 <ul>
 <li><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）表示与容量</a></li>
-<li><a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）生成与加速</a></li>
+<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）生成与加速</a></li>
 <li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）模型侧认名</a>（本篇）</li>
 <li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）调用侧：Chat API &#x2F; Streaming &#x2F; Structured &#x2F; Tool 闭环</a></li>
 </ul>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">（一）文本 → Tokenization → Embedding → Transformer</span><br><span class="line">（二）→ Logits → 采样 → Token；KV Cache；停止条件</span><br><span class="line">（三）消息角色；训练阶段；指令遵循与幻觉；结构化总览；延迟；部署/成本认名</span><br><span class="line">（四）Chat Completion → Structured Output → Tool Calling 闭环</span><br></pre></td></tr></table></figure>
 
-<p>到这里，<strong>模型侧名词级认名</strong>可以收口。下一步读<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>：把消息列表真正送进 Chat Completion，并学会结构化输出与 Tool Calling 全闭环。工具闭环与 Prompt 工程之后，进入 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）</a>（Loop、规划、记忆与评测）。</p>
+<p>到这里，<strong>模型侧名词级认名</strong>可以收口。下一步读<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>：把消息列表真正送进 Chat Completion，并学会结构化输出与 Tool Calling 全闭环。工具闭环与 Prompt 工程之后，进入 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">Agent 基础（一）</a>（Loop、规划、记忆与评测）。</p>
 
     </div>
 

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="interrupt&#x2F;resume、HITL、Time Travel、durable execution；与 LE 合同&#x2F;门&#x2F;预算映射。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LangGraph(五)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="interrupt&#x2F;resume、HITL、Time Travel、durable execution；与 LE 合同&#x2F;门&#x2F;预算映射。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-17T05:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.434Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangGraph">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/","path":"2026/07/17/Agent工程学习-LangGraph-五/","title":"AI-Agent工程学习-LangGraph(五)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LangGraph(五) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-interrupt-%E4%B8%8E-resume"><span class="nav-number">2.</span> <span class="nav-text">1. interrupt 与 resume</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Interrupt-%E7%9A%84%E9%87%8D%E6%94%BE%E8%A7%84%E5%88%99"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 Interrupt 的重放规则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-HITL-%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">2. HITL 模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Durable-execution"><span class="nav-number">4.</span> <span class="nav-text">3. Durable execution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Time-Travel%EF%BC%9A%E6%9F%A5%E7%9C%8B%E3%80%81%E9%87%8D%E6%94%BE%E3%80%81%E5%88%86%E5%8F%89"><span class="nav-number">5.</span> <span class="nav-text">4. Time Travel：查看、重放、分叉</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E4%B8%8E-Loop-Engineering-%E5%AF%B9%E7%85%A7"><span class="nav-number">6.</span> <span class="nav-text">5. 与 Loop Engineering 对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">7.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LangGraph(五) | 我的记录小站">
+      <meta itemprop="description" content="interrupt&#x2F;resume、HITL、Time Travel、durable execution；与 LE 合同&#x2F;门&#x2F;预算映射。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LangGraph(五)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-17 13:00:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T13:00:00+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">interrupt/resume、HITL、Time Travel、durable execution；与 LE 合同/门/预算映射。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">LangGraph（四）</a>：会推进图之后，学 <strong>可控运行</strong>——暂停、恢复、分叉调试，并与 Loop Engineering 对齐。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>LangGraph 相对「只跑完为止的 Agent 环」的核心增量之一：<strong>在任意节点暂停，等人或外部系统，再精确续跑</strong>。</p>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/interrupts">Interrupts</a></p>
+<p>前提（缺一不可）：</p>
+<ol>
+<li><strong>Checkpointer</strong>（生产用持久化后端）</li>
+<li><strong><code>thread_id</code></strong> in config</li>
+<li>在需要暂停处调用 <strong><code>interrupt(payload)</code></strong>（payload 需 JSON 可序列化）</li>
+</ol>
+<hr>
+<h2 id="1-interrupt-与-resume"><a href="#1-interrupt-与-resume" class="headerlink" title="1. interrupt 与 resume"></a>1. interrupt 与 resume</h2><p>流程（概念）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">节点执行到 interrupt()</span><br><span class="line">  → 当前 checkpoint 落盘</span><br><span class="line">  → 执行挂起，payload 返回给调用方（stream / __interrupt__）</span><br><span class="line">  → 外部审批/改参</span><br><span class="line">  → resume(value) 继续；value 成为 interrupt() 的返回值</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">interrupt/resume 最小闭环：审批节点暂停，外部 Command(resume=...) 续跑。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypedDict</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.checkpoint.memory <span class="keyword">import</span> InMemorySaver</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> END, START, StateGraph</span><br><span class="line"><span class="keyword">from</span> langgraph.types <span class="keyword">import</span> Command, interrupt</span><br><span class="line"></span><br><span class="line">logging.basicConfig(level=logging.INFO)</span><br><span class="line">logger = logging.getLogger(__name__)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">State</span>(TypedDict, total=<span class="literal">False</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;待审批草稿与最终状态。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    draft: <span class="built_in">str</span></span><br><span class="line">    status: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">approve_tool</span>(<span class="params">state: State</span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">str</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;在发送前 interrupt，等人审；resume 值成为 interrupt() 的返回值。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    为什么必须 checkpointer + thread_id：暂停时要把 checkpoint 落盘，</span></span><br><span class="line"><span class="string">    恢复时靠同一 thread 找回断点。interrupt 前逻辑须幂等（节点会从头重跑）。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 含 draft 的当前状态。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        审批通过则 status=sent，否则 rejected。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 输入 payload 需 JSON 可序列化，供 UI 展示；输出 decision 来自 resume</span></span><br><span class="line">    decision = interrupt(&#123;</span><br><span class="line">        <span class="string">&quot;tool&quot;</span>: <span class="string">&quot;send_email&quot;</span>,</span><br><span class="line">        <span class="string">&quot;draft&quot;</span>: state[<span class="string">&quot;draft&quot;</span>],</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">if</span> decision != <span class="string">&quot;approve&quot;</span>:</span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">&quot;status&quot;</span>: <span class="string">&quot;rejected&quot;</span>&#125;</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;status&quot;</span>: <span class="string">&quot;sent&quot;</span>&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">builder = StateGraph(State)</span><br><span class="line">builder.add_node(<span class="string">&quot;approve_tool&quot;</span>, approve_tool)</span><br><span class="line">builder.add_edge(START, <span class="string">&quot;approve_tool&quot;</span>)</span><br><span class="line">builder.add_edge(<span class="string">&quot;approve_tool&quot;</span>, END)</span><br><span class="line">graph = builder.<span class="built_in">compile</span>(checkpointer=InMemorySaver())</span><br><span class="line"></span><br><span class="line">config = &#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;thread_id&quot;</span>: <span class="string">&quot;approval-1&quot;</span>&#125;&#125;</span><br><span class="line"><span class="comment"># 第一次 invoke 会在 interrupt 处挂起，结果中带 __interrupt__</span></span><br><span class="line">paused = graph.invoke(&#123;<span class="string">&quot;draft&quot;</span>: <span class="string">&quot;...&quot;</span>&#125;, config=config)</span><br><span class="line">logger.info(<span class="string">&quot;interrupt payload=%s&quot;</span>, paused[<span class="string">&quot;__interrupt__&quot;</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 同一 thread_id 续跑；resume 值注入为 interrupt() 的返回值</span></span><br><span class="line">final = graph.invoke(Command(resume=<span class="string">&quot;approve&quot;</span>), config=config)</span><br></pre></td></tr></table></figure>
+
+<p>与 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">LangChain HumanInTheLoopMiddleware</a> 同族：Middleware 在 harness 内封装；LangGraph <strong><code>interrupt()</code></strong> 在 <strong>自定义图</strong> 任意节点显式暂停。</p>
+<p>恢复时必须复用同一 <code>thread_id</code>。<code>Command(resume=...)</code> 的值会成为 <code>interrupt()</code> 的返回值。</p>
+<h3 id="1-1-Interrupt-的重放规则"><a href="#1-1-Interrupt-的重放规则" class="headerlink" title="1.1 Interrupt 的重放规则"></a>1.1 Interrupt 的重放规则</h3><p>恢复不是从 Python 的中断行继续，而是从 <strong>该节点开头重跑</strong>。因此：</p>
+<ol>
+<li><code>interrupt()</code> 前的逻辑必须幂等；</li>
+<li>邮件发送、扣款等副作用放在审批通过后的独立节点；</li>
+<li>不要用 <code>try/except</code> 包住 <code>interrupt()</code>（Runtime 依赖特殊异常完成暂停）；</li>
+<li>一个节点内避免 <code>while True + interrupt()</code>；校验失败应更新 state 并通过边回到节点。</li>
+</ol>
+<hr>
+<h2 id="2-HITL-模式"><a href="#2-HITL-模式" class="headerlink" title="2. HITL 模式"></a>2. HITL 模式</h2><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>审批 tool</strong></td>
+<td>模型产出 tool_calls → interrupt 展示 → resume 批准&#x2F;拒绝</td>
+</tr>
+<tr>
+<td><strong>改 state 再续</strong></td>
+<td>人工编辑 checkpoint 中字段（Studio &#x2F; API）</td>
+</tr>
+<tr>
+<td><strong>改路由</strong></td>
+<td>resume 时带不同 value，节点分支不同</td>
+</tr>
+</tbody></table>
+<p>对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">Agent 三 Runtime · HITL</a> 与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE 验证门</a>：Gate 不必只靠模型自评。</p>
+<hr>
+<h2 id="3-Durable-execution"><a href="#3-Durable-execution" class="headerlink" title="3. Durable execution"></a>3. Durable execution</h2><p>长运行工作流（小时&#x2F;天级）：</p>
+<ul>
+<li>每 superstep &#x2F; 节点边界 checkpoint</li>
+<li>进程重启后 <strong><code>thread_id</code> 指向同一链</strong> → 从断点继续</li>
+<li>已成功步骤不重复（配合 superstep 语义）</li>
+</ul>
+<p>这是「企业级 Workflow 编排」选 LangGraph 的主因之一。</p>
+<hr>
+<h2 id="4-Time-Travel：查看、重放、分叉"><a href="#4-Time-Travel：查看、重放、分叉" class="headerlink" title="4. Time Travel：查看、重放、分叉"></a>4. Time Travel：查看、重放、分叉</h2><p>有 checkpoint 历史时，可：</p>
+<ul>
+<li><strong>查看</strong>：<code>get_state</code> &#x2F; <code>get_state_history</code></li>
+<li><strong>重放</strong>：用历史快照的 <code>config</code> 再次 <code>invoke</code></li>
+<li><strong>分叉</strong>：对旧 checkpoint 调 <code>update_state</code>，再用 <code>None</code> 续跑</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Time Travel 分叉：从历史 checkpoint 改 draft 后另开分支续跑。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 假定 graph 已带 checkpointer，config 含与 interrupt 示例相同的 thread_id</span></span><br><span class="line">history = <span class="built_in">list</span>(graph.get_state_history(config))</span><br><span class="line"><span class="comment"># 找到「下一跳仍含 approve_tool」的快照，即审批节点执行前</span></span><br><span class="line">before_action = <span class="built_in">next</span>(</span><br><span class="line">    snapshot <span class="keyword">for</span> snapshot <span class="keyword">in</span> history <span class="keyword">if</span> <span class="string">&quot;approve_tool&quot;</span> <span class="keyword">in</span> snapshot.<span class="built_in">next</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># update_state 创建新 checkpoint 分支，不覆盖原历史；更新仍走 reducer</span></span><br><span class="line">fork_config = graph.update_state(</span><br><span class="line">    before_action.config,</span><br><span class="line">    values=&#123;<span class="string">&quot;draft&quot;</span>: <span class="string">&quot;人工修订后的内容&quot;</span>&#125;,</span><br><span class="line">)</span><br><span class="line"><span class="comment"># 输入 None：从分叉点的 checkpoint 继续，而不是注入新用户消息</span></span><br><span class="line">forked_result = graph.invoke(<span class="literal">None</span>, config=fork_config)</span><br></pre></td></tr></table></figure>
+
+<p><code>update_state</code> <strong>不是回滚原线程</strong>，而是创建新 checkpoint 分支；更新仍经过 reducer。并行历史无法推断最后节点时，可显式传 <code>as_node=</code>。</p>
+<p>用途：复现失败步、A&#x2F;B 路由、审计「若当时选了 B 会怎样」。</p>
+<hr>
+<h2 id="5-与-Loop-Engineering-对照"><a href="#5-与-Loop-Engineering-对照" class="headerlink" title="5. 与 Loop Engineering 对照"></a>5. 与 Loop Engineering 对照</h2><table>
+<thead>
+<tr>
+<th>LE 概念</th>
+<th>LangGraph 落点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Contract（可机检 Done）</strong></td>
+<td>验证节点 + <code>Command(goto=END)</code>；<code>response_format</code> 子图</td>
+</tr>
+<tr>
+<td><strong>Verification Gate</strong></td>
+<td>确定性检查节点；<code>interrupt</code> 人工门；conditional edge</td>
+</tr>
+<tr>
+<td><strong>Maker–Checker</strong></td>
+<td>生成节点与验收节点分离（不同 Node）</td>
+</tr>
+<tr>
+<td><strong>硬顶 &#x2F; 软预算</strong></td>
+<td><code>recursion_limit</code> + state 中 <code>step_count</code> &#x2F; <code>remaining_budget</code>（见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/#6-Loop-%E5%AE%89%E5%85%A8%E9%98%80%EF%BC%9Arecursion-limit">四</a>）</td>
+</tr>
+<tr>
+<td><strong>无进展</strong></td>
+<td>检测节点 → 换策略边或 <code>goto</code> 重启子图</td>
+</tr>
+<tr>
+<td><strong>优雅收尾</strong></td>
+<td>预算耗尽分支写 <code>handoff_note</code> + checkpoint，禁止静默断</td>
+</tr>
+</tbody></table>
+<p>禁止：<strong>仅靠模型宣称完成</strong> 作为唯一结束条件（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/#1-%E5%8F%8D%E6%A8%A1%E5%BC%8F%E5%AD%97%E5%85%B8">LE 反模式</a>）。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LE 规定「如何停、如何验」</span><br><span class="line">LangGraph 提供「在哪停、如何续、如何分叉」</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>interrupt 为什么必须配 checkpointer + thread_id？</li>
+<li>HITL 与 LE Gate 如何对应？</li>
+<li>Durable execution 与「外层 while 重跑整图」差在哪？</li>
+<li>Time Travel 解决什么运维&#x2F;调试问题？</li>
+<li>为什么 <code>interrupt()</code> 前的副作用必须幂等？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>interrupt&#x2F;resume</strong>：精确暂停与续跑；payload 可展示给 UI。</p>
+<p><strong>HITL</strong>：审批、改 state、改路由。</p>
+<p><strong>Durable</strong>：长任务断点续跑。</p>
+<p><strong>Time Travel</strong>：查看、重放、<code>update_state</code> 分叉；原历史不被覆盖。</p>
+<p><strong>LE 映射</strong>：合同、门、预算、优雅收尾落到节点与边。</p>
+<p><strong>LangGraph 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">（一）定位与 Graph 基础</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">（二）State 与 Reducer</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">（三）Persistence</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">（四）执行模型</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">（五）Interrupt 与 LE 对齐</a>（本篇）</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">（六）模式拼装与收口</a></li>
+</ul>
+<p>下一篇：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）· 模式拼装与收口</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangGraph/" rel="tag"># LangGraph</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/" rel="prev" title="AI-Agent工程学习-LangGraph(四)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangGraph(四)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/" rel="next" title="AI-Agent工程学习-LangGraph(六)">
+                  AI-Agent工程学习-LangGraph(六) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

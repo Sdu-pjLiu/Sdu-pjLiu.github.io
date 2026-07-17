@@ -27,7 +27,7 @@
 <meta property="og:description" content="接第一篇：Inference、Logits、解码策略、Temperature &#x2F; Top-k &#x2F; Top-p、停止条件，以及 KV Cache 与 Prefill&#x2F;Decode。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-15T03:57:47.000Z">
-<meta property="article:modified_time" content="2026-07-17T04:27:20.661Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.432Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="LLM">
@@ -136,7 +136,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">1. Inference（推理）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E8%87%AA%E5%9B%9E%E5%BD%92%EF%BC%88Autoregressive%EF%BC%89%E7%94%9F%E6%88%90"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 自回归（Autoregressive）生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Inference-%E4%B8%8E%E7%AC%AC%E4%B8%80%E7%AF%87%E6%A6%82%E5%BF%B5%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Inference 与第一篇概念的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-Inference-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 Inference 对 Agent 的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E7%94%9F%E6%88%90%E4%BD%95%E6%97%B6%E5%81%9C%E6%AD%A2%EF%BC%9AEOS-stop-max-tokens"><span class="nav-number">1.4.</span> <span class="nav-text">1.4 生成何时停止：EOS &#x2F; stop &#x2F; max_tokens</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Logits"><span class="nav-number">2.</span> <span class="nav-text">2. Logits</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Softmax%EF%BC%9A%E4%BB%8E%E5%88%86%E6%95%B0%E5%88%B0%E6%A6%82%E7%8E%87"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Softmax：从分数到概率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-LM-Head-%E4%B8%8E%E6%B5%81%E6%B0%B4%E7%BA%BF%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 LM Head 与流水线中的位置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Decoding-Strategy%EF%BC%88%E8%A7%A3%E7%A0%81%E7%AD%96%E7%95%A5%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. Decoding Strategy（解码策略）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%A4%E5%A4%A7%E7%B1%BB"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 两大类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E7%AD%96%E7%95%A5%E5%A6%82%E4%BD%95%E6%8C%82%E5%9C%A8%E7%94%9F%E6%88%90%E9%93%BE%E4%B8%8A"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 策略如何挂在生成链上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%92%8C-Agent-%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%88%E9%A2%84%E5%91%8A%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 和 Agent 的关系（预告）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Temperature"><span class="nav-number">4.</span> <span class="nav-text">4. Temperature</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E7%9B%B4%E8%A7%82%E6%95%88%E6%9E%9C"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 直观效果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%B8%B8%E8%A7%81%E4%BD%BF%E7%94%A8%E5%8C%BA%E9%97%B4"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 常见使用区间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Temperature-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 Temperature 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Top-k-Sampling"><span class="nav-number">5.</span> <span class="nav-text">5. Top-k Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 工作机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E7%89%B9%E7%82%B9"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E4%B8%8E-Temperature-%E7%9A%84%E9%85%8D%E5%90%88"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 与 Temperature 的配合</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Top-p-Sampling%EF%BC%88Nucleus-Sampling%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">6. Top-p Sampling（Nucleus Sampling）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 工作机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-Top-p-%E4%B8%8E-Top-k-%E5%AF%B9%E6%AF%94"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 Top-p 与 Top-k 对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E5%B8%B8%E8%A7%81%E7%BB%84%E5%90%88"><span class="nav-number">6.3.</span> <span class="nav-text">6.3 常见组合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">6.4.</span> <span class="nav-text">6.4 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-KV-Cache"><span class="nav-number">7.</span> <span class="nav-text">7. KV Cache</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%AE%83"><span class="nav-number">7.1.</span> <span class="nav-text">7.1 为什么需要它</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-Prefill-%E4%B8%8E-Decode"><span class="nav-number">7.2.</span> <span class="nav-text">7.2 Prefill 与 Decode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-%E4%B8%8E-Causal-Attention-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">7.3.</span> <span class="nav-text">7.3 与 Causal Attention 的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-%E4%BB%A3%E4%BB%B7%EF%BC%9A%E6%98%BE%E5%AD%98"><span class="nav-number">7.4.</span> <span class="nav-text">7.4 代价：显存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-5-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">7.5.</span> <span class="nav-text">7.5 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Inference%EF%BC%88%E6%8E%A8%E7%90%86%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">1. Inference（推理）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E8%87%AA%E5%9B%9E%E5%BD%92%EF%BC%88Autoregressive%EF%BC%89%E7%94%9F%E6%88%90"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 自回归（Autoregressive）生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Inference-%E4%B8%8E%E7%AC%AC%E4%B8%80%E7%AF%87%E6%A6%82%E5%BF%B5%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Inference 与第一篇概念的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-Inference-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 Inference 对 Agent 的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E7%94%9F%E6%88%90%E4%BD%95%E6%97%B6%E5%81%9C%E6%AD%A2%EF%BC%9AEOS-stop-max-tokens"><span class="nav-number">1.4.</span> <span class="nav-text">1.4 生成何时停止：EOS &#x2F; stop &#x2F; max_tokens</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Logits"><span class="nav-number">2.</span> <span class="nav-text">2. Logits</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Softmax%EF%BC%9A%E4%BB%8E%E5%88%86%E6%95%B0%E5%88%B0%E6%A6%82%E7%8E%87"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Softmax：从分数到概率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-LM-Head-%E4%B8%8E%E6%B5%81%E6%B0%B4%E7%BA%BF%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 LM Head 与流水线中的位置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Decoding-Strategy%EF%BC%88%E8%A7%A3%E7%A0%81%E7%AD%96%E7%95%A5%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">3. Decoding Strategy（解码策略）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%A4%E5%A4%A7%E7%B1%BB"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 两大类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E7%AD%96%E7%95%A5%E5%A6%82%E4%BD%95%E6%8C%82%E5%9C%A8%E7%94%9F%E6%88%90%E9%93%BE%E4%B8%8A"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 策略如何挂在生成链上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%92%8C-Agent-%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%88%E9%A2%84%E5%91%8A%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 和 Agent 的关系（预告）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Temperature"><span class="nav-number">4.</span> <span class="nav-text">4. Temperature</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E7%9B%B4%E8%A7%82%E6%95%88%E6%9E%9C"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 直观效果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%B8%B8%E8%A7%81%E4%BD%BF%E7%94%A8%E5%8C%BA%E9%97%B4"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 常见使用区间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Temperature-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 Temperature 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Top-k-Sampling"><span class="nav-number">5.</span> <span class="nav-text">5. Top-k Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 工作机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E7%89%B9%E7%82%B9"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E4%B8%8E-Temperature-%E7%9A%84%E9%85%8D%E5%90%88"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 与 Temperature 的配合</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Top-p-Sampling%EF%BC%88Nucleus-Sampling%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">6. Top-p Sampling（Nucleus Sampling）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 工作机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-Top-p-%E4%B8%8E-Top-k-%E5%AF%B9%E6%AF%94"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 Top-p 与 Top-k 对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E5%B8%B8%E8%A7%81%E7%BB%84%E5%90%88"><span class="nav-number">6.3.</span> <span class="nav-text">6.3 常见组合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">6.4.</span> <span class="nav-text">6.4 对 Agent 的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-%E5%90%8C%E4%B8%80%E7%BB%84-Logits-%E7%9A%84%E9%87%87%E6%A0%B7%E5%AF%B9%E7%85%A7%EF%BC%88%E7%AE%97%E4%BE%8B%EF%BC%89"><span class="nav-number">6.5.</span> <span class="nav-text">6.5 同一组 Logits 的采样对照（算例）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-KV-Cache"><span class="nav-number">7.</span> <span class="nav-text">7. KV Cache</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%AE%83"><span class="nav-number">7.1.</span> <span class="nav-text">7.1 为什么需要它</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-Prefill-%E4%B8%8E-Decode"><span class="nav-number">7.2.</span> <span class="nav-text">7.2 Prefill 与 Decode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-%E4%B8%8E-Causal-Attention-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">7.3.</span> <span class="nav-text">7.3 与 Causal Attention 的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-%E4%BB%A3%E4%BB%B7%EF%BC%9A%E6%98%BE%E5%AD%98"><span class="nav-number">7.4.</span> <span class="nav-text">7.4 代价：显存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-5-%E5%AF%B9-Agent-%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">7.5.</span> <span class="nav-text">7.5 对 Agent 的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -222,7 +222,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 12:27:20" itemprop="dateModified" datetime="2026-07-17T12:27:20+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-17 15:27:36" itemprop="dateModified" datetime="2026-07-17T15:27:36+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -424,6 +424,60 @@
 <li>调参建议：先定任务要稳还是要活（Temperature），再用 Top-p 挡住明显的长尾胡话。</li>
 </ol>
 <h3 id="6-4-对-Agent-的影响"><a href="#6-4-对-Agent-的影响" class="headerlink" title="6.4 对 Agent 的影响"></a>6.4 对 Agent 的影响</h3><p>Tool 调用、结构化输出：Top-p 可偏低（如 0.8～0.95 且配合低温），减少抽到稀奇 Token。开放生成：可略提高 Top-p，但仍建议设上限，避免完全放任长尾。</p>
+<h3 id="6-5-同一组-Logits-的采样对照（算例）"><a href="#6-5-同一组-Logits-的采样对照（算例）" class="headerlink" title="6.5 同一组 Logits 的采样对照（算例）"></a>6.5 同一组 Logits 的采样对照（算例）</h3><p>设某步 Logits（Softmax 前）仅 4 个候选（教学简化，已省略其余词表）：</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th align="center">Logit $z_i$</th>
+<th align="center">基准 $P$（$T&#x3D;1$）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>「Paris」</td>
+<td align="center">3.0</td>
+<td align="center">0.576</td>
+</tr>
+<tr>
+<td>「London」</td>
+<td align="center">1.0</td>
+<td align="center">0.078</td>
+</tr>
+<tr>
+<td>「Berlin」</td>
+<td align="center">0.5</td>
+<td align="center">0.047</td>
+</tr>
+<tr>
+<td>「???」</td>
+<td align="center">−1.0</td>
+<td align="center">0.009</td>
+</tr>
+</tbody></table>
+<p><strong>Temperature（只改 $T$，不截断）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>效果 on 候选集</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$T&#x3D;0.3$</td>
+<td>「Paris」≈ <strong>0.95</strong>，几乎贪心</td>
+</tr>
+<tr>
+<td>$T&#x3D;1$</td>
+<td>上表基准分布</td>
+</tr>
+<tr>
+<td>$T&#x3D;1.5$</td>
+<td>「Paris」降至 ≈ <strong>0.42</strong>，「London」「Berlin」相对上升</td>
+</tr>
+</tbody></table>
+<p><strong>Top-k（$T&#x3D;1$，$k&#x3D;2$）：</strong> 只保留 Paris、London → 重归一后 $P(\text{Paris})≈0.88$。</p>
+<p><strong>Top-p（$T&#x3D;1$，$p&#x3D;0.9$）：</strong> 累积至 Paris+London 已 ≥ 0.65，再加 Berlin 超 0.9 → 候选 {Paris, London, Berlin}，长尾「???」被砍掉。</p>
+<p>同一 Logits 下：<strong>低温</strong>压尖峰；<strong>Top-k</strong> 固定个数；<strong>Top-p</strong> 随分布自适应宽度——Agent 调工具参数宜「低温 + 偏低 Top-p」。</p>
 <hr>
 <h2 id="7-KV-Cache"><a href="#7-KV-Cache" class="headerlink" title="7. KV Cache"></a>7. KV Cache</h2><p><strong>什么是 KV Cache？</strong></p>
 <p>KV Cache 是 Inference 时的加速手段：把历史 Token 已经算好的 <strong>Key（K）和 Value（V）</strong> 存起来，新 Token 只需算自己的 Query（Q）以及自己的 K、V，再与缓存中的 K、V 做 Attention。</p>

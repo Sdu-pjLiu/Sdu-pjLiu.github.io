@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Middleware hooks 与内置对照、自定义示意、LangSmith、实践阶梯；LangChain 收口并指向 LangGraph。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LangChain(六)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Middleware hooks 与内置对照、自定义示意、LangSmith、实践阶梯；LangChain 收口并指向 LangGraph。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-17T02:30:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.433Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangChain">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/","path":"2026/07/17/Agent工程学习-LangChain-六/","title":"AI-Agent工程学习-LangChain(六)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LangChain(六) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Harness-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E-Hooks"><span class="nav-number">2.</span> <span class="nav-text">1. Harness 生命周期与 Hooks</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Hooks-%E8%AE%A4%E5%90%8D"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 Hooks 认名</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%86%85%E7%BD%AE-Middleware-%E2%86%94-%E7%90%86%E8%AE%BA%E5%9B%9E%E9%93%BE"><span class="nav-number">3.</span> <span class="nav-text">2. 内置 Middleware ↔ 理论回链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%87%AA%E5%AE%9A%E4%B9%89-Middleware%EF%BC%88%E6%9C%80%E5%B0%8F%E7%A4%BA%E6%84%8F%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. 自定义 Middleware（最小示意）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. LangSmith（轻量）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">6.</span> <span class="nav-text">5. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%BE%B9%E7%95%8C%E4%B8%8E%E4%B8%8B%E4%B8%80%E6%A8%A1%E5%9D%97"><span class="nav-number">7.</span> <span class="nav-text">6. 边界与下一模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">8.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LangChain(六) | 我的记录小站">
+      <meta itemprop="description" content="Middleware hooks 与内置对照、自定义示意、LangSmith、实践阶梯；LangChain 收口并指向 LangGraph。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LangChain(六)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-17 10:30:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T10:30:00+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Middleware hooks 与内置对照、自定义示意、LangSmith、实践阶梯；LangChain 收口并指向 LangGraph。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">LangChain（五）</a>：最小闭环跑通之后，用 <strong>Middleware</strong> 扩展 harness——压缩、HITL、重试、预算、护栏——并收口本系列。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langchain/middleware/overview">Middleware overview</a>。</p>
+<p><strong>Middleware ≠ 另一套 Runtime</strong>：hooks 跑在 <code>create_agent</code> 编译出的 LangGraph 里；整段 Agent（含 middleware）可再嵌进更大 StateGraph（LangGraph 模块展开）。</p>
+<p>Filesystem &#x2F; Skills &#x2F; Subagent 等厚能力 → <strong>Deep Agents</strong> 预装栈；本篇只认名，不展开。</p>
+<hr>
+<h2 id="1-Harness-生命周期与-Hooks"><a href="#1-Harness-生命周期与-Hooks" class="headerlink" title="1. Harness 生命周期与 Hooks"></a>1. Harness 生命周期与 Hooks</h2><p>一次 <code>agent.invoke</code> 在 harness 内的典型请求流：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">invoke 入口</span><br><span class="line">  ↓ before_agent          （加载记忆、校验输入）</span><br><span class="line">  ↓ before_model          （截断/摘要历史、去 PII）</span><br><span class="line">  ↓ wrap_model_call       （重试、缓存、动态改 prompt/tools）</span><br><span class="line">Model 节点 ── tool_calls? ──→ after_model （HITL 审批、路由）</span><br><span class="line">  ↑                              ↓</span><br><span class="line">  └──── ToolNode ← wrap_tool_call （工具重试、拦截）</span><br><span class="line">  ↓ after_agent           （落盘、通知、清理）</span><br><span class="line">structured_response / messages 输出</span><br></pre></td></tr></table></figure>
+
+<p>Middleware 挂载点与内置能力对照：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>Hook</th>
+<th>典型 Middleware</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动</td>
+<td><strong>before_agent</strong></td>
+<td>加载 thread 历史</td>
+</tr>
+<tr>
+<td>进模型前</td>
+<td><strong>before_model</strong></td>
+<td>Summarization、PII 脱敏</td>
+</tr>
+<tr>
+<td>模型调用</td>
+<td><strong>wrap_model_call</strong></td>
+<td>ModelRetry、动态改 tools</td>
+</tr>
+<tr>
+<td>模型后</td>
+<td><strong>after_model</strong></td>
+<td>HumanInTheLoop、Guardrails</td>
+</tr>
+<tr>
+<td>工具执行</td>
+<td><strong>wrap_tool_call</strong></td>
+<td>ToolRetry、allowlist</td>
+</tr>
+<tr>
+<td>结束</td>
+<td><strong>after_agent</strong></td>
+<td>通知、清理</td>
+</tr>
+</tbody></table>
+<h3 id="1-1-Hooks-认名"><a href="#1-1-Hooks-认名" class="headerlink" title="1.1 Hooks 认名"></a>1.1 Hooks 认名</h3><p>环内步骤：<strong>模型调用 ↔ 工具执行</strong>。Middleware 在关键点插入逻辑：</p>
+<table>
+<thead>
+<tr>
+<th>Hook（概念名）</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>before_agent</strong></td>
+<td>启动时加载记忆、校验输入</td>
+</tr>
+<tr>
+<td><strong>before_model</strong></td>
+<td>截断&#x2F;摘要历史、去 PII</td>
+</tr>
+<tr>
+<td><strong>wrap_model_call</strong></td>
+<td>重试、缓存、动态改 tools&#x2F;prompt&#x2F;model</td>
+</tr>
+<tr>
+<td><strong>wrap_tool_call</strong></td>
+<td>工具级重试、注入上下文、拦截执行</td>
+</tr>
+<tr>
+<td><strong>after_model</strong></td>
+<td>HITL 审批 tool_calls、路由</td>
+</tr>
+<tr>
+<td><strong>after_agent</strong></td>
+<td>落盘、通知、清理</td>
+</tr>
+</tbody></table>
+<p>多枚 middleware <strong>顺序组合</strong>：进模型前顺序执行，出模型后常反向（与 Web middleware 类似）。以当前文档为准。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;演示为 Agent 组合摘要与人工审批中间件。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.agents <span class="keyword">import</span> create_agent</span><br><span class="line"><span class="keyword">from</span> langchain.agents.middleware <span class="keyword">import</span> (</span><br><span class="line">    HumanInTheLoopMiddleware,</span><br><span class="line">    SummarizationMiddleware,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># middleware 按声明顺序包裹 Agent 循环：摘要中间件在上下文接近上限时</span></span><br><span class="line"><span class="comment"># 压缩历史，HITL 中间件则在高风险工具真正执行前暂停并等待人工决策。</span></span><br><span class="line">agent = create_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    tools=[...],</span><br><span class="line">    middleware=[</span><br><span class="line">        SummarizationMiddleware(...),</span><br><span class="line">        HumanInTheLoopMiddleware(interrupt_on=&#123;<span class="string">&quot;send_email&quot;</span>: <span class="literal">True</span>&#125;),</span><br><span class="line">    ],</span><br><span class="line">    <span class="comment"># checkpointer 保存暂停时的图状态；恢复同一 thread_id 后，Agent 才能</span></span><br><span class="line">    <span class="comment"># 从审批点继续，而不是丢失此前的 messages 和待执行 tool call。</span></span><br><span class="line">    checkpointer=...,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-内置-Middleware-↔-理论回链"><a href="#2-内置-Middleware-↔-理论回链" class="headerlink" title="2. 内置 Middleware ↔ 理论回链"></a>2. 内置 Middleware ↔ 理论回链</h2><table>
+<thead>
+<tr>
+<th>Middleware</th>
+<th>解决什么</th>
+<th>理论回链</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SummarizationMiddleware</strong></td>
+<td>Context 将满时摘要压缩</td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent 五 · 压缩</a></td>
+</tr>
+<tr>
+<td><strong>HumanInTheLoopMiddleware</strong></td>
+<td>高风险工具前人工确认</td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 三 Runtime</a>、<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE Gate</a></td>
+</tr>
+<tr>
+<td><strong>ModelRetryMiddleware</strong> &#x2F; <strong>ToolRetryMiddleware</strong></td>
+<td>瞬时失败重试</td>
+<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#7-%E8%B0%83%E7%94%A8%E9%9F%A7%E6%80%A7%EF%BC%88Agent-%E7%9B%B8%E5%85%B3%EF%BC%89">LLM 四 · 调用韧性</a></td>
+</tr>
+<tr>
+<td><strong>Model&#x2F;call limit 类</strong></td>
+<td>硬顶步数&#x2F;调用次数</td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-1-Budget">Budget</a>、<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/">LE 双层预算</a></td>
+</tr>
+<tr>
+<td><strong>PIIMiddleware</strong></td>
+<td>脱敏&#x2F;拦截敏感信息</td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">Agent 六</a>、<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">PE 四 Injection</a></td>
+</tr>
+<tr>
+<td><strong>Guardrails（Middleware 护栏）</strong></td>
+<td>输入&#x2F;输出合规检查、拦截违规内容</td>
+<td>官方 overview 中的 guardrails 能力；通常挂在 before_model &#x2F; after_model</td>
+</tr>
+<tr>
+<td><strong>TodoListMiddleware</strong></td>
+<td>规划清单工具</td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">Agent 二 · 规划</a></td>
+</tr>
+</tbody></table>
+<p>压缩时注意：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/">LE · 压缩后续传预算</a>——摘要不得丢掉合同与剩余额度等不可摘要字段（若你在 state 中存放了它们）。</p>
+<hr>
+<h2 id="3-自定义-Middleware（最小示意）"><a href="#3-自定义-Middleware（最小示意）" class="headerlink" title="3. 自定义 Middleware（最小示意）"></a>3. 自定义 Middleware（最小示意）</h2><p>业务闸门（工具白名单、步数硬顶、假完成检测）用自定义 hooks，而不是改模型提示碰运气。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;演示通过自定义中间件限制 Agent 可调用的工具。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 概念示意：在 after_model 拦截未批准工具名</span></span><br><span class="line"><span class="comment"># 实际 API 以 AgentMiddleware / 装饰器文档为准</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AllowlistToolsMiddleware</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;仅允许白名单内的工具调用继续执行。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, allowed_tools: <span class="built_in">set</span>[<span class="built_in">str</span>]</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">        <span class="string">&quot;&quot;&quot;初始化工具白名单。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        Args:</span></span><br><span class="line"><span class="string">            allowed_tools: 允许 Agent 调用的工具名称集合。</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="variable language_">self</span>.allowed_tools = allowed_tools</span><br><span class="line"></span><br><span class="line">    <span class="comment"># after_model 的输入包含模型刚生成的 AIMessage，其中 tool_calls</span></span><br><span class="line">    <span class="comment"># 描述拟调用的工具及参数；hook 应在执行前过滤或拒绝非白名单调用，</span></span><br><span class="line">    <span class="comment"># 输出更新后的状态或控制指令，以确定性规则阻止高风险工具落地。</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE</a>：确定性规则优先于「请模型自己注意」。</p>
+<hr>
+<h2 id="4-LangSmith（轻量）"><a href="#4-LangSmith（轻量）" class="headerlink" title="4. LangSmith（轻量）"></a>4. LangSmith（轻量）</h2><ul>
+<li>设 <code>LANGSMITH_TRACING=true</code> 与 API Key，即可看到 model &#x2F; tool &#x2F; middleware 轨迹。</li>
+<li>用途：定位错调工具、空转、压缩前后 Context 变化。</li>
+<li>评测数据集与回归可后置加深；本阶段要求 <strong>本地能打开一条成功&#x2F;失败 trace</strong>。</li>
+</ul>
+<p>官方建议同时了解 LangSmith Engine（监控与问题定位）；实现细节属平台篇，此处认名。</p>
+<hr>
+<h2 id="5-实践阶梯-L0-→-L2"><a href="#5-实践阶梯-L0-→-L2" class="headerlink" title="5. 实践阶梯 L0 → L2"></a>5. 实践阶梯 L0 → L2</h2><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>做什么</th>
+<th>证明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L0</strong></td>
+<td><code>create_agent</code> + 2～3 个 <code>@tool</code> + 可机检输出（或 response_format）</td>
+<td>最小闭环</td>
+</tr>
+<tr>
+<td><strong>L1</strong></td>
+<td>checkpointer 多轮 + streaming；RAG Tool 挂上</td>
+<td>记忆与检索入环</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>Summarization + Retry&#x2F;Limit +（可选）HITL；LangSmith 可见关键跨</td>
+<td>harness 可治理</td>
+</tr>
+</tbody></table>
+<p>Filesystem &#x2F; Skills &#x2F; Subagent → 升到 Deep Agents，或自建等价 middleware（成本高）。</p>
+<hr>
+<h2 id="6-边界与下一模块"><a href="#6-边界与下一模块" class="headerlink" title="6. 边界与下一模块"></a>6. 边界与下一模块</h2><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>去向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可定制单 Agent harness</td>
+<td><strong>本系列（LangChain）</strong></td>
+</tr>
+<tr>
+<td>多节点确定性编排、复杂分支、子图</td>
+<td><strong>LangGraph</strong></td>
+</tr>
+<tr>
+<td>开箱压缩 + 虚拟 FS + subagent</td>
+<td><strong>Deep Agents</strong>（基于 <code>create_agent</code>）</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">LLM → Prompt → Agent → Loop Engineering</span><br><span class="line">        ↓</span><br><span class="line">LangChain（一）Messages/Model</span><br><span class="line">    →（二）LCEL →（三）Prompt/Tools →（四）RAG</span><br><span class="line">    →（五）create_agent →（六）Middleware（本篇）</span><br><span class="line">        ↓</span><br><span class="line">LangGraph（一）～（六）：StateGraph 编排 Runtime</span><br><span class="line">        ↓</span><br><span class="line">后续模块：Deep Agents（厚 harness）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>Middleware 与「再写一个外层 while」差在哪？</li>
+<li>HITL 为什么通常要配 checkpointer？</li>
+<li>Summarization 与 LE「压缩丢合同」如何同时防？</li>
+<li>L0&#x2F;L1&#x2F;L2 各证明什么？何时才需要 Deep Agents？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Middleware</strong>：扩展 harness 的主机制；hooks 插在模型&#x2F;工具前后。</p>
+<p><strong>内置</strong>：压缩、HITL、重试、限次、PII、Todo——对齐理论 Runtime &#x2F; LE。</p>
+<p><strong>自定义</strong>：确定性闸门优先生 middleware。</p>
+<p><strong>LangSmith</strong>：trace 先跑通。</p>
+<p><strong>阶梯</strong>：L0 闭环 → L1 记忆&#x2F;检索 → L2 可治理。</p>
+<p><strong>下一步</strong>：LangGraph 编排；Deep Agents 认名。</p>
+<p><strong>LangChain 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">（一）定位、Messages 与 Model</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/">（二）LCEL 与 Runnable</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">（三）Prompt、Tools 与 Runtime</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">（四）Retrieval 与 RAG 积木</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">（五）create_agent 核心闭环</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">（六）Middleware 与收口</a>（本篇）</li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/">LE（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent（五）（六）</a></p>
+<p>LangChain（实现层）到此收口。下一模块：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">LangGraph（一）· 定位与 Graph 基础</a>——在 <code>create_agent</code> 节点之外，用 StateGraph 做确定性编排、持久化与中断&#x2F;恢复。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangChain/" rel="tag"># LangChain</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/" rel="prev" title="AI-Agent工程学习-LangChain(五)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangChain(五)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/" rel="next" title="AI-Agent工程学习-LangGraph(一)">
+                  AI-Agent工程学习-LangGraph(一) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

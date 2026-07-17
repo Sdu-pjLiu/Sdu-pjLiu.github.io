@@ -27,7 +27,7 @@
 <meta property="og:description" content="Skill 深化、MCP 认名、权限沙箱、Subagent；Agent 基础收口。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T08:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T04:27:20.662Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.433Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -158,7 +158,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -221,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 12:27:20" itemprop="dateModified" datetime="2026-07-17T12:27:20+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-17 15:27:36" itemprop="dateModified" datetime="2026-07-17T15:27:36+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -243,14 +243,14 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent 基础（五）</a>：工程坑有手册之后，补齐 <strong>能力组件与安全边界</strong>，并收口本系列。</p>
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent 基础（五）</a>：工程坑有手册之后，补齐 <strong>能力组件与安全边界</strong>，并收口本系列。</p>
 <span id="more"></span>
-<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>一～五已覆盖：闭环、规划模式、记忆&#x2F;Runtime（含 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">Skill 认名（三）§1.4</a>）、评测、工程坑（含能力膨胀治理）。</p>
-<p>本篇 <strong>深化 Skill 边界</strong>，并补齐 MCP、权限&#x2F;沙箱、Subagent；接 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">PE 四 · Injection</a> 的数据边界。</p>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>一～五已覆盖：闭环、规划模式、记忆&#x2F;Runtime（含 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">Skill 认名（三）§1.4</a>）、评测、工程坑（含能力膨胀治理）。</p>
+<p>本篇 <strong>深化 Skill 边界</strong>，并补齐 MCP、权限&#x2F;沙箱、Subagent；接 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">PE 四 · Injection</a> 的数据边界。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">LLM（决策）</span><br><span class="line">  + Tools（函数 / 副作用动作）     ← LLM 四 Tool Calling</span><br><span class="line">  + Skills（按需程序性知识包）     ← 三认名 / 六深化</span><br><span class="line">  + Knowledge / RAG（事实检索）    ← 三已讲</span><br><span class="line">  + MCP（可选外部能力总线）        ← 本篇认名</span><br><span class="line">  + Runtime（权限 / 沙箱 / Budget / Hooks）</span><br></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="1-Skill-深化与边界"><a href="#1-Skill-深化与边界" class="headerlink" title="1. Skill 深化与边界"></a>1. Skill 深化与边界</h2><p>若未读 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">（三）§1.4</a>，请先回读认名（Skill 是什么、最小结构、Skill≠Tool）。</p>
+<h2 id="1-Skill-深化与边界"><a href="#1-Skill-深化与边界" class="headerlink" title="1. Skill 深化与边界"></a>1. Skill 深化与边界</h2><p>若未读 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">（三）§1.4</a>，请先回读认名（Skill 是什么、最小结构、Skill≠Tool）。</p>
 <h3 id="1-1-与-Tool-Template-RAG-完整对照（复习）"><a href="#1-1-与-Tool-Template-RAG-完整对照（复习）" class="headerlink" title="1.1 与 Tool &#x2F; Template &#x2F; RAG 完整对照（复习）"></a>1.1 与 Tool &#x2F; Template &#x2F; RAG 完整对照（复习）</h3><table>
 <thead>
 <tr>
@@ -285,14 +285,14 @@
 <td>否</td>
 </tr>
 </tbody></table>
-<p>能力目录过大时的 L0&#x2F;L1&#x2F;L2 治理见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#1-%E8%83%BD%E5%8A%9B%E8%86%A8%E8%83%80%EF%BC%88Tools%E3%80%81Skills%E3%80%81Procedural%EF%BC%89">（五）§1</a>；本篇讲 <strong>生命周期与编写评测</strong>。</p>
+<p>能力目录过大时的 L0&#x2F;L1&#x2F;L2 治理见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#1-%E8%83%BD%E5%8A%9B%E8%86%A8%E8%83%80%EF%BC%88Tools%E3%80%81Skills%E3%80%81Procedural%EF%BC%89">（五）§1</a>；本篇讲 <strong>生命周期与编写评测</strong>。</p>
 <h3 id="1-2-生命周期"><a href="#1-2-生命周期" class="headerlink" title="1.2 生命周期"></a>1.2 生命周期</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">发现（目录 / 检索）</span><br><span class="line">  → 选择（模型或 Runtime 路由）</span><br><span class="line">  → 注入 Context（body 进入本轮可见区）</span><br><span class="line">  → 执行中引用（配合 Tool Invocation）</span><br><span class="line">  →（可选）卸载或摘要（释放窗位）</span><br></pre></td></tr></table></figure>
 
-<p>与 Procedural 层：Skill 是 Procedural 的 <strong>可版本、可发现、可注入</strong> 产品形态（认名见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">三 §1.4</a>）。</p>
+<p>与 Procedural 层：Skill 是 Procedural 的 <strong>可版本、可发现、可注入</strong> 产品形态（认名见<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">三 §1.4</a>）。</p>
 <h3 id="1-3-编写与评测"><a href="#1-3-编写与评测" class="headerlink" title="1.3 编写与评测"></a>1.3 编写与评测</h3><ol>
 <li><strong>description</strong> 决定会不会被误选——与 Tool Schema 的 <code>description</code> 同等重要。</li>
-<li>安全写法见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#4-%E7%A8%8B%E5%BA%8F%E6%80%A7%E6%96%87%E6%A1%A3%E6%80%8E%E4%B9%88%E5%86%99%EF%BC%88Skill--Template-%E8%B5%84%E4%BA%A7%EF%BC%89">PE 四</a>。</li>
-<li>变更后回归 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8">Tool Accuracy</a> 与 Unnecessary Tool Calls。</li>
+<li>安全写法见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#4-%E7%A8%8B%E5%BA%8F%E6%80%A7%E6%96%87%E6%A1%A3%E6%80%8E%E4%B9%88%E5%86%99%EF%BC%88Skill--Template-%E8%B5%84%E4%BA%A7%EF%BC%89">PE 四</a>。</li>
+<li>变更后回归 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8">Tool Accuracy</a> 与 Unnecessary Tool Calls。</li>
 </ol>
 <hr>
 <h2 id="2-MCP-外部能力总线（认名）"><a href="#2-MCP-外部能力总线（认名）" class="headerlink" title="2. MCP &#x2F; 外部能力总线（认名）"></a>2. MCP &#x2F; 外部能力总线（认名）</h2><p><strong>为何需要：</strong> 工具与资源不应全写死在 Agent 单进程；团队&#x2F;第三方能力宜通过标准总线接入。</p>
@@ -318,9 +318,10 @@
 </tr>
 </tbody></table>
 <p>与 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">LLM 四 Tool Calling</a>：<strong>MCP 提供能力描述与接入；执行闭环仍是 Invocation → 应用执行 → Result 写回</strong>。MCP 不替代 Runtime 校验与权限。</p>
+<p><strong>场景片段：</strong> 输入「查询订单 A102」→ MCP Tool <code>get_order</code> 返回状态；读取政策则使用 MCP Resource → Runtime 写回 Context，模型输出订单状态与政策说明。</p>
 <p>本系列不写具体 SDK；实现模块再讲连接、鉴权与部署。</p>
 <hr>
-<h2 id="3-权限、沙箱与审批档"><a href="#3-权限、沙箱与审批档" class="headerlink" title="3. 权限、沙箱与审批档"></a>3. 权限、沙箱与审批档</h2><p>扩 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">（三）Runtime · HITL &#x2F; Guardrails</a>：</p>
+<h2 id="3-权限、沙箱与审批档"><a href="#3-权限、沙箱与审批档" class="headerlink" title="3. 权限、沙箱与审批档"></a>3. 权限、沙箱与审批档</h2><p>扩 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">（三）Runtime · HITL &#x2F; Guardrails</a>：</p>
 <h3 id="3-1-三档审批"><a href="#3-1-三档审批" class="headerlink" title="3.1 三档审批"></a>3.1 三档审批</h3><table>
 <thead>
 <tr>
@@ -345,10 +346,10 @@
 <td>读密钥、任意 shell、未授权网络</td>
 </tr>
 </tbody></table>
-<p>Prompt 写「禁止」不能替代 <strong>禁止档</strong>——须 Runtime 硬拦（回链 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#2-2-Prompt-%E4%B8%8D%E8%83%BD%E5%8D%95%E7%8B%AC%E6%89%9B%E5%AE%89%E5%85%A8">PE 四</a>）。</p>
+<p>Prompt 写「禁止」不能替代 <strong>禁止档</strong>——须 Runtime 硬拦（回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#2-2-Prompt-%E4%B8%8D%E8%83%BD%E5%8D%95%E7%8B%AC%E6%89%9B%E5%AE%89%E5%85%A8">PE 四</a>）。</p>
 <h3 id="3-2-沙箱（认名）"><a href="#3-2-沙箱（认名）" class="headerlink" title="3.2 沙箱（认名）"></a>3.2 沙箱（认名）</h3><p>隔离 <strong>文件系统、网络、进程</strong> 的可见范围；缩小 Action Space 的实际破坏面。与 HITL 组合：沙箱内自动，越界须确认。</p>
 <hr>
-<h2 id="4-Subagent-与-Agent-as-Tool"><a href="#4-Subagent-与-Agent-as-Tool" class="headerlink" title="4. Subagent 与 Agent-as-Tool"></a>4. Subagent 与 Agent-as-Tool</h2><p>扩 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-%E5%A4%9A-Agent%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%8C%E5%8D%8A%E8%8A%82%EF%BC%89">（三）多 Agent 认名</a>：</p>
+<h2 id="4-Subagent-与-Agent-as-Tool"><a href="#4-Subagent-与-Agent-as-Tool" class="headerlink" title="4. Subagent 与 Agent-as-Tool"></a>4. Subagent 与 Agent-as-Tool</h2><p>扩 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-%E5%A4%9A-Agent%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%8C%E5%8D%8A%E8%8A%82%EF%BC%89">（三）多 Agent 认名</a>：</p>
 <table>
 <thead>
 <tr>
@@ -368,9 +369,10 @@
 <p>要点：</p>
 <ol>
 <li><strong>Context Isolation</strong>（<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#5-7-%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95%E4%B8%8E-Agent">LLM 一 5.7</a>）：子任务 Trace 不要无限灌回主窗。</li>
-<li><strong>Handoff 必带</strong>（回链<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#4-Runtime-%E6%97%81%E8%B7%AF%E5%9D%91%EF%BC%88%E7%9F%AD%EF%BC%89">五 §4</a>）：Goal 摘要、已完成&#x2F;未完成、硬规则引用。</li>
+<li><strong>Handoff 必带</strong>（回链<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#4-Runtime-%E6%97%81%E8%B7%AF%E5%9D%91%EF%BC%88%E7%9F%AD%EF%BC%89">五 §4</a>）：Goal 摘要、已完成&#x2F;未完成、硬规则引用。</li>
 <li><strong>默认策略</strong>：单 Agent + Skill + 分层规划做稳，再考虑多 Agent——避免过早拆角色丢上下文。</li>
 </ol>
+<p><strong>场景片段：</strong> 主 Agent 输入「检查项目安全风险」→ 委派安全 Subagent 独立扫描 → 子 Agent 只返回风险摘要与证据路径，避免完整 Trace 挤占主 Context。</p>
 <hr>
 <h2 id="5-Environment-扩展认名（半节）"><a href="#5-Environment-扩展认名（半节）" class="headerlink" title="5. Environment 扩展认名（半节）"></a>5. Environment 扩展认名（半节）</h2><p>除搜索、DB、HTTP 外，常见扩展：</p>
 <table>
@@ -389,7 +391,7 @@
 <td>UI 操作；Action Space 与风险面扩大</td>
 </tr>
 </tbody></table>
-<p>共性：权限档要上移；Tool Result 须裁剪再写回（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">五 §2</a>）；Injection 风险更高（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#1-%E6%94%BB%E5%87%BB%E9%9D%A2%EF%BC%9A%E8%B0%81%E5%9C%A8%E5%BE%80-Context-%E9%87%8C%E5%A1%9E%E3%80%8C%E5%81%87%E6%8C%87%E4%BB%A4%E3%80%8D">PE 四</a>）。</p>
+<p>共性：权限档要上移；Tool Result 须裁剪再写回（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">五 §2</a>）；Injection 风险更高（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#1-%E6%94%BB%E5%87%BB%E9%9D%A2%EF%BC%9A%E8%B0%81%E5%9C%A8%E5%BE%80-Context-%E9%87%8C%E5%A1%9E%E3%80%8C%E5%81%87%E6%8C%87%E4%BB%A4%E3%80%8D">PE 四</a>）。</p>
 <hr>
 <h2 id="6-Hooks（认名半节）"><a href="#6-Hooks（认名半节）" class="headerlink" title="6. Hooks（认名半节）"></a>6. Hooks（认名半节）</h2><p>Runtime 在关键节点插入逻辑，<strong>不</strong>改 LLM 协议：</p>
 <table>
@@ -445,21 +447,21 @@
 <p><strong>Hooks</strong>：Runtime 扩展点；实现模块展开。</p>
 <p><strong>Agent 基础系列导航：</strong></p>
 <ul>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a>（本篇）</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a>（本篇）</li>
 </ul>
 <p><strong>前置：</strong></p>
 <ul>
-<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
-<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
+<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
 </ul>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">LLM（一）～（四，含调用韧性）</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四，含 Injection）</span><br><span class="line">    ↓</span><br><span class="line">Agent（一）闭环 →（二）模式 →（三）记忆/Runtime（含 Skill 认名）</span><br><span class="line">    →（四）评测/Research →（五）工程坑 →（六）Skill 深化与架构</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）～（三）</span><br><span class="line">    ↓</span><br><span class="line">实现与框架模块</span><br></pre></td></tr></table></figure>
 
-<p>Agent 基础（组件与安全边界）到此收口。下一模块：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering（一）· 合同与验证门</a>——把 Loop 工程化为可收敛、可验证、可安全停下的系统。</p>
+<p>Agent 基础（组件与安全边界）到此收口。下一模块：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering（一）· 合同与验证门</a>——把 Loop 工程化为可收敛、可验证、可安全停下的系统。</p>
 
     </div>
 
@@ -481,7 +483,7 @@
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/" rel="next" title="AI-Agent工程学习-Loop Engineering(一)">
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/" rel="next" title="AI-Agent工程学习-Loop Engineering(一)">
                   AI-Agent工程学习-Loop Engineering(一) <i class="fa fa-angle-right"></i>
                 </a>
             </div>

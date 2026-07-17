@@ -27,7 +27,7 @@
 <meta property="og:description" content="Agent 轨迹级评测（相对 Prompt 评测的增量）与 Research Agent 实践地图 L0–L2；工程坑见（五）。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T06:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T04:27:20.661Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.432Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -135,7 +135,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%AF%84%E6%B5%8B%E5%88%86%E5%B1%82%EF%BC%9A%E8%8A%82%E7%82%B9-%E2%86%92-%E8%BD%A8%E8%BF%B9-%E2%86%92-%E4%BB%BB%E5%8A%A1-%E2%86%92-%E5%AE%89%E5%85%A8"><span class="nav-number">1.</span> <span class="nav-text">1. 评测分层：节点 → 轨迹 → 任务 → 安全</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8"><span class="nav-number">2.</span> <span class="nav-text">2. 增量指标字典</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Judge-Human-Rubric%EF%BC%9AAgent-%E5%9C%BA%E6%99%AF%E5%B7%AE%E5%9C%A8%E5%93%AA"><span class="nav-number">3.</span> <span class="nav-text">3. Judge &#x2F; Human &#x2F; Rubric：Agent 场景差在哪</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Research-Agent-%E5%9C%B0%E5%9B%BE"><span class="nav-number">4.</span> <span class="nav-text">4. Research Agent 地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">5.</span> <span class="nav-text">5. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%98%B6%E6%AE%B5%E8%87%AA%E6%A3%80%EF%BC%9A%E5%BA%94%E8%83%BD%E5%9B%9E%E7%AD%94%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">6.</span> <span class="nav-text">6. 阶段自检：应能回答的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%AF%84%E6%B5%8B%E5%88%86%E5%B1%82%EF%BC%9A%E8%8A%82%E7%82%B9-%E2%86%92-%E8%BD%A8%E8%BF%B9-%E2%86%92-%E4%BB%BB%E5%8A%A1-%E2%86%92-%E5%AE%89%E5%85%A8"><span class="nav-number">1.</span> <span class="nav-text">1. 评测分层：节点 → 轨迹 → 任务 → 安全</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%A2%9E%E9%87%8F%E6%8C%87%E6%A0%87%E5%AD%97%E5%85%B8"><span class="nav-number">2.</span> <span class="nav-text">2. 增量指标字典</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%81%87%E6%83%B3%E8%BD%A8%E8%BF%B9%E6%95%B0%E5%AD%97%E6%BC%94%E7%AE%97%EF%BC%885-%E6%9D%A1-Scenario%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 假想轨迹数字演算（5 条 Scenario）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Judge-Human-Rubric%EF%BC%9AAgent-%E5%9C%BA%E6%99%AF%E5%B7%AE%E5%9C%A8%E5%93%AA"><span class="nav-number">3.</span> <span class="nav-text">3. Judge &#x2F; Human &#x2F; Rubric：Agent 场景差在哪</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Research-Agent-%E5%9C%B0%E5%9B%BE"><span class="nav-number">4.</span> <span class="nav-text">4. Research Agent 地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">5.</span> <span class="nav-text">5. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%98%B6%E6%AE%B5%E8%87%AA%E6%A3%80%EF%BC%9A%E5%BA%94%E8%83%BD%E5%9B%9E%E7%AD%94%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">6.</span> <span class="nav-text">6. 阶段自检：应能回答的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -158,7 +158,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -221,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 12:27:20" itemprop="dateModified" datetime="2026-07-17T12:27:20+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-17 15:27:36" itemprop="dateModified" datetime="2026-07-17T15:27:36+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -243,7 +243,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 基础（三）</a>：把「好不好」从单次 Completion 升级到整条轨迹，并用 Research Agent 把一～三串成地图。</p>
+    <div class="post-body" itemprop="articleBody"><p>接<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 基础（三）</a>：把「好不好」从单次 Completion 升级到整条轨迹，并用 Research Agent 把一～三串成地图。</p>
 <span id="more"></span>
 <h2 id="1-评测分层：节点-→-轨迹-→-任务-→-安全"><a href="#1-评测分层：节点-→-轨迹-→-任务-→-安全" class="headerlink" title="1. 评测分层：节点 → 轨迹 → 任务 → 安全"></a>1. 评测分层：节点 → 轨迹 → 任务 → 安全</h2><p><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/#2-Prompt-Evaluation%EF%BC%88%E8%AF%84%E6%B5%8B%EF%BC%89">Prompt Evaluation</a> 已覆盖：黄金集、规则校验、LLM-as-Judge、人工抽检、离线&#x2F;线上。本篇 <strong>不重讲</strong>，只升级对象。</p>
 <table>
@@ -308,7 +308,74 @@
 <li><strong>Unnecessary Tool Calls</strong>：无增益的重复调用</li>
 </ol>
 <p>工具侧协议仍以 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">Tool Calling 闭环</a> 为准：参数错先算节点失败，再归因 Schema 或 Prompt。</p>
-<p>上述轨迹指标可接到 Runtime <strong>验证门</strong>（假完成率、重复工具率等），把「评完再改」变成「环内硬拦」——见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering</a>。</p>
+<p>上述轨迹指标可接到 Runtime <strong>验证门</strong>（假完成率、重复工具率等），把「评完再改」变成「环内硬拦」——见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering</a>。</p>
+<h3 id="2-1-假想轨迹数字演算（5-条-Scenario）"><a href="#2-1-假想轨迹数字演算（5-条-Scenario）" class="headerlink" title="2.1 假想轨迹数字演算（5 条 Scenario）"></a>2.1 假想轨迹数字演算（5 条 Scenario）</h3><p>固定黄金集 <strong>N &#x3D; 5</strong>，工具桩与 Rubric 已配置：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>轨迹摘要</th>
+<th align="center">Task Success</th>
+<th align="center">Tool 选型</th>
+<th align="center">参数合法</th>
+<th align="center">结果被使用</th>
+<th align="center">假完成？</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>search×2 → 成稿，事实可指向 Observation</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">否</td>
+</tr>
+<tr>
+<td>2</td>
+<td>未调工具直接写「已调研完毕」</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">—</td>
+<td align="center">✗</td>
+<td align="center"><strong>是</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>search 成功但报告未引用任何 Observation</td>
+<td align="center">✗</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">部分</td>
+</tr>
+<tr>
+<td>4</td>
+<td>调错工具 <code>send_email</code> 而非 <code>search</code></td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">否</td>
+</tr>
+<tr>
+<td>5</td>
+<td>search 参数 JSON 缺字段</td>
+<td align="center">✗</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">—</td>
+<td align="center">否</td>
+</tr>
+</tbody></table>
+<p><strong>聚合（非空定义）：</strong></p>
+<ul>
+<li><strong>Task Success Rate</strong> &#x3D; 1 &#x2F; 5 &#x3D; <strong>20%</strong></li>
+<li><strong>Tool Accuracy（选型）</strong> &#x3D; 3 &#x2F; 5 &#x3D; <strong>60%</strong>（#2 未调用计失败）</li>
+<li><strong>Tool Accuracy（参数合法）</strong> &#x3D; 4 &#x2F; 4 次调用 &#x3D; <strong>100%</strong>（#2 无调用不计入分母）</li>
+<li><strong>假完成率</strong> &#x3D; 1 &#x2F; 5 &#x3D; <strong>20%</strong>（#2；#3 若 Gate 要求「每条关键事实有 Observation 指针」也会拦下）</li>
+</ul>
+<p>演算说明：指标必须绑定 <strong>可观测轨迹字段</strong>（tool_calls、Observation id、Final 文本），不能只看自然语言「我觉得做完了」。</p>
 <hr>
 <h2 id="3-Judge-Human-Rubric：Agent-场景差在哪"><a href="#3-Judge-Human-Rubric：Agent-场景差在哪" class="headerlink" title="3. Judge &#x2F; Human &#x2F; Rubric：Agent 场景差在哪"></a>3. Judge &#x2F; Human &#x2F; Rubric：Agent 场景差在哪</h2><p>细节回链 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/#2-Prompt-Evaluation%EF%BC%88%E8%AF%84%E6%B5%8B%EF%BC%89">PE 三 2.1–2.2</a>。Agent 增量：</p>
 <ol>
@@ -347,12 +414,12 @@
 <tr>
 <td>任务拆解</td>
 <td>Planner + DAG</td>
-<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#2-%E8%A7%84%E5%88%92%E5%BC%8F-Agent%EF%BC%88Plan-and-Execute-%E5%8F%8A%E8%A7%84%E5%88%92%E6%8A%80%E6%B3%95%EF%BC%89">规划式 &#x2F; Hierarchical</a></td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#2-%E8%A7%84%E5%88%92%E5%BC%8F-Agent%EF%BC%88Plan-and-Execute-%E5%8F%8A%E8%A7%84%E5%88%92%E6%8A%80%E6%B3%95%EF%BC%89">规划式 &#x2F; Hierarchical</a></td>
 </tr>
 <tr>
 <td>搜索</td>
 <td>Tools + Trace</td>
-<td>叶子 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#1-ReAct%EF%BC%88Reason-Act%EF%BC%89">ReAct</a></td>
+<td>叶子 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#1-ReAct%EF%BC%88Reason-Act%EF%BC%89">ReAct</a></td>
 </tr>
 <tr>
 <td>分析</td>
@@ -367,7 +434,7 @@
 <tr>
 <td>全程</td>
 <td>Runtime Budget &#x2F; 停止 &#x2F; Checkpoint</td>
-<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">Runtime 治理</a></td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">Runtime 治理</a></td>
 </tr>
 </tbody></table>
 <p>默认组合（再写一遍）：<strong>Hierarchical&#x2F;DAG + 叶子 ReAct + 成稿轻量 Reflection</strong>。</p>
@@ -383,7 +450,7 @@
 <tbody><tr>
 <td><strong>L0</strong></td>
 <td>2～3 个 mock search；手写 while + Tool 协议走通 Loop</td>
-<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/#5-Agent-Loop">Agent Loop</a></td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/#5-Agent-Loop">Agent Loop</a></td>
 </tr>
 <tr>
 <td><strong>L1</strong></td>
@@ -405,7 +472,7 @@
 <li>同一问题两次跑：结构稳定（Prompt &#x2F; Schema 版本固定）。</li>
 </ol>
 <hr>
-<h2 id="6-阶段自检：应能回答的问题"><a href="#6-阶段自检：应能回答的问题" class="headerlink" title="6. 阶段自检：应能回答的问题"></a>6. 阶段自检：应能回答的问题</h2><p>先过本篇与一～三（评测与地图）；工程坑见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）</a>；能力组件与安全见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）</a>。</p>
+<h2 id="6-阶段自检：应能回答的问题"><a href="#6-阶段自检：应能回答的问题" class="headerlink" title="6. 阶段自检：应能回答的问题"></a>6. 阶段自检：应能回答的问题</h2><p>先过本篇与一～三（评测与地图）；工程坑见<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）</a>；能力组件与安全见<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）</a>。</p>
 <ol>
 <li>Agent 五件套各负责什么？缺 Runtime 会怎样？</li>
 <li>Thought &#x2F; Action &#x2F; Observation &#x2F; Reflection 各产出什么？</li>
@@ -415,10 +482,10 @@
 <li>为何 Checkpoint 对长任务重要？</li>
 <li>Task Success &#x2F; Hallucination &#x2F; Tool Accuracy 如何落到可计算定义？</li>
 <li>Research Agent 如何把 Planner、搜索 Tool、Memory、Rubric 串成一条管线？</li>
-<li>Tools &#x2F; Skills 过多时，为何不能全部塞进本次 Action Space？（预告<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#1-%E8%83%BD%E5%8A%9B%E8%86%A8%E8%83%80%EF%BC%88Tools%E3%80%81Skills%E3%80%81Procedural%EF%BC%89">（五）§1</a>）</li>
-<li>Context 压缩应在哪些时机触发？硬规则能否一并摘要？（预告<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">（五）§2</a>）</li>
-<li>记忆写污染与脏读如何防护？（预告<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#3-%E8%AE%B0%E5%BF%86%E6%95%85%E9%9A%9C%E6%89%8B%E5%86%8C">（五）§3</a>）</li>
-<li>Skill 与 Tool 各解决什么？（回<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">（三）§1.4</a>认名 +<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#1-Skill-%E6%B7%B1%E5%8C%96%E4%B8%8E%E8%BE%B9%E7%95%8C">（六）§1</a>深化）</li>
+<li>Tools &#x2F; Skills 过多时，为何不能全部塞进本次 Action Space？（预告<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#1-%E8%83%BD%E5%8A%9B%E8%86%A8%E8%83%80%EF%BC%88Tools%E3%80%81Skills%E3%80%81Procedural%EF%BC%89">（五）§1</a>）</li>
+<li>Context 压缩应在哪些时机触发？硬规则能否一并摘要？（预告<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">（五）§2</a>）</li>
+<li>记忆写污染与脏读如何防护？（预告<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#3-%E8%AE%B0%E5%BF%86%E6%95%85%E9%9A%9C%E6%89%8B%E5%86%8C">（五）§3</a>）</li>
+<li>Skill 与 Tool 各解决什么？（回<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#1-4-Skill-%E8%AE%A4%E5%90%8D%EF%BC%88Procedural-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81%EF%BC%89">（三）§1.4</a>认名 +<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#1-Skill-%E6%B7%B1%E5%8C%96%E4%B8%8E%E8%BE%B9%E7%95%8C">（六）§1</a>深化）</li>
 </ol>
 <p>答不上的回对应篇重读。</p>
 <hr>
@@ -428,21 +495,21 @@
 <p><strong>实践</strong>：L0 闭环 → L1 静态计划 → L2 重规划；四条验收门禁。</p>
 <p><strong>Agent 基础系列导航：</strong></p>
 <ul>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a>（本篇）</li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a></li>
-<li><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a>（本篇）</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a></li>
 </ul>
 <p><strong>前置：</strong></p>
 <ul>
-<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Ageng%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
-<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
+<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
 </ul>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">LLM 基础：算与调</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四）：写、推、管、防注入</span><br><span class="line">    ↓</span><br><span class="line">Agent 基础（一）～（四）：闭环、模式、记忆/Runtime（含 Skill 认名）、评测与实践地图</span><br><span class="line">    ↓</span><br><span class="line">Agent 基础（五）：工程坑</span><br><span class="line">    ↓</span><br><span class="line">Agent 基础（六）：Skill 深化与架构</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）～（三）</span><br><span class="line">    ↓</span><br><span class="line">实现与框架模块</span><br></pre></td></tr></table></figure>
 
-<p>评测与 Research 地图到此完成。工程坑见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）</a>；能力组件见<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）</a>；可收敛 Loop 见 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering</a>。</p>
+<p>评测与 Research 地图到此完成。工程坑见<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）</a>；能力组件见<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）</a>；可收敛 Loop 见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering</a>。</p>
 
     </div>
 

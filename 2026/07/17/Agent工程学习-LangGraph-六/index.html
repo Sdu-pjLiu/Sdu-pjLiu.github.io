@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Subgraph、Router&#x2F;Supervisor、create_agent 入图、Multi-Agent、实践阶梯；收口至 Deep Agents。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LangGraph(六)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Subgraph、Router&#x2F;Supervisor、create_agent 入图、Multi-Agent、实践阶梯；收口至 Deep Agents。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-17T05:30:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.434Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangGraph">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/","path":"2026/07/17/Agent工程学习-LangGraph-六/","title":"AI-Agent工程学习-LangGraph(六)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LangGraph(六) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Subgraph"><span class="nav-number">2.</span> <span class="nav-text">1. Subgraph</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Router-%E4%B8%8E-Supervisor"><span class="nav-number">3.</span> <span class="nav-text">2. Router 与 Supervisor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%B5%8C%E5%85%A5-LangChain-create-agent"><span class="nav-number">4.</span> <span class="nav-text">3. 嵌入 LangChain create_agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E6%89%8B%E7%94%BB%E5%B7%A5%E5%85%B7%E7%8E%AF%EF%BC%9AToolNode"><span class="nav-number">5.</span> <span class="nav-text">4. 手画工具环：ToolNode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%AB%AF%E5%88%B0%E7%AB%AF%EF%BC%9AResearch-%E8%BF%B7%E4%BD%A0%E5%9B%BE"><span class="nav-number">6.</span> <span class="nav-text">5. 端到端：Research 迷你图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Multi-Agent-%E8%90%BD%E5%9C%B0%E8%A6%81%E7%82%B9"><span class="nav-number">7.</span> <span class="nav-text">6. Multi-Agent 落地要点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0-%E2%86%92-L2"><span class="nav-number">8.</span> <span class="nav-text">7. 实践阶梯 L0 → L2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89"><span class="nav-number">9.</span> <span class="nav-text">8. LangSmith（轻量）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E5%85%A8%E8%B7%AF%E5%BE%84%E4%B8%8E%E4%B8%8B%E4%B8%80%E6%A8%A1%E5%9D%97"><span class="nav-number">10.</span> <span class="nav-text">9. 全路径与下一模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">11.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LangGraph(六) | 我的记录小站">
+      <meta itemprop="description" content="Subgraph、Router&#x2F;Supervisor、create_agent 入图、Multi-Agent、实践阶梯；收口至 Deep Agents。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LangGraph(六)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-17 13:30:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T13:30:00+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Subgraph、Router/Supervisor、create_agent 入图、Multi-Agent、实践阶梯；收口至 Deep Agents。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">LangGraph（五）</a>：Interrupt 与 LE 对齐之后，用 <strong>Subgraph 与多 Agent 模式</strong> 拼装企业拓扑，并收口本系列。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>前四篇：Graph &#x2F; State &#x2F; Persistence &#x2F; 执行；第五篇：可控运行。</p>
+<p>本篇：<strong>模块化 + 模式 + 与 LangChain 拼装 + 实践阶梯</strong>。</p>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/use-subgraphs">Subgraphs</a></p>
+<hr>
+<h2 id="1-Subgraph"><a href="#1-Subgraph" class="headerlink" title="1. Subgraph"></a>1. Subgraph</h2><p>把一段流程编译成 <strong>子图</strong>，作为父图的一个 <strong>Node</strong> 嵌入。</p>
+<table>
+<thead>
+<tr>
+<th><code>checkpointer=</code>（子图 compile）</th>
+<th>行为（认名）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>None</code>（默认）</strong></td>
+<td>单次调用内 fresh；单次调用内可 inherit 父 checkpointer 支持 interrupt</td>
+</tr>
+<tr>
+<td><strong><code>True</code></strong></td>
+<td>同 thread 跨调用累积子图状态</td>
+</tr>
+<tr>
+<td><strong><code>False</code></strong></td>
+<td>无 checkpoint；像纯函数，无 interrupt&#x2F;durable</td>
+</tr>
+</tbody></table>
+<p>父图 <strong>必须</strong> 带 checkpointer，子图的 interrupt &#x2F; 持久化才完整生效。</p>
+<p>跨子图共享数据：优先 <strong>Store</strong>；或设计 state 映射（子图更新未必立刻反映父 checkpoint 命名空间）。</p>
+<p>最小父子图拼装（父子共享同一 State Schema）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Subgraph 嵌入：子图作父图 Node；父图带 checkpointer 以支持 interrupt/durable。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypedDict</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.checkpoint.memory <span class="keyword">import</span> InMemorySaver</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> END, START, StateGraph</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">State</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;父子共享的同一 State Schema（查询与研究结果）。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    query: <span class="built_in">str</span></span><br><span class="line">    research: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">research_node</span>(<span class="params">state: State</span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">str</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;子图内研究节点：根据 query 写回 research 字段。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 含 query 的共享状态。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        research 字段的 partial update。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;research&quot;</span>: <span class="string">f&quot;research for: <span class="subst">&#123;state[<span class="string">&#x27;query&#x27;</span>]&#125;</span>&quot;</span>&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">child_builder = StateGraph(State)</span><br><span class="line">child_builder.add_node(<span class="string">&quot;research&quot;</span>, research_node)</span><br><span class="line">child_builder.add_edge(START, <span class="string">&quot;research&quot;</span>)</span><br><span class="line">child_builder.add_edge(<span class="string">&quot;research&quot;</span>, END)</span><br><span class="line"><span class="comment"># 默认 checkpointer=None：单次调用内可继承父 checkpointer，支持 interrupt</span></span><br><span class="line">child_graph = child_builder.<span class="built_in">compile</span>()</span><br><span class="line"></span><br><span class="line">parent_builder = StateGraph(State)</span><br><span class="line"><span class="comment"># 已编译子图直接作为 Node；输入输出按共享 State 传递</span></span><br><span class="line">parent_builder.add_node(<span class="string">&quot;research_subgraph&quot;</span>, child_graph)</span><br><span class="line">parent_builder.add_edge(START, <span class="string">&quot;research_subgraph&quot;</span>)</span><br><span class="line">parent_builder.add_edge(<span class="string">&quot;research_subgraph&quot;</span>, END)</span><br><span class="line"><span class="comment"># 父图必须带 checkpointer，子图 interrupt / 持久化才完整生效</span></span><br><span class="line">parent_graph = parent_builder.<span class="built_in">compile</span>(checkpointer=InMemorySaver())</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-Router-与-Supervisor"><a href="#2-Router-与-Supervisor" class="headerlink" title="2. Router 与 Supervisor"></a>2. Router 与 Supervisor</h2><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>结构</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Router</strong></td>
+<td>分类节点 + conditional edge 到不同分支</td>
+<td>意图分流、模型&#x2F;工具集切换</td>
+</tr>
+<tr>
+<td><strong>Supervisor</strong></td>
+<td>中心节点分派到专家子图&#x2F;子 Agent</td>
+<td>研究&#x2F;编码等多角色</td>
+</tr>
+</tbody></table>
+<p>Supervisor 伪拓扑：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">START → supervisor → researcher_subgraph → supervisor → writer_subgraph → END</span><br></pre></td></tr></table></figure>
+
+<p>Handoff 必带（回 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#4-Subagent-%E4%B8%8E-Agent-as-Tool">Agent 六</a>）：Goal 摘要、已完成&#x2F;未完成、硬规则引用。</p>
+<p><strong>Swarm</strong>（多 Agent 对等协作）：行业模式名；LangGraph 无单独「Swarm API」——用多节点 + Store + 路由实现即可；<strong>非入门主线</strong>。</p>
+<hr>
+<h2 id="3-嵌入-LangChain-create-agent"><a href="#3-嵌入-LangChain-create-agent" class="headerlink" title="3. 嵌入 LangChain create_agent"></a>3. 嵌入 LangChain <code>create_agent</code></h2><p>LangChain Agent 本质是已编译图 → <strong>直接作为 Node</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">将 LangChain create_agent 编译结果整段嵌入 StateGraph 作为 Node。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Literal</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.agents <span class="keyword">import</span> create_agent</span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> END, MessagesState, START, StateGraph</span><br><span class="line"></span><br><span class="line"><span class="comment"># 假定 search 工具与 checkpointer 已按前文定义</span></span><br><span class="line">research_agent = create_agent(</span><br><span class="line">    model=<span class="string">&quot;...&quot;</span>,</span><br><span class="line">    tools=[search],</span><br><span class="line">    system_prompt=<span class="string">&quot;...&quot;</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">classify_node</span>(<span class="params">state: MessagesState</span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;意图分类占位：真实场景可写路由标记或改写 messages。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 图级 MessagesState。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        空更新；路由由下方 route 根据 state 决定。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">route</span>(<span class="params">state: MessagesState</span>) -&gt; <span class="type">Literal</span>[<span class="string">&quot;research&quot;</span>, <span class="string">&quot;finish&quot;</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;根据分类结果选择研究子 Agent 或直接结束。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 分类后的 MessagesState。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        映射到 conditional_edges 路径名的字面量。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;research&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">builder = StateGraph(MessagesState)</span><br><span class="line">builder.add_node(<span class="string">&quot;classify&quot;</span>, classify_node)</span><br><span class="line"><span class="comment"># research_agent 是已编译图：含工具环与 middleware，整段作为一 Node</span></span><br><span class="line">builder.add_node(<span class="string">&quot;research&quot;</span>, research_agent)</span><br><span class="line">builder.add_edge(START, <span class="string">&quot;classify&quot;</span>)</span><br><span class="line">builder.add_conditional_edges(</span><br><span class="line">    <span class="string">&quot;classify&quot;</span>,</span><br><span class="line">    route,</span><br><span class="line">    &#123;<span class="string">&quot;research&quot;</span>: <span class="string">&quot;research&quot;</span>, <span class="string">&quot;finish&quot;</span>: END&#125;,</span><br><span class="line">)</span><br><span class="line">graph = builder.<span class="built_in">compile</span>(checkpointer=checkpointer)</span><br></pre></td></tr></table></figure>
+
+<p>Middleware（压缩、HITL、重试）随 Agent 节点一起走；外层图再加 deterministic 节点与 interrupt。</p>
+<hr>
+<h2 id="4-手画工具环：ToolNode"><a href="#4-手画工具环：ToolNode" class="headerlink" title="4. 手画工具环：ToolNode"></a>4. 手画工具环：ToolNode</h2><p>需要精细控制模型节点、工具节点和每条边时，用预构建 <strong><code>ToolNode</code></strong> + <strong><code>tools_condition</code></strong>：</p>
+<p>以下假定 <code>model</code> 与 <code>tools</code> 已按 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">LangChain（三）</a> 定义：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">手画工具环：model 节点 + ToolNode + tools_condition 闭环。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> MessagesState, START, StateGraph</span><br><span class="line"><span class="keyword">from</span> langgraph.prebuilt <span class="keyword">import</span> ToolNode, tools_condition</span><br><span class="line"></span><br><span class="line"><span class="comment"># 假定 model 与 tools 已按 LangChain（三）定义</span></span><br><span class="line">model_with_tools = model.bind_tools(tools)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">call_model</span>(<span class="params">state: MessagesState</span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;调用已 bind_tools 的模型，把 AIMessage 追加进 messages。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        state: 含对话历史的 MessagesState。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        单条模型响应，供 MessagesState 的 add_messages reducer 合并。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    response = model_with_tools.invoke(state[<span class="string">&quot;messages&quot;</span>])</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;messages&quot;</span>: [response]&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">builder = StateGraph(MessagesState)</span><br><span class="line">builder.add_node(<span class="string">&quot;agent&quot;</span>, call_model)</span><br><span class="line"><span class="comment"># ToolNode：并行执行 tool_calls，并处理错误与 state/context 注入</span></span><br><span class="line">builder.add_node(<span class="string">&quot;tools&quot;</span>, ToolNode(tools))</span><br><span class="line">builder.add_edge(START, <span class="string">&quot;agent&quot;</span>)</span><br><span class="line"><span class="comment"># tools_condition：末条 AIMessage 有 tool_calls → &quot;tools&quot;，否则 → END</span></span><br><span class="line">builder.add_conditional_edges(<span class="string">&quot;agent&quot;</span>, tools_condition)</span><br><span class="line">builder.add_edge(<span class="string">&quot;tools&quot;</span>, <span class="string">&quot;agent&quot;</span>)</span><br><span class="line">tool_graph = builder.<span class="built_in">compile</span>()</span><br></pre></td></tr></table></figure>
+
+<p><code>tools_condition</code> 检查末条 AIMessage：有 tool_calls → <code>&quot;tools&quot;</code>；否则 → <code>END</code>。<code>ToolNode</code> 负责并行工具执行、错误处理与 state&#x2F;context 注入。</p>
+<table>
+<thead>
+<tr>
+<th>选择</th>
+<th>适合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>嵌 <code>create_agent</code></strong></td>
+<td>标准工具环 + Middleware，少写样板</td>
+</tr>
+<tr>
+<td><strong>手画 ToolNode 环</strong></td>
+<td>在模型&#x2F;工具之间插验证、审批、改写、独立预算节点</td>
+</tr>
+</tbody></table>
+<p>无论哪种，都应配 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/#6-Loop-%E5%AE%89%E5%85%A8%E9%98%80%EF%BC%9Arecursion-limit">recursion_limit</a> 与业务停止条件。</p>
+<hr>
+<h2 id="5-端到端：Research-迷你图"><a href="#5-端到端：Research-迷你图" class="headerlink" title="5. 端到端：Research 迷你图"></a>5. 端到端：Research 迷你图</h2><p>把本系列积木串成一条可理解的 Research 流水线（概念拓扑）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">START → planner → Send(N × research_worker) → combine → writer → verify</span><br><span class="line">  ├─ contract_ok → END</span><br><span class="line">  └─ 不通过 → interrupt（人工改 draft）→ writer</span><br></pre></td></tr></table></figure>
+
+<p>各 superstep 的 state 变化摘要（假定 <code>ResearchState</code> 含 <code>query</code>、<code>subtasks</code>、<code>notes</code>、<code>draft</code>、<code>contract_ok</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>Superstep</th>
+<th>节点</th>
+<th>state 变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>planner</strong></td>
+<td><code>query</code> → 写入 <code>subtasks=[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;]</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Send → research_worker ×3</strong></td>
+<td><code>notes</code> 经 reducer 追加 3 条摘要</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>combine</strong></td>
+<td>合并 <code>notes</code> 为结构化提纲</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>writer</strong></td>
+<td>生成 <code>draft</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>verify</strong></td>
+<td>机检 <code>contract_ok</code>；失败则 <code>interrupt</code> 等人工修订</td>
+</tr>
+</tbody></table>
+<p><strong>图中有图</strong>：外层是 LangGraph Superstep Runtime；若 <code>research_worker</code> 节点内嵌 <code>create_agent</code>，则该节点内部又是一张 Agent 工具环子图（含 Middleware）。外层负责 <strong>确定性编排与 LE 门禁</strong>，内层负责 <strong>模型选工具</strong>。</p>
+<p>对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#4-Research-Agent-%E5%9C%B0%E5%9B%BE">Agent（四）Research 地图</a> 与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE 验证门</a>。</p>
+<hr>
+<h2 id="6-Multi-Agent-落地要点"><a href="#6-Multi-Agent-落地要点" class="headerlink" title="6. Multi-Agent 落地要点"></a>6. Multi-Agent 落地要点</h2><ol>
+<li><strong>Context 隔离</strong>：子 Agent 各用 subgraph &#x2F; 独立 messages 切片，防互相污染。</li>
+<li><strong>统一 Store</strong>：跨 Agent 共享用户级事实。</li>
+<li><strong>统一 thread 或分 thread</strong>：按产品需求；审计场景常分 thread + Store 汇总。</li>
+<li><strong>LE 门禁在图级</strong>：外环验证节点 + 预算 state，不单靠子 Agent 自评。</li>
+</ol>
+<hr>
+<h2 id="7-实践阶梯-L0-→-L2"><a href="#7-实践阶梯-L0-→-L2" class="headerlink" title="7. 实践阶梯 L0 → L2"></a>7. 实践阶梯 L0 → L2</h2><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>做什么</th>
+<th>证明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L0</strong></td>
+<td>线性 DAG + 明确 <code>recursion_limit</code></td>
+<td>Node&#x2F;Edge&#x2F;compile；能解释触顶行为</td>
+</tr>
+<tr>
+<td><strong>L1</strong></td>
+<td>+ checkpointer 多轮 + interrupt；用 <code>Send</code> 并行处理 N 条输入</td>
+<td>Persistence + HITL + 动态并行</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>Supervisor + 两个 Agent 子图（<code>create_agent</code> 或 ToolNode 环）+ 验证节点 + trace</td>
+<td>企业拓扑 + LE 对齐</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-LangSmith（轻量）"><a href="#8-LangSmith（轻量）" class="headerlink" title="8. LangSmith（轻量）"></a>8. LangSmith（轻量）</h2><ul>
+<li><code>LANGSMITH_TRACING=true</code>：看 <strong>节点级</strong> 路径、state 转移、interrupt 载荷。</li>
+<li>图比单 Agent 更依赖 trace：定位「哪条边走错」。</li>
+<li>部署认名：LangSmith Deployment &#x2F; Agent Server（平台篇，此处不展开）。</li>
+</ul>
+<hr>
+<h2 id="9-全路径与下一模块"><a href="#9-全路径与下一模块" class="headerlink" title="9. 全路径与下一模块"></a>9. 全路径与下一模块</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LLM → Prompt → Agent → Loop Engineering</span><br><span class="line">        ↓</span><br><span class="line">LangChain（一）～（六）</span><br><span class="line">        ↓</span><br><span class="line">LangGraph（一）Graph →（二）State →（三）Persistence</span><br><span class="line">    →（四）执行 →（五）Interrupt/LE →（六）模式拼装（本篇）</span><br><span class="line">        ↓</span><br><span class="line">下一模块：Deep Agents（厚 harness）</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>需求</th>
+<th>去向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>标准单 Agent + Middleware</td>
+<td>LangChain</td>
+</tr>
+<tr>
+<td>自定义编排 + durable + HITL</td>
+<td><strong>LangGraph（本系列）</strong></td>
+</tr>
+<tr>
+<td>开箱 FS &#x2F; Skills &#x2F; subagent 栈</td>
+<td><strong>Deep Agents</strong></td>
+</tr>
+</tbody></table>
+<p>除本系列主讲的 Graph API 外，Functional API（<code>@entrypoint</code> &#x2F; <code>@task</code>）可在保留函数式结构时获得同一 Runtime 能力；两者可混用，回看<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/#1-%E4%B8%A4%E7%A7%8D-API%EF%BC%9AGraph-%E4%B8%8E-Functional">（一）</a>。</p>
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>子图 <code>checkpointer=True</code> 与 <code>False</code> 各适合什么？</li>
+<li>Router 与 Supervisor 分工差在哪？</li>
+<li>为何把 <code>create_agent</code> 当 Node 而不是重写工具环？</li>
+<li>L2 与「只用 LangChain Middleware」的分水岭是什么？</li>
+<li>何时应手画 ToolNode 环，而不是直接嵌 <code>create_agent</code>？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Subgraph</strong>：模块化；checkpoint 作用域要显式选。</p>
+<p><strong>Router &#x2F; Supervisor</strong>：分流与分派；Handoff 带摘要与规则。</p>
+<p><strong>拼装</strong>：<code>create_agent</code> 整段入图。</p>
+<p><strong>工具环</strong>：<code>ToolNode</code> + <code>tools_condition</code> 提供细粒度拓扑控制。</p>
+<p><strong>Multi-Agent</strong>：隔离 + Store + 图级 LE 门禁。</p>
+<p><strong>阶梯</strong>：L0 DAG → L1 持久&#x2F;HITL → L2 Supervisor 拓扑。</p>
+<p><strong>下一步</strong>：Deep Agents。</p>
+<p><strong>LangGraph 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">（一）定位与 Graph 基础</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">（二）State 与 Reducer</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">（三）Persistence</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%9B%9B/">（四）执行模型</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">（五）Interrupt 与 LE 对齐</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">（六）模式拼装与收口</a>（本篇）</li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">LangChain（六）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/">LE（三）</a></p>
+<p>LangGraph（编排 Runtime）到此收口。下一模块：<strong>Deep Agents</strong>——在 LangGraph 之上，用预装规划、虚拟文件系统、Skills 与 Subagent 做长任务厚 harness。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangGraph/" rel="tag"># LangGraph</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/" rel="prev" title="AI-Agent工程学习-LangGraph(五)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangGraph(五)
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

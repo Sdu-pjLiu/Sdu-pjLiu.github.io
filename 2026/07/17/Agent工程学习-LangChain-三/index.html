@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Agent 侧 system_prompt 与 Chain 侧 Prompt 模板；@tool &#x2F; StructuredTool；ToolRuntime 与 context_schema。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-LangChain(三)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Agent 侧 system_prompt 与 Chain 侧 Prompt 模板；@tool &#x2F; StructuredTool；ToolRuntime 与 context_schema。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-17T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-17T07:27:36.433Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangChain">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/","path":"2026/07/17/Agent工程学习-LangChain-三/","title":"AI-Agent工程学习-LangChain(三)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-LangChain(三) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Prompt%EF%BC%9AAgent-%E4%BE%A7-vs-Chain-%E4%BE%A7"><span class="nav-number">2.</span> <span class="nav-text">1. Prompt：Agent 侧 vs Chain 侧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Agent-%E4%BE%A7%EF%BC%88%E4%B8%BB%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 Agent 侧（主）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Chain-%E4%BE%A7%EF%BC%88%E8%BE%85%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 Chain 侧（辅）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E8%BE%93%E5%87%BA%EF%BC%9AStructured-Output-%E4%BC%98%E5%85%88"><span class="nav-number">3.</span> <span class="nav-text">2. 输出：Structured Output 优先</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Tool%EF%BC%9A-tool-StructuredTool"><span class="nav-number">4.</span> <span class="nav-text">3. Tool：@tool &#x2F; StructuredTool</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%AE%9A%E4%B9%89"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E9%94%99%E8%AF%AF%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 错误与副作用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Runtime-Context%EF%BC%9A%E5%B7%A5%E5%85%B7%E5%A6%82%E4%BD%95%E8%AF%BB%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="nav-number">5.</span> <span class="nav-text">4. Runtime Context：工具如何读上下文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Toolkit-%E4%B8%8E-MCP%E2%86%92Tool%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. Toolkit 与 MCP→Tool（认名）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AD%A6%E6%A3%80%E6%9F%A5"><span class="nav-number">7.</span> <span class="nav-text">自学检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-LangChain(三) | 我的记录小站">
+      <meta itemprop="description" content="Agent 侧 system_prompt 与 Chain 侧 Prompt 模板；@tool &#x2F; StructuredTool；ToolRuntime 与 context_schema。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-LangChain(三)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-17 09:00:00 / 修改时间：15:27:36" itemprop="dateCreated datePublished" datetime="2026-07-17T09:00:00+08:00">2026-07-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Agent 侧 system_prompt 与 Chain 侧 Prompt 模板；@tool / StructuredTool；ToolRuntime 与 context_schema。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/">LangChain（二）</a>：会拼 Runnable 之后，补齐 <strong>输入合同（Prompt）</strong> 与 <strong>动作合同（Tools）</strong>，以及工具如何读运行时上下文。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>Prompt 怎么写</th>
+<th>工具怎么挂</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Agent（主）</strong></td>
+<td><code>create_agent(..., system_prompt=...)</code></td>
+<td><code>tools=[...]</code></td>
+</tr>
+<tr>
+<td><strong>Chain &#x2F; RAG（辅）</strong></td>
+<td><code>ChatPromptTemplate</code> + LCEL</td>
+<td>检索器或函数进管道</td>
+</tr>
+</tbody></table>
+<p>动态改 prompt &#x2F; 可用工具列表 → 优先 <strong>Middleware</strong>（见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">六</a>），而不是把模板写成巨型静态字符串。</p>
+<p>回链：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">PE 一 · 组成</a>、<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">LLM 四 · Tool Calling</a>、<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">Agent 三 · 工具治理</a>。</p>
+<hr>
+<h2 id="1-Prompt：Agent-侧-vs-Chain-侧"><a href="#1-Prompt：Agent-侧-vs-Chain-侧" class="headerlink" title="1. Prompt：Agent 侧 vs Chain 侧"></a>1. Prompt：Agent 侧 vs Chain 侧</h2><h3 id="1-1-Agent-侧（主）"><a href="#1-1-Agent-侧（主）" class="headerlink" title="1.1 Agent 侧（主）"></a>1.1 Agent 侧（主）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">用 create_agent 挂载 system_prompt 与工具列表。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.agents <span class="keyword">import</span> create_agent</span><br><span class="line"></span><br><span class="line"><span class="comment"># system_prompt 与用户轮次分离；对话内容走 messages，不塞进系统字符串</span></span><br><span class="line"><span class="comment"># tools 省略具体实现，见下文 @tool 示例</span></span><br><span class="line">agent = create_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    tools=[...],</span><br><span class="line">    system_prompt=<span class="string">&quot;你是助手。先查证再回答；不确定就说不确定。&quot;</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>接受 <code>str</code> 或 <code>SystemMessage</code>。</li>
+<li>运行时对话进 <code>messages</code>；系统指令与用户轮次分离（对齐消息角色）。</li>
+</ul>
+<h3 id="1-2-Chain-侧（辅）"><a href="#1-2-Chain-侧（辅）" class="headerlink" title="1.2 Chain 侧（辅）"></a>1.2 Chain 侧（辅）</h3><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>PromptTemplate</strong></td>
+<td>字符串模板（<code>&#123;variable&#125;</code>）</td>
+</tr>
+<tr>
+<td><strong>ChatPromptTemplate</strong></td>
+<td>多角色消息模板</td>
+</tr>
+<tr>
+<td><strong>MessagesPlaceholder</strong></td>
+<td>插入历史消息列表（如 <code>chat_history</code>）</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">用 ChatPromptTemplate 组装多角色 Chain 侧提示。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> MessagesPlaceholder</span><br><span class="line"></span><br><span class="line"><span class="comment"># MessagesPlaceholder 在运行时插入历史消息列表，避免把多轮对话硬编码进模板</span></span><br><span class="line">prompt = ChatPromptTemplate.from_messages(</span><br><span class="line">    [</span><br><span class="line">        (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;根据 &#123;context&#125; 回答问题。&quot;</span>),</span><br><span class="line">        MessagesPlaceholder(<span class="string">&quot;chat_history&quot;</span>),</span><br><span class="line">        (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;&#123;question&#125;&quot;</span>),</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>Few-shot 模板：认名即可；版本与评测回 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">PE 三</a>。</p>
+<hr>
+<h2 id="2-输出：Structured-Output-优先"><a href="#2-输出：Structured-Output-优先" class="headerlink" title="2. 输出：Structured Output 优先"></a>2. 输出：Structured Output 优先</h2><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>何时用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Agent <code>response_format=</code></strong></td>
+<td>Agent 最终要返回 Pydantic &#x2F; schema（见<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">五</a>）</td>
+</tr>
+<tr>
+<td><strong><code>with_structured_output</code></strong></td>
+<td>单次 ChatModel 调用就要结构</td>
+</tr>
+<tr>
+<td><strong>经典 OutputParser</strong></td>
+<td>读旧代码；新链路优先 schema 校验</td>
+</tr>
+</tbody></table>
+<p>「解析自然语言当合同」脆弱——与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/#3-%E6%94%B6%E6%95%9B%E5%90%88%E5%90%8C%EF%BC%88Contract%EF%BC%89">LE · 可机检合同</a> 同一原则。</p>
+<hr>
+<h2 id="3-Tool：-tool-StructuredTool"><a href="#3-Tool：-tool-StructuredTool" class="headerlink" title="3. Tool：@tool &#x2F; StructuredTool"></a>3. Tool：<code>@tool</code> &#x2F; StructuredTool</h2><h3 id="3-1-定义"><a href="#3-1-定义" class="headerlink" title="3.1 定义"></a>3.1 定义</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">用 @tool 把带类型注解的函数注册为 Agent 可调用工具。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.tools <span class="keyword">import</span> tool</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@tool</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_weather</span>(<span class="params">city: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;查询指定城市的当前天气。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        city: 城市名。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        天气摘要字符串。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;<span class="subst">&#123;city&#125;</span>: 晴，25°C&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>要点（对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#1-%E8%83%BD%E5%8A%9B%E8%86%A8%E8%83%80%EF%BC%88Tools%E3%80%81Skills%E3%80%81Procedural%EF%BC%89">Agent 五 · 能力膨胀</a>）：</p>
+<ol>
+<li><strong>name</strong>：默认函数名；HITL &#x2F; 权限档按 name 匹配。</li>
+<li><strong>description</strong>：模型选型最敏感——何时用 &#x2F; 何时不用要写清。</li>
+<li><strong>参数类型注解</strong>：生成 JSON Schema；含糊描述 &#x3D; 错调工具。</li>
+</ol>
+<p>也可用 <code>StructuredTool.from_function</code> 显式构造；本质都是 <strong>BaseTool</strong>。</p>
+<h3 id="3-2-错误与副作用"><a href="#3-2-错误与副作用" class="headerlink" title="3.2 错误与副作用"></a>3.2 错误与副作用</h3><ul>
+<li>工具内抛错：应变成可观察的失败信息，供模型重试或换策略（环内再配 ToolRetry Middleware）。</li>
+<li>有副作用的工具：审批档与 HITL 见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#3-%E6%9D%83%E9%99%90%E3%80%81%E6%B2%99%E7%AE%B1%E4%B8%8E%E5%AE%A1%E6%89%B9%E6%A1%A3">Agent 六</a>、<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">六 · HumanInTheLoop</a>。</li>
+</ul>
+<hr>
+<h2 id="4-Runtime-Context：工具如何读上下文"><a href="#4-Runtime-Context：工具如何读上下文" class="headerlink" title="4. Runtime Context：工具如何读上下文"></a>4. Runtime Context：工具如何读上下文</h2><p>Agent 可声明 <strong><code>context_schema</code></strong>，调用时传入 <code>context=</code>；工具通过 <strong>ToolRuntime</strong>（或等价 runtime 参数）读取——用户 ID、租户、功能开关等 <strong>不应塞进 Prompt 明文</strong> 时可走这条路。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">演示 context_schema 与 ToolRuntime 向工具注入运行时上下文。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.agents <span class="keyword">import</span> create_agent</span><br><span class="line"><span class="keyword">from</span> langchain.tools <span class="keyword">import</span> ToolRuntime</span><br><span class="line"><span class="keyword">from</span> langchain.tools <span class="keyword">import</span> tool</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Ctx</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Agent 调用时注入的运行时上下文（如用户身份）。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    user_id: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@tool</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">list_orders</span>(<span class="params">runtime: ToolRuntime[Ctx]</span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;列出当前用户的订单摘要。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        runtime: 框架注入的运行时，可读取 context_schema 实例。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        当前用户的订单摘要字符串。</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 用户 ID 等会话信息经 context 注入，避免写进 Prompt 明文</span></span><br><span class="line">    uid = runtime.context.user_id</span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;orders for <span class="subst">&#123;uid&#125;</span>: ...&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">agent = create_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    tools=[list_orders],</span><br><span class="line">    context_schema=Ctx,</span><br><span class="line">)</span><br><span class="line"><span class="comment"># 调用示例：agent.invoke(..., context=Ctx(user_id=&quot;u-1&quot;))</span></span><br></pre></td></tr></table></figure>
+
+<p>工具也可按文档约定 <strong>写回短时状态</strong>（更新 <code>messages</code> 外的自定义 state 字段）——细节以当前版本文档为准；原则是：<strong>状态变更显式，不靠隐藏全局变量</strong>。</p>
+<hr>
+<h2 id="5-Toolkit-与-MCP→Tool（认名）"><a href="#5-Toolkit-与-MCP→Tool（认名）" class="headerlink" title="5. Toolkit 与 MCP→Tool（认名）"></a>5. Toolkit 与 MCP→Tool（认名）</h2><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Toolkit</strong></td>
+<td>一组相关工具的打包（社区集成常见）</td>
+</tr>
+<tr>
+<td><strong>MCP → Tool</strong></td>
+<td>外部能力总线暴露的动作，映射进 Tool Calling 闭环</td>
+</tr>
+</tbody></table>
+<p>MCP 认名见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">Agent 六</a>：执行仍走 schema → 调用 → ToolMessage；LangChain 侧负责把 MCP 工具适配成 <code>@tool</code> &#x2F; BaseTool。</p>
+<p>动态裁剪可用工具集合（防目录膨胀）→ Middleware &#x2F; 按需注入，对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent 五 L2 加载</a>。</p>
+<hr>
+<h2 id="自学检查"><a href="#自学检查" class="headerlink" title="自学检查"></a>自学检查</h2><ol>
+<li>Agent 的 <code>system_prompt</code> 与 <code>ChatPromptTemplate</code> 各适合哪类程序？</li>
+<li>为何新代码优先 <code>response_format</code> &#x2F; structured output，而不是自由文本 + OutputParser？</li>
+<li>Tool 的 description 写差会导致什么？</li>
+<li><code>context_schema</code> 解决什么问题？和塞进 system 字符串有何区别？</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Prompt</strong>：Agent 用 <code>system_prompt</code>；Chain 用 Template + Placeholder。</p>
+<p><strong>输出</strong>：结构化 schema 优先。</p>
+<p><strong>Tool</strong>：<code>@tool</code> + 清晰 description + 类型注解；副作用要闸门。</p>
+<p><strong>Runtime</strong>：<code>context_schema</code> + ToolRuntime 读上下文；状态显式。</p>
+<p><strong>MCP&#x2F;Toolkit</strong>：认名；执行仍是 Tool Calling。</p>
+<p><strong>LangChain 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">（一）定位、Messages 与 Model</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/">（二）LCEL 与 Runnable</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">（三）Prompt、Tools 与 Runtime</a>（本篇）</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">（四）Retrieval 与 RAG 积木</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%94/">（五）create_agent 核心闭环</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">（六）Middleware 与收口</a></li>
+</ul>
+<p>下一篇：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">LangChain（四）· Retrieval 与 RAG 积木</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangChain/" rel="tag"># LangChain</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%BA%8C/" rel="prev" title="AI-Agent工程学习-LangChain(二)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangChain(二)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/" rel="next" title="AI-Agent工程学习-LangChain(四)">
+                  AI-Agent工程学习-LangChain(四) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
