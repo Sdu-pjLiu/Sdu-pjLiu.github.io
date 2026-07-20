@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="MCP 开篇：Host&#x2F;Client&#x2F;Server、Tools&#x2F;Resources&#x2F;Prompts、传输；与 Agent（六）认名及 Harness 映射。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-MCP(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="MCP 开篇：Host&#x2F;Client&#x2F;Server、Tools&#x2F;Resources&#x2F;Prompts、传输；与 Agent（六）认名及 Harness 映射。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-21T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T10:40:42.364Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="MCP">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%80/","path":"/2026/08/11/Agent工程学习-MCP-一/","title":"AI-Agent工程学习-MCP(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-MCP(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-MCP-vs-%E8%87%AA%E5%BB%BA-Tool-vs-OpenAPI"><span class="nav-number">2.</span> <span class="nav-text">1. MCP vs 自建 Tool vs OpenAPI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Host-Client-Server"><span class="nav-number">3.</span> <span class="nav-text">2. Host &#x2F; Client &#x2F; Server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Tools-Resources-Prompts%EF%BC%88Server-%E4%BE%A7%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. Tools &#x2F; Resources &#x2F; Prompts（Server 侧）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E8%83%BD%E5%8A%9B%E5%8F%91%E7%8E%B0"><span class="nav-number">5.</span> <span class="nav-text">4. 能力发现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E4%BC%A0%E8%BE%93%EF%BC%9ASTDIO-%E4%B8%8E-HTTP"><span class="nav-number">6.</span> <span class="nav-text">5. 传输：STDIO 与 HTTP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Harness-Tool-%E5%B1%82%E6%98%A0%E5%B0%84"><span class="nav-number">7.</span> <span class="nav-text">6. Harness Tool 层映射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E5%BA%8F%E5%88%97"><span class="nav-number">8.</span> <span class="nav-text">7. 完整调用序列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">9.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-MCP(一) | 我的记录小站">
+      <meta itemprop="description" content="MCP 开篇：Host&#x2F;Client&#x2F;Server、Tools&#x2F;Resources&#x2F;Prompts、传输；与 Agent（六）认名及 Harness 映射。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-MCP(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-21 08:00:00" itemprop="dateCreated datePublished" datetime="2026-07-21T08:00:00+08:00">2026-07-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-20 18:40:42" itemprop="dateModified" datetime="2026-07-20T18:40:42+08:00">2026-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">MCP 开篇：Host/Client/Server、Tools/Resources/Prompts、传输；与 Agent（六）认名及 Harness 映射。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%94/">RAG（五）</a>：Knowledge 层用 RAG 深化后，外部能力（爬虫、SEO、数据库、SaaS）宜通过 <strong>Model Context Protocol（MCP）</strong> 标准接入——本篇讲 <strong>架构与协议</strong>；实现见（二）Server、（三）Client。</p>
+<span id="more"></span>
+<h2 id="0-本系列在学习路径中的位置"><a href="#0-本系列在学习路径中的位置" class="headerlink" title="0. 本系列在学习路径中的位置"></a>0. 本系列在学习路径中的位置</h2><p><strong>理论认名</strong>：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#2-MCP--%E5%A4%96%E9%83%A8%E8%83%BD%E5%8A%9B%E6%80%BB%E7%BA%BF%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89">Agent（六）§2 MCP</a> — Tools &#x2F; Resources &#x2F; Prompts 与 Tool Calling 闭环关系。</p>
+<p><strong>Client 示例</strong>：<a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/#1-2-MCP-%E6%8E%A5%E5%85%A5">Deep Agents（二）§1.2</a> — <code>MultiServerMCPClient</code> 异步挂载。</p>
+<p><strong>本系列分工：</strong> 不重定义三件套；专注 <strong>协议、自建 Server、LangChain&#x2F;Deep Agents 集成、安全与 SEO 项目</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>篇</th>
+<th>覆盖</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>（一）</td>
+<td>架构、传输、调用序列</td>
+</tr>
+<tr>
+<td>（二）</td>
+<td>Server 开发</td>
+</tr>
+<tr>
+<td>（三）</td>
+<td>Client + Agent 框架</td>
+</tr>
+<tr>
+<td>（四）</td>
+<td>Auth&#x2F;安全 + SEO 项目</td>
+</tr>
+</tbody></table>
+<p>官方：<a target="_blank" rel="noopener" href="https://modelcontextprotocol.io/">Model Context Protocol</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langchain/mcp">LangChain MCP</a></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MCP Host（IDE / Agent 应用）</span><br><span class="line">  ↔ MCP Client（协议客户端）</span><br><span class="line">  ↔ MCP Server（能力提供方）</span><br><span class="line">        Tools / Resources / Prompts</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="1-MCP-vs-自建-Tool-vs-OpenAPI"><a href="#1-MCP-vs-自建-Tool-vs-OpenAPI" class="headerlink" title="1. MCP vs 自建 Tool vs OpenAPI"></a>1. MCP vs 自建 Tool vs OpenAPI</h2><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>函数 @tool</strong></td>
+<td>单应用、逻辑简单、无复用</td>
+</tr>
+<tr>
+<td><strong>OpenAPI HTTP</strong></td>
+<td>已有 REST 服务</td>
+</tr>
+<tr>
+<td><strong>MCP Server</strong></td>
+<td>跨应用复用、IDE+Agent 统一接入、第三方能力包</td>
+</tr>
+</tbody></table>
+<p>MCP <strong>不替代</strong> Runtime 校验——仍须 Schema、权限、HITL（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#3-%E6%9D%83%E9%99%90%E6%A1%A3%E4%B8%8E%E6%B2%99%E7%AE%B1%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89">Agent 六</a>）。</p>
+<hr>
+<h2 id="2-Host-Client-Server"><a href="#2-Host-Client-Server" class="headerlink" title="2. Host &#x2F; Client &#x2F; Server"></a>2. Host &#x2F; Client &#x2F; Server</h2><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Host</strong></td>
+<td>承载 Agent 的应用（Cursor、自研控制台）</td>
+</tr>
+<tr>
+<td><strong>Client</strong></td>
+<td>按 MCP 协议连接 Server、发现能力、转发调用</td>
+</tr>
+<tr>
+<td><strong>Server</strong></td>
+<td>暴露 Tools&#x2F;Resources&#x2F;Prompts；执行真实逻辑</td>
+</tr>
+</tbody></table>
+<p>生命周期：<code>initialize</code> → <code>list_tools</code> &#x2F; <code>list_resources</code> → <code>call_tool</code> &#x2F; <code>read_resource</code> → （可选）<code>shutdown</code>。</p>
+<hr>
+<h2 id="3-Tools-Resources-Prompts（Server-侧）"><a href="#3-Tools-Resources-Prompts（Server-侧）" class="headerlink" title="3. Tools &#x2F; Resources &#x2F; Prompts（Server 侧）"></a>3. Tools &#x2F; Resources &#x2F; Prompts（Server 侧）</h2><p>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#2-MCP--%E5%A4%96%E9%83%A8%E8%83%BD%E5%8A%9B%E6%80%BB%E7%BA%BF%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89">Agent（六）</a>：</p>
+<table>
+<thead>
+<tr>
+<th>MCP</th>
+<th>Server 暴露</th>
+<th>Agent 侧</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Tools</strong></td>
+<td>可调用动作 + JSON Schema</td>
+<td>→ 模型 Tool Schema → Invocation</td>
+</tr>
+<tr>
+<td><strong>Resources</strong></td>
+<td>URI 可读内容</td>
+<td>→ 读入 Context（未必走 tool_call）</td>
+</tr>
+<tr>
+<td><strong>Prompts</strong></td>
+<td>参数化模板</td>
+<td>→ 复用 PE Registry 思想</td>
+</tr>
+</tbody></table>
+<p>执行闭环仍是：<strong>模型提案 → Runtime 校验 → Server 执行 → Result 写回 ToolMessage</strong>。</p>
+<hr>
+<h2 id="4-能力发现"><a href="#4-能力发现" class="headerlink" title="4. 能力发现"></a>4. 能力发现</h2><p>Client 启动时：</p>
+<ol>
+<li><code>list_tools</code> → 转为 LangChain <code>StructuredTool</code> 列表  </li>
+<li><code>list_resources</code> → 供 UI 或 Runtime 预读  </li>
+<li><code>list_prompts</code> → 可选注入</li>
+</ol>
+<p>工具名冲突（多 Server）→ Client 侧 <strong>前缀</strong> 或 allowlist（MCP 三）。</p>
+<hr>
+<h2 id="5-传输：STDIO-与-HTTP"><a href="#5-传输：STDIO-与-HTTP" class="headerlink" title="5. 传输：STDIO 与 HTTP"></a>5. 传输：STDIO 与 HTTP</h2><table>
+<thead>
+<tr>
+<th>传输</th>
+<th>场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>STDIO</strong></td>
+<td>本地子进程 Server；开发、CLI、IDE</td>
+</tr>
+<tr>
+<td><strong>Streamable HTTP</strong></td>
+<td>远程 Server；生产、多租户</td>
+</tr>
+<tr>
+<td><strong>SSE</strong></td>
+<td>旧版&#x2F;兼容认名；新项目以官方当前 Transport 文档为准</td>
+</tr>
+</tbody></table>
+<p>Deep Agents 示例用 HTTP URL；本地 SEO Server 常用 stdio（MCP 四）。</p>
+<hr>
+<h2 id="6-Harness-Tool-层映射"><a href="#6-Harness-Tool-层映射" class="headerlink" title="6. Harness Tool 层映射"></a>6. Harness Tool 层映射</h2><p><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">Agent（三）§6 Harness</a> Tool 层：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MCP Server 能力</span><br><span class="line">  → MCP Client 适配为 LangChain Tools</span><br><span class="line">  → create_agent / create_deep_agent 注册</span><br><span class="line">  → 模型 tool_calls → Client call_tool → Observation</span><br></pre></td></tr></table></figure>
+
+<p>MCP 在 <strong>Tool 层之下</strong> 的标准总线；Orchestration 仍在 LangGraph。</p>
+<hr>
+<h2 id="7-完整调用序列"><a href="#7-完整调用序列" class="headerlink" title="7. 完整调用序列"></a>7. 完整调用序列</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">User Message</span><br><span class="line">  → Model 返回 tool_calls[&#123;name, args, id&#125;]</span><br><span class="line">  → Harness 校验 name ∈ allowlist</span><br><span class="line">  → MCP Client call_tool(name, args)</span><br><span class="line">  → MCP Server 执行业务 → Result</span><br><span class="line">  → ToolMessage(content=Result, tool_call_id=id)</span><br><span class="line">  → Model 继续推理 → Final</span><br></pre></td></tr></table></figure>
+
+<p>Resources 路径：<code>read_resource(uri)</code> → 注入 system&#x2F;context <strong>不经过</strong> tool_call 环，仍须权限控制。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完 MCP 系列后，请到 <a href="/2026/08/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">MCP · 自检与面试</a>。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>架构</strong>：Host–Client–Server；能力三件套。</p>
+<p><strong>传输</strong>：stdio 本地；HTTP 远程。</p>
+<p><strong>映射</strong>：MCP → Harness Tool 层；不替代 Runtime。</p>
+<p><strong>MCP 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/08/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%80/">（一）架构与协议</a>（本篇）</li>
+<li><a href="/2026/08/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%BA%8C/">（二）开发 Server</a></li>
+<li><a href="/2026/08/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%89/">（三）Client 与框架集成</a></li>
+<li><a href="/2026/08/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E5%9B%9B/">（四）安全与 SEO 项目</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#2-MCP--%E5%A4%96%E9%83%A8%E8%83%BD%E5%8A%9B%E6%80%BB%E7%BA%BF%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89">Agent（六）MCP 认名</a> · <a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%94/">RAG（五）</a></p>
+<p><strong>下一篇</strong>：<a href="/2026/08/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%BA%8C/">MCP（二）· 开发 MCP Server</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/MCP/" rel="tag"># MCP</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="prev" title="AI-Agent工程学习-RAG(自检与面试)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-RAG(自检与面试)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-MCP(二)">
+                  AI-Agent工程学习-MCP(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -27,7 +27,7 @@
 <meta property="og:description" content="Skill 深化、MCP 认名、权限沙箱、Subagent；Agent 基础收口。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T08:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-20T08:11:24.763Z">
+<meta property="article:modified_time" content="2026-07-20T10:40:42.360Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-count">72</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -158,7 +158,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -221,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-20 16:11:24" itemprop="dateModified" datetime="2026-07-20T16:11:24+08:00">2026-07-20</time>
+      <time title="修改时间：2026-07-20 18:40:42" itemprop="dateModified" datetime="2026-07-20T18:40:42+08:00">2026-07-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -445,8 +445,18 @@
 <td>Deep Agents</td>
 <td><code>create_deep_agent</code> 预装栈</td>
 </tr>
+<tr>
+<td><strong>Knowledge &#x2F; RAG</strong></td>
+<td>RAG 系列</td>
+<td>LangChain Retriever + <a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">RAG（一）～（五）</a></td>
+</tr>
+<tr>
+<td><strong>外部能力总线</strong></td>
+<td>MCP 工程</td>
+<td>MCP Server + Client 适配器</td>
+</tr>
 </tbody></table>
-<p><strong>全路径一句话：</strong> Agent 基础之后，Loop &#x2F; LangChain &#x2F; LangGraph &#x2F; Deep Agents 不再学新 Agent 理论，而是学 <strong>同一 Harness 架构的不同落地</strong>。</p>
+<p><strong>全路径一句话：</strong> Agent 基础之后，Loop &#x2F; LangChain &#x2F; LangGraph &#x2F; Deep Agents 不再学新 Agent 理论，而是学 <strong>同一 Harness 架构的不同落地</strong>；<strong>RAG &#x2F; MCP</strong> 为 Knowledge 与 Tool 总线垂直模块。四条实现线工程对比见 <a href="/2026/08/22/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">实现框架对比</a>。</p>
 <p><strong>与 Loop Engineering 的关系：</strong> Loop Engineering 约束 Harness 的 Done 判据与验证门——何时算完成、哪些 Observation 才算证据、Budget 耗尽如何降级（见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE（一）</a>）。Harness 负责跑环；LE 负责环 <strong>该不该停、停之前验什么</strong>。</p>
 <hr>
 <h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 基础 · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
@@ -471,7 +481,7 @@
 <li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
 <li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
 </ul>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">LLM（一）～（四，含调用韧性）</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四，含 Injection）</span><br><span class="line">    ↓</span><br><span class="line">Agent（一）闭环 →（二）模式 →（三）记忆/Runtime/Harness（含 Skill 认名）</span><br><span class="line">    →（四）评测/Research →（五）工程坑 →（六）Skill 深化与 Harness 谱系</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）～（三）</span><br><span class="line">    ↓</span><br><span class="line">LangChain（薄 Harness）→ LangGraph（编排 Runtime）→ Deep Agents（厚 Harness）</span><br></pre></td></tr></table></figure>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">LLM（一）～（四，含调用韧性）</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四，含 Injection）</span><br><span class="line">    ↓</span><br><span class="line">Agent（一）闭环 →（二）模式 →（三）记忆/Runtime/Harness（含 Skill 认名）</span><br><span class="line">    →（四）评测/Research →（五）工程坑 →（六）Skill 深化与 Harness 谱系</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）～（三）</span><br><span class="line">    ↓</span><br><span class="line">LangChain（薄 Harness）→ LangGraph（编排 Runtime）→ Deep Agents（厚 Harness）</span><br><span class="line">    ↓</span><br><span class="line">RAG 系统 → MCP 工程</span><br></pre></td></tr></table></figure>
 
 <p>Agent 基础（组件与安全边界）到此收口。<strong>下一篇</strong>：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 基础 · 自检与面试</a>。下一模块：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering（一）· 合同与验证门</a>——把 Loop 工程化为可收敛、可验证、可安全停下的系统；Harness 实现从 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">LangChain（一）</a> 开始。</p>
 

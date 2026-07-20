@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="RAG 开篇：Embedding&#x2F;Chunk&#x2F;Index&#x2F;Retrieve&#x2F;Generate 评测驱动管线；LangChain 实现；与 LangChain（四）分工。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-RAG(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="RAG 开篇：Embedding&#x2F;Chunk&#x2F;Index&#x2F;Retrieve&#x2F;Generate 评测驱动管线；LangChain 实现；与 LangChain（四）分工。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-20T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T10:40:42.364Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="RAG">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/","path":"/2026/08/05/Agent工程学习-RAG-一/","title":"AI-Agent工程学习-RAG(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-RAG(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%80%89%E5%9E%8B%EF%BC%9AChain-vs-Tool-vs-Graph"><span class="nav-number">2.</span> <span class="nav-text">1. 选型：Chain vs Tool vs Graph</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Embedding"><span class="nav-number">3.</span> <span class="nav-text">2. Embedding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Chunking"><span class="nav-number">4.</span> <span class="nav-text">3. Chunking</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Indexing"><span class="nav-number">5.</span> <span class="nav-text">4. Indexing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Retrieval"><span class="nav-number">6.</span> <span class="nav-text">5. Retrieval</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Generation%EF%BC%88Grounded%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. Generation（Grounded）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-LCEL-%E5%AE%8C%E6%95%B4%E9%93%BE%EF%BC%88%E5%A4%8D%E4%B9%A0-%E6%B7%B1%E5%8C%96%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">7. LCEL 完整链（复习 + 深化）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-RAG-%E8%AF%84%E6%B5%8B%E5%85%A5%E9%97%A8"><span class="nav-number">9.</span> <span class="nav-text">8. RAG 评测入门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E8%AF%84%E6%B5%8B%E5%B7%A5%E5%85%B7%E8%AE%A4%E5%90%8D"><span class="nav-number">10.</span> <span class="nav-text">9. 评测工具认名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">11.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-RAG(一) | 我的记录小站">
+      <meta itemprop="description" content="RAG 开篇：Embedding&#x2F;Chunk&#x2F;Index&#x2F;Retrieve&#x2F;Generate 评测驱动管线；LangChain 实现；与 LangChain（四）分工。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-RAG(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-20 16:00:00 / 修改时间：18:40:42" itemprop="dateCreated datePublished" datetime="2026-07-20T16:00:00+08:00">2026-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">RAG 开篇：Embedding/Chunk/Index/Retrieve/Generate 评测驱动管线；LangChain 实现；与 LangChain（四）分工。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Deep Agents · 自检与面试</a>：Harness 与长任务 Context 治理已学；当 Agent 需要 <strong>企业文档、政策手册、产品知识</strong> 等外存事实时，进入 <strong>RAG 系统</strong> 垂直模块——用 LangChain 把检索管线做深、做可测、做可运维。</p>
+<span id="more"></span>
+<h2 id="0-本系列在学习路径中的位置"><a href="#0-本系列在学习路径中的位置" class="headerlink" title="0. 本系列在学习路径中的位置"></a>0. 本系列在学习路径中的位置</h2><p><strong>理论已学：</strong></p>
+<ul>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#3-RAG-%E5%9C%A8-Agent-%E4%B8%AD%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%8C%82%E6%B3%95">Agent（三）§3</a> — RAG 工具化 vs Runtime 预注入</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">LangChain（四）</a> — Document &#x2F; VectorStore &#x2F; Retriever <strong>积木入门</strong></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE（一）</a> — 引用与验收门</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">Agent（四）</a> — 轨迹与任务评测</li>
+</ul>
+<p><strong>本系列分工：</strong> LangChain（四）&#x3D; 预习；<strong>RAG（一）～（五）</strong> &#x3D; 深化 + 增强 + Agentic&#x2F;Graph + 生产。</p>
+<table>
+<thead>
+<tr>
+<th>产品&#x2F;模块</th>
+<th>本路径角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td>RAG 实现主线（Loader &#x2F; Embed &#x2F; VectorStore &#x2F; Retriever &#x2F; LCEL &#x2F; <code>@tool</code>）</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>Agentic &#x2F; Graph 多跳编排（（三）（四）回链）</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td>Skills &#x2F; Memory &#x2F; FS 与 RAG Context 对照（（三）offloading）</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Embedding → Chunk → Index → Retrieve → Generate</span><br><span class="line">     ↓ 评测驱动（Recall / 引用正确率）</span><br><span class="line">LangChain（四）积木  →  RAG 系列深化</span><br><span class="line">     ↓</span><br><span class="line">LCEL 链  |  Retriever Tool  |  LangGraph 状态机</span><br></pre></td></tr></table></figure>
+
+<p>本系列五篇与模块地图：</p>
+<table>
+<thead>
+<tr>
+<th>篇</th>
+<th>覆盖</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>（一）</td>
+<td>基础管线、评测入门</td>
+</tr>
+<tr>
+<td>（二）</td>
+<td>高级检索增强</td>
+</tr>
+<tr>
+<td>（三）</td>
+<td>Agentic RAG</td>
+</tr>
+<tr>
+<td>（四）</td>
+<td>Graph RAG</td>
+</tr>
+<tr>
+<td>（五）</td>
+<td>生产工程 + 企业知识库项目</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="1-选型：Chain-vs-Tool-vs-Graph"><a href="#1-选型：Chain-vs-Tool-vs-Graph" class="headerlink" title="1. 选型：Chain vs Tool vs Graph"></a>1. 选型：Chain vs Tool vs Graph</h2><table>
+<thead>
+<tr>
+<th>形态</th>
+<th>何时用</th>
+<th>LangChain 入口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LCEL 确定性链</strong></td>
+<td>每问必检一次；路径固定</td>
+<td><code>retriever | prompt | model</code>（见 LangChain 四）</td>
+</tr>
+<tr>
+<td><strong>Retriever Tool</strong></td>
+<td>是否检索、检几次由模型决定</td>
+<td><code>@tool</code> + <code>create_agent</code></td>
+</tr>
+<tr>
+<td><strong>LangGraph 编排</strong></td>
+<td>多跳、评分、改写、分支</td>
+<td>StateGraph（见 RAG 三、四）</td>
+</tr>
+</tbody></table>
+<p>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#3-RAG-%E5%9C%A8-Agent-%E4%B8%AD%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%8C%82%E6%B3%95">Agent（三）</a>：预注入适合「每次必查固定库」；Tool 适合「按需检索」。</p>
+<hr>
+<h2 id="2-Embedding"><a href="#2-Embedding" class="headerlink" title="2. Embedding"></a>2. Embedding</h2><p><a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/#4-6-Embedding-%E4%B8%8E-LLM%E3%80%81RAG%E3%80%81Tokenization">LLM（一）</a> 已讲向量语义；工程上额外关注：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>模型</strong></td>
+<td>与语料语言一致；中英文混库选多语 embedding</td>
+</tr>
+<tr>
+<td><strong>维度</strong></td>
+<td>高维未必更好；与向量库、延迟、成本权衡</td>
+</tr>
+<tr>
+<td><strong>版本</strong></td>
+<td><code>embedding_model_id</code> 写入索引 metadata；<strong>换模型通常需重建索引</strong></td>
+</tr>
+<tr>
+<td><strong>归一化</strong></td>
+<td>部分库要求 L2 归一化；查询与索引侧一致</td>
+</tr>
+</tbody></table>
+<p>LangChain 侧：<code>OpenAIEmbeddings</code>、<code>HuggingFaceEmbeddings</code> 等，与 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/#4-Embeddings%EF%BC%88%E4%B8%BA%E6%A3%80%E7%B4%A2%E9%93%BA%E5%9E%AB%EF%BC%89">LangChain（一）</a> 同一接口。</p>
+<hr>
+<h2 id="3-Chunking"><a href="#3-Chunking" class="headerlink" title="3. Chunking"></a>3. Chunking</h2><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>特点</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>固定长度</strong></td>
+<td>实现简单</td>
+<td>均质文本</td>
+</tr>
+<tr>
+<td><strong>递归分隔</strong></td>
+<td>按 <code>\n\n</code>、句号等切</td>
+<td>Markdown &#x2F; 技术文档</td>
+</tr>
+<tr>
+<td><strong>结构感知</strong></td>
+<td>按标题、章节、表格边界</td>
+<td>手册、Wiki</td>
+</tr>
+<tr>
+<td><strong>语义切块</strong></td>
+<td>按 embedding 相似度合并句</td>
+<td>长叙述、论文（成本更高）</td>
+</tr>
+</tbody></table>
+<p><strong>metadata 最小集</strong>（供过滤与引用）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source_id, source_title, chapter, page, tenant_id, updated_at, doc_type</span><br></pre></td></tr></table></figure>
+
+<p>切块过 <strong>粗</strong>：检索命中段落过大、噪声多；过 <strong>细</strong>：丢失上下文、引用难读。先用 dev 集扫 <code>chunk_size</code> &#x2F; <code>overlap</code>（常见 512–1024 token，overlap 10%–20%）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;演示递归切块与 metadata 保留。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-20</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain_text_splitters <span class="keyword">import</span> RecursiveCharacterTextSplitter</span><br><span class="line"></span><br><span class="line">splitter = RecursiveCharacterTextSplitter(</span><br><span class="line">    chunk_size=<span class="number">800</span>,</span><br><span class="line">    chunk_overlap=<span class="number">120</span>,</span><br><span class="line">    separators=[<span class="string">&quot;\n## &quot;</span>, <span class="string">&quot;\n\n&quot;</span>, <span class="string">&quot;\n&quot;</span>, <span class="string">&quot;。&quot;</span>],</span><br><span class="line">)</span><br><span class="line">chunks = splitter.split_documents(documents)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-Indexing"><a href="#4-Indexing" class="headerlink" title="4. Indexing"></a>4. Indexing</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Loader → Document 列表 → Split → embed_documents → VectorStore.add</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>认名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>VectorStore</strong></td>
+<td>内存 &#x2F; Chroma &#x2F; PGVector &#x2F; 云向量库</td>
+</tr>
+<tr>
+<td><strong>HNSW &#x2F; IVF</strong></td>
+<td>近似最近邻索引结构（库内实现，换库需读文档）</td>
+</tr>
+<tr>
+<td><strong>增量</strong></td>
+<td>新文档 <code>add</code>；删改需 <code>delete</code> + 重 embed 或版本号字段</td>
+</tr>
+<tr>
+<td><strong>全量重建</strong></td>
+<td>embedding 模型升级、schema 变更时的标准操作</td>
+</tr>
+</tbody></table>
+<p>工程习惯：索引名含 <code>&#123;corpus&#125;_&#123;embed_model&#125;_&#123;date&#125;</code>，避免 silent 混版本。</p>
+<hr>
+<h2 id="5-Retrieval"><a href="#5-Retrieval" class="headerlink" title="5. Retrieval"></a>5. Retrieval</h2><p><strong>Retriever</strong> 统一接口：<code>invoke(query) -&gt; list[Document]</code>。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>similarity_search</code></td>
+<td>Top-K 余弦&#x2F;内积近邻</td>
+</tr>
+<tr>
+<td><code>similarity_search_with_score</code></td>
+<td>带分数，可设 <strong>阈值</strong> 拒答</td>
+</tr>
+<tr>
+<td><strong>MMR</strong></td>
+<td>最大边际相关性，减近重复块</td>
+</tr>
+</tbody></table>
+<p><strong>空结果策略：</strong> 不硬生成——返回「未找到依据」或触发 Query 改写（见 RAG 二）；与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE Gate</a> 对齐。</p>
+<hr>
+<h2 id="6-Generation（Grounded）"><a href="#6-Generation（Grounded）" class="headerlink" title="6. Generation（Grounded）"></a>6. Generation（Grounded）</h2><p>Prompt 合同示例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">仅根据以下&lt;context&gt;回答；若无依据则明确说「文档未覆盖」。</span><br><span class="line">每条关键事实后标注 [source_id:chunk_id]。</span><br><span class="line">&lt;context&gt;&#123;retrieved&#125;&lt;/context&gt;</span><br><span class="line">问题：&#123;question&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Citation</strong> 不是排版——是 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">Agent（四）</a> Faithfulness 评测的输入。低温不能替代 RAG（<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/#3-2-Hallucination%EF%BC%88%E5%B9%BB%E8%A7%89%EF%BC%89">LLM 三 · 幻觉</a>）。</p>
+<hr>
+<h2 id="7-LCEL-完整链（复习-深化）"><a href="#7-LCEL-完整链（复习-深化）" class="headerlink" title="7. LCEL 完整链（复习 + 深化）"></a>7. LCEL 完整链（复习 + 深化）</h2><p>与 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/#4-LCEL-%E9%97%AE%E7%AD%94%E9%93%BE%EF%BC%88%E7%A1%AE%E5%AE%9A%E6%80%A7%EF%BC%89">LangChain（四）§4</a> 同一模式；本篇强调 <strong>metadata 进引用</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;带引用 metadata 的 LCEL RAG 链。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-20</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_core.runnables <span class="keyword">import</span> RunnablePassthrough</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">format_docs</span>(<span class="params">documents: <span class="built_in">list</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;将 Document 格式化为带 source 标记的上下文。&quot;&quot;&quot;</span></span><br><span class="line">    parts = []</span><br><span class="line">    <span class="keyword">for</span> document <span class="keyword">in</span> documents:</span><br><span class="line">        source = document.metadata.get(<span class="string">&quot;source_id&quot;</span>, <span class="string">&quot;unknown&quot;</span>)</span><br><span class="line">        parts.append(<span class="string">f&quot;[<span class="subst">&#123;source&#125;</span>]\n<span class="subst">&#123;document.page_content&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;\n\n---\n\n&quot;</span>.join(parts)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;仅根据 context 回答；无依据则说明未覆盖。&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;context:\n&#123;context&#125;\n\nquestion: &#123;question&#125;&quot;</span>),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">rag_chain = (</span><br><span class="line">    &#123;<span class="string">&quot;context&quot;</span>: retriever | format_docs, <span class="string">&quot;question&quot;</span>: RunnablePassthrough()&#125;</span><br><span class="line">    | prompt</span><br><span class="line">    | model</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="8-RAG-评测入门"><a href="#8-RAG-评测入门" class="headerlink" title="8. RAG 评测入门"></a>8. RAG 评测入门</h2><p>先测 <strong>检索</strong>，再测 <strong>生成</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Recall@K</strong></td>
+<td>标准答案所需 chunk 是否出现在 Top-K</td>
+</tr>
+<tr>
+<td><strong>MRR</strong></td>
+<td>第一个正确 chunk 的排名倒数均值</td>
+</tr>
+<tr>
+<td><strong>Citation 正确率</strong></td>
+<td>答案引用是否指向真实命中 chunk</td>
+</tr>
+<tr>
+<td><strong>Faithfulness</strong></td>
+<td>答案陈述是否有 Observation&#x2F;检索支撑</td>
+</tr>
+<tr>
+<td><strong>Task Success</strong></td>
+<td>端到端 Rubric（回链 Agent 四）</td>
+</tr>
+</tbody></table>
+<p><strong>L0 实验：</strong> 准备 20–50 页语料 + <strong>10 问评测集</strong>（含标准引用 doc_id）；跑朴素 RAG，记录 Recall@4 与人工 Faithfulness，作为后续增强的 baseline。</p>
+<hr>
+<h2 id="9-评测工具认名"><a href="#9-评测工具认名" class="headerlink" title="9. 评测工具认名"></a>9. 评测工具认名</h2><p><strong>原则：</strong> 本篇 §8 与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a> 中的指标是 <strong>工程口径</strong>；RAGAS &#x2F; DeepEval &#x2F; TruLens 等是 <strong>自动化实现</strong>，不是第二套标准。选型时看：能否输出与 Trace 字段一致的 Recall、Faithfulness、Citation 结果。</p>
+<table>
+<thead>
+<tr>
+<th>文内指标</th>
+<th>RAGAS &#x2F; 同类</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Recall@K</strong></td>
+<td><code>context_recall</code> 等</td>
+<td>需 gold chunk id；K 与检索配置一致</td>
+</tr>
+<tr>
+<td><strong>Faithfulness</strong></td>
+<td><code>faithfulness</code> &#x2F; groundedness</td>
+<td>断言 ↔ 检索 context</td>
+</tr>
+<tr>
+<td><strong>Citation 正确率</strong></td>
+<td>自建 Rubric + structured output</td>
+<td>无通用开箱指标，以 doc_id 对齐为准</td>
+</tr>
+<tr>
+<td><strong>Task Success</strong></td>
+<td>dataset run &#x2F; 自定义 Scenario</td>
+<td>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a> Scenario 集</td>
+</tr>
+</tbody></table>
+<p><strong>DeepEval &#x2F; TruLens</strong> 与 RAGAS 同类：批量跑断言级指标。若已用 <strong>LangSmith Dataset + Experiment</strong>，优先与 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/#4-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89">LangChain（六）§4</a> 对齐，避免同一发版跑两套不互通的报表。</p>
+<p>发版回归的完整五域 Checklist 见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a>；RAG 域指标与本节 §8 一致。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完 RAG 系列五篇后，请到 <a href="/2026/08/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">RAG · 自检与面试</a> 完成验收。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>定位</strong>：RAG 系列 &#x3D; LangChain 实现 + 评测驱动的检索垂直深化；LangChain（四）为预习。</p>
+<p><strong>管线</strong>：Embed → Chunk（metadata）→ Index → Retrieve（阈值&#x2F;MMR）→ Grounded Generate。</p>
+<p><strong>选型</strong>：固定路径用 LCEL；按需检索用 Tool；多跳用 LangGraph。</p>
+<p><strong>评测</strong>：Recall@K、引用正确率先于堆增强；§9 工具认名（文内指标为主）。</p>
+<p><strong>RAG 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">（一）定位与基础管线</a>（本篇）</li>
+<li><a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%8C/">（二）高级检索增强</a></li>
+<li><a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%89/">（三）Agentic RAG</a></li>
+<li><a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E5%9B%9B/">（四）Graph RAG</a></li>
+<li><a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%94/">（五）生产与企业知识库</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Deep Agents 自检</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">LangChain（四）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#3-RAG-%E5%9C%A8-Agent-%E4%B8%AD%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%8C%82%E6%B3%95">Agent（三）RAG 挂法</a></p>
+<p><strong>下一篇</strong>：<a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%8C/">RAG（二）· 高级检索增强</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangChain/" rel="tag"># LangChain</a>
+              <a href="/tags/RAG/" rel="tag"># RAG</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="prev" title="AI-Agent工程学习-DeepAgents(自检与面试)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-DeepAgents(自检与面试)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-RAG(二)">
+                  AI-Agent工程学习-RAG(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
