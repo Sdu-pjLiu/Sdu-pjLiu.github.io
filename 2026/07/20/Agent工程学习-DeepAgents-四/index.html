@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Delegation：write_todos、Subagent 全系、与 LangGraph 对比、best practices。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-DeepAgents(四)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Delegation：write_todos、Subagent 全系、与 LangGraph 对比、best practices。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-20T05:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T08:11:24.765Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="DeepAgents">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/","path":"2026/07/20/Agent工程学习-DeepAgents-四/","title":"AI-Agent工程学习-DeepAgents(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-DeepAgents(四) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Task-Planning%EF%BC%9Awrite-todos"><span class="nav-number">2.</span> <span class="nav-text">1. Task Planning：write_todos</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Subagent-%E6%A8%A1%E5%9E%8B%E4%B8%8E-task-%E5%B7%A5%E5%85%B7"><span class="nav-number">3.</span> <span class="nav-text">2. Subagent 模型与 task 工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%95%E6%97%B6%E7%94%A8-%E4%B8%8D%E7%94%A8"><span class="nav-number">3.1.</span> <span class="nav-text">何时用 &#x2F; 不用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-general-purpose-Subagent"><span class="nav-number">4.</span> <span class="nav-text">3. general-purpose Subagent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Custom-%E4%B8%8E-CompiledSubAgent"><span class="nav-number">5.</span> <span class="nav-text">4. Custom 与 CompiledSubAgent</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-SubAgent-%E5%AD%97%E5%85%B8"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 SubAgent 字典</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-CompiledSubAgent"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 CompiledSubAgent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Structured-output"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 Structured output</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Async-%E4%B8%8E-Dynamic-Subagents"><span class="nav-number">6.</span> <span class="nav-text">5. Async 与 Dynamic Subagents</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-Async-subagents"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 Async subagents</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-Dynamic-subagents%EF%BC%88Beta%EF%BC%89"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 Dynamic subagents（Beta）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-vs-LangGraph-Multi-Agent"><span class="nav-number">7.</span> <span class="nav-text">6. vs LangGraph Multi-Agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Best-practices"><span class="nav-number">8.</span> <span class="nav-text">7. Best practices</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Troubleshooting"><span class="nav-number">8.1.</span> <span class="nav-text">Troubleshooting</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-Streaming-%E4%B8%8E-LangSmith"><span class="nav-number">9.</span> <span class="nav-text">8. Streaming 与 LangSmith</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-L1-%E5%AE%9E%E9%AA%8C%EF%BC%88%E5%AE%8C%E6%88%90%EF%BC%89"><span class="nav-number">10.</span> <span class="nav-text">9. L1 实验（完成）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">11.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-DeepAgents(四) | 我的记录小站">
+      <meta itemprop="description" content="Delegation：write_todos、Subagent 全系、与 LangGraph 对比、best practices。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-DeepAgents(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-20 13:00:00 / 修改时间：16:11:24" itemprop="dateCreated datePublished" datetime="2026-07-20T13:00:00+08:00">2026-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Delegation：write_todos、Subagent 全系、与 LangGraph 对比、best practices。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">Deep Agents（三）</a>：Context 管「知道什么」；<strong>Delegation</strong> 管「如何拆任务、如何把重活隔离出去」。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p><strong>Delegation</strong> &#x3D; Task planning（<code>write_todos</code>）+ Subagents（<code>task</code> 工具）。</p>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/subagents">Subagents</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/async-subagents">Async subagents</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/dynamic-subagents">Dynamic subagents</a></p>
+<p>Subagent 的核心价值：<strong>Context quarantine</strong>——主 Agent 只收 final report，不收中间十几次 search&#x2F;read（见 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）Handoff</a> 对比）。</p>
+<hr>
+<h2 id="1-Task-Planning：write-todos"><a href="#1-Task-Planning：write-todos" class="headerlink" title="1. Task Planning：write_todos"></a>1. Task Planning：write_todos</h2><p>Harness 内置 <strong><code>write_todos</code></strong> 工具，Agent 在运行中维护结构化任务列表。</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>状态</td>
+<td><code>pending</code> &#x2F; <code>in_progress</code> &#x2F; <code>completed</code></td>
+</tr>
+<tr>
+<td>持久</td>
+<td>存在 agent state</td>
+</tr>
+<tr>
+<td>定位</td>
+<td><strong>轻量跟踪</strong>，不是独立 Plan-Execute-Verify 引擎</td>
+</tr>
+</tbody></table>
+<p>推荐工作流：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">复杂任务 → write_todos 列清单 → 逐项执行或 task 委托 → 更新 todo 状态 → 主 Agent 综合</span><br></pre></td></tr></table></figure>
+
+<p><strong>不要</strong>把它理解成自动「生成计划 → 拆分子任务 → 检查 → 修正」的状态机——检查与修正仍靠 <strong>模型推理 +（可选）HITL</strong>（见<a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）</a>）。</p>
+<hr>
+<h2 id="2-Subagent-模型与-task-工具"><a href="#2-Subagent-模型与-task-工具" class="headerlink" title="2. Subagent 模型与 task 工具"></a>2. Subagent 模型与 task 工具</h2><p>主 Agent 通过 <strong><code>task</code></strong> 工具创建 <strong>临时</strong> Subagent 执行子任务。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Fresh context</strong></td>
+<td>每次调用新建实例，独立 context</td>
+</tr>
+<tr>
+<td><strong>Autonomous execution</strong></td>
+<td>Subagent 独立跑到完成</td>
+</tr>
+<tr>
+<td><strong>Single handoff</strong></td>
+<td><strong>只回传一份</strong> final report 给主 Agent</td>
+</tr>
+<tr>
+<td><strong>Stateless messaging</strong></td>
+<td>不能多次 message 回父 Agent</td>
+</tr>
+<tr>
+<td><strong>Token efficiency</strong></td>
+<td>重活隔离在子 context，压缩为短结果</td>
+</tr>
+</tbody></table>
+<p>主 Agent 在同一 turn 可发 <strong>多个</strong> <code>task()</code> 并行（同步 Subagent 阻塞到完成）。</p>
+<h3 id="何时用-不用"><a href="#何时用-不用" class="headerlink" title="何时用 &#x2F; 不用"></a>何时用 &#x2F; 不用</h3><table>
+<thead>
+<tr>
+<th>用 Subagent</th>
+<th>不用 Subagent</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多步 research &#x2F; 大量 tool 输出</td>
+<td>单步简单任务</td>
+</tr>
+<tr>
+<td>需 specialized tools + prompt</td>
+<td>必须保留全部中间 context</td>
+</tr>
+<tr>
+<td>并行独立子任务</td>
+<td>委托开销 &gt; 收益</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-general-purpose-Subagent"><a href="#3-general-purpose-Subagent" class="headerlink" title="3. general-purpose Subagent"></a>3. general-purpose Subagent</h2><p>除非已有同名同步 Subagent，Deep Agents <strong>自动添加</strong> <code>general-purpose</code>：</p>
+<ul>
+<li>默认带 FS 工具</li>
+<li>继承主 Agent <strong>skills</strong></li>
+<li>可通过 <code>subagents=[&#123;&quot;name&quot;: &quot;general-purpose&quot;, ...&#125;]</code> <strong>整体替换</strong></li>
+<li>禁用：<code>GeneralPurposeSubagentProfile(enabled=False)</code> + 不传同步 subagents（<strong>勿</strong> <code>excluded_middleware</code> 删 SubAgentMiddleware）</li>
+</ul>
+<p>示例：主 Agent 用 Gemini，委托用 GPT：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">覆盖 general-purpose Subagent 的 model 与 prompt。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-02</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;google_genai:gemini-2.0-flash&quot;</span>,</span><br><span class="line">    tools=[internet_search],</span><br><span class="line">    subagents=[</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;general-purpose&quot;</span>,</span><br><span class="line">            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;General-purpose agent for research and multi-step tasks&quot;</span>,</span><br><span class="line">            <span class="string">&quot;system_prompt&quot;</span>: <span class="string">&quot;You are a general-purpose assistant.&quot;</span>,</span><br><span class="line">            <span class="string">&quot;tools&quot;</span>: [internet_search],</span><br><span class="line">            <span class="string">&quot;model&quot;</span>: <span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-Custom-与-CompiledSubAgent"><a href="#4-Custom-与-CompiledSubAgent" class="headerlink" title="4. Custom 与 CompiledSubAgent"></a>4. Custom 与 CompiledSubAgent</h2><h3 id="4-1-SubAgent-字典"><a href="#4-1-SubAgent-字典" class="headerlink" title="4.1 SubAgent 字典"></a>4.1 SubAgent 字典</h3><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>name</code></td>
+<td>唯一 ID；<code>task(subagent_type=...)</code> 使用</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><strong>主 Agent 选谁委托的依据</strong>（要 action-oriented）</td>
+</tr>
+<tr>
+<td><code>system_prompt</code></td>
+<td>子 Agent 指令；<strong>不继承</strong>主 Agent</td>
+</tr>
+<tr>
+<td><code>tools</code></td>
+<td>可选；指定则 <strong>覆盖</strong>继承，否则继承主 Agent</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>可选覆盖</td>
+</tr>
+<tr>
+<td><code>middleware</code></td>
+<td>不继承主 Agent；按 name 替换子栈默认</td>
+</tr>
+<tr>
+<td><code>interrupt_on</code></td>
+<td>可选；默认继承主 Agent</td>
+</tr>
+<tr>
+<td><code>skills</code></td>
+<td>可选；不继承（GP 除外）</td>
+</tr>
+<tr>
+<td><code>response_format</code></td>
+<td>结构化输出 → 父收到 JSON ToolMessage</td>
+</tr>
+<tr>
+<td><code>permissions</code></td>
+<td>可选；<strong>替换</strong>父 FS 权限</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Research Subagent：最小 custom 配置。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-02</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">internet_search</span>(<span class="params">query: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Run a web search.&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;search results for <span class="subst">&#123;query&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">research_subagent = &#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;research-agent&quot;</span>,</span><br><span class="line">    <span class="string">&quot;description&quot;</span>: (</span><br><span class="line">        <span class="string">&quot;Conducts in-depth research using web search. &quot;</span></span><br><span class="line">        <span class="string">&quot;Use for multi-search synthesis, not single facts.&quot;</span></span><br><span class="line">    ),</span><br><span class="line">    <span class="string">&quot;system_prompt&quot;</span>: (</span><br><span class="line">        <span class="string">&quot;You are a thorough researcher. Return summary + key findings + sources. &quot;</span></span><br><span class="line">        <span class="string">&quot;Keep under 500 words. Do NOT include raw search dumps.&quot;</span></span><br><span class="line">    ),</span><br><span class="line">    <span class="string">&quot;tools&quot;</span>: [internet_search],</span><br><span class="line">    <span class="string">&quot;model&quot;</span>: <span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    system_prompt=(</span><br><span class="line">        <span class="string">&quot;You are a coordinator. Delegate research to research-agent via task().&quot;</span></span><br><span class="line">    ),</span><br><span class="line">    subagents=[research_subagent],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><strong>不存在</strong>独立的「Agent Routing 框架」——路由 &#x3D; 主 Agent 读 <code>description</code> 后选 <code>subagent_type</code>。</p>
+<h3 id="4-2-CompiledSubAgent"><a href="#4-2-CompiledSubAgent" class="headerlink" title="4.2 CompiledSubAgent"></a>4.2 CompiledSubAgent</h3><p>预编译 LangGraph &#x2F; <code>create_agent</code> 图作为 Subagent：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">CompiledSubAgent：LangGraph 图嵌入委托层。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-02</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> CompiledSubAgent, create_deep_agent</span><br><span class="line"><span class="keyword">from</span> langchain.agents <span class="keyword">import</span> create_agent</span><br><span class="line"></span><br><span class="line">custom_graph = create_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    tools=[],</span><br><span class="line">    system_prompt=<span class="string">&quot;You are a specialized data analyzer.&quot;</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">custom_subagent = CompiledSubAgent(</span><br><span class="line">    name=<span class="string">&quot;data-analyzer&quot;</span>,</span><br><span class="line">    description=<span class="string">&quot;Specialized agent for complex data analysis tasks&quot;</span>,</span><br><span class="line">    runnable=custom_graph,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    subagents=[custom_subagent],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>图 state 须有 <code>&quot;messages&quot;</code> 键。</p>
+<h3 id="4-3-Structured-output"><a href="#4-3-Structured-output" class="headerlink" title="4.3 Structured output"></a>4.3 Structured output</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Subagent response_format：父 Agent 收到 JSON 序列化结果。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-02</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pydantic <span class="keyword">import</span> BaseModel, Field</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">internet_search</span>(<span class="params">query: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Run a web search.&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;search results for <span class="subst">&#123;query&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ResearchFindings</span>(<span class="title class_ inherited__">BaseModel</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;研究结果结构化 schema。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    summary: <span class="built_in">str</span> = Field(description=<span class="string">&quot;Summary of findings&quot;</span>)</span><br><span class="line">    confidence: <span class="built_in">float</span> = Field(description=<span class="string">&quot;Confidence 0-1&quot;</span>)</span><br><span class="line">    sources: <span class="built_in">list</span>[<span class="built_in">str</span>] = Field(description=<span class="string">&quot;Source URLs&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">research_subagent = &#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;researcher&quot;</span>,</span><br><span class="line">    <span class="string">&quot;description&quot;</span>: <span class="string">&quot;Researches topics and returns structured findings&quot;</span>,</span><br><span class="line">    <span class="string">&quot;system_prompt&quot;</span>: <span class="string">&quot;Research thoroughly.&quot;</span>,</span><br><span class="line">    <span class="string">&quot;tools&quot;</span>: [internet_search],</span><br><span class="line">    <span class="string">&quot;response_format&quot;</span>: ResearchFindings,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>, subagents=[research_subagent])</span><br></pre></td></tr></table></figure>
+
+<p>需 <code>deepagents&gt;=0.5.3</code>。</p>
+<hr>
+<h2 id="5-Async-与-Dynamic-Subagents"><a href="#5-Async-与-Dynamic-Subagents" class="headerlink" title="5. Async 与 Dynamic Subagents"></a>5. Async 与 Dynamic Subagents</h2><h3 id="5-1-Async-subagents"><a href="#5-1-Async-subagents" class="headerlink" title="5.1 Async subagents"></a>5.1 Async subagents</h3><ul>
+<li>长任务、并行工作流、需 <strong>中途 steering &#x2F; cancel</strong></li>
+<li>独立 Middleware 路径（AsyncSubAgentMiddleware）</li>
+<li>与同步 <code>task()</code> <strong>并存</strong>；禁用同步 subagent 不影响 async</li>
+</ul>
+<p>详见 <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/async-subagents">async-subagents</a>。</p>
+<h3 id="5-2-Dynamic-subagents（Beta）"><a href="#5-2-Dynamic-subagents（Beta）" class="headerlink" title="5.2 Dynamic subagents（Beta）"></a>5.2 Dynamic subagents（Beta）</h3><p>需 <strong>Subagents + CodeInterpreterMiddleware</strong>；Agent 从 QuickJS <strong>代码里</strong> batch dispatch <code>task()</code>（循环、分支、并行批）。</p>
+<ul>
+<li>触发：请求里含 <strong>「workflow」</strong> 等词时倾向走 interpreter 编排</li>
+<li>适用：目录内每文件 review、批量 ticket、多视角分析</li>
+<li><code>CodeInterpreterMiddleware(subagents=False)</code> 可强制只走普通 <code>task</code> 路径</li>
+</ul>
+<hr>
+<h2 id="6-vs-LangGraph-Multi-Agent"><a href="#6-vs-LangGraph-Multi-Agent" class="headerlink" title="6. vs LangGraph Multi-Agent"></a>6. vs LangGraph Multi-Agent</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>LangGraph Supervisor &#x2F; Subgraph</th>
+<th>Deep Agents Subagent</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>拓扑</td>
+<td>显式 Node&#x2F;Edge</td>
+<td>Harness 内置 <code>task</code> 工具</td>
+</tr>
+<tr>
+<td>状态映射</td>
+<td>自行设计 state &#x2F; Store</td>
+<td>自动隔离 + single handoff</td>
+</tr>
+<tr>
+<td>中间 context</td>
+<td>可保留在父图</td>
+<td>默认不回流细节</td>
+</tr>
+<tr>
+<td>适用</td>
+<td>确定性编排 + 图级 LE</td>
+<td>长任务 + context 卫生</td>
+</tr>
+<tr>
+<td>组合</td>
+<td>可 <code>CompiledSubAgent</code> 嵌入 Deep Agents</td>
+<td>外层 Deep Agents，内层 LangGraph</td>
+</tr>
+</tbody></table>
+<p>需要 <strong>每步图级门禁</strong> 或 <strong>复杂 handoff 合同</strong> → LangGraph；需要 <strong>快速委托重 research</strong> → Deep Agents Subagent。</p>
+<hr>
+<h2 id="7-Best-practices"><a href="#7-Best-practices" class="headerlink" title="7. Best practices"></a>7. Best practices</h2><ol>
+<li><strong>description 要具体</strong>：✅「Analyzes financial data and generates investment insights」❌「Does finance stuff」</li>
+<li><strong>system_prompt 要求 concise output</strong>：限制字数、禁止 raw data</li>
+<li><strong>最小 tool set</strong>：只给子任务需要的工具</li>
+<li><strong>按任务选 model</strong>：长文档 vs 数值分析可用不同 model</li>
+<li><strong>主 Agent system_prompt 明确要求委托</strong>：「复杂任务用 task()，保持自身 context 干净」</li>
+</ol>
+<h3 id="Troubleshooting"><a href="#Troubleshooting" class="headerlink" title="Troubleshooting"></a>Troubleshooting</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>对策</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Subagent 不被调用</td>
+<td>加强 description；主 prompt 写「必须 delegate」</td>
+</tr>
+<tr>
+<td>Context 仍膨胀</td>
+<td>子 prompt 要求摘要；大数据写 FS</td>
+</tr>
+<tr>
+<td>选错 Subagent</td>
+<td>差异化 description（quick vs deep researcher）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-Streaming-与-LangSmith"><a href="#8-Streaming-与-LangSmith" class="headerlink" title="8. Streaming 与 LangSmith"></a>8. Streaming 与 LangSmith</h2><ul>
+<li><code>stream.subagents</code> 跟踪每个委托（见<a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/#6-streaming">（二）§6</a>）</li>
+<li>每条 run metadata 含 <code>lc_agent_name</code>（如 <code>research-agent</code>）</li>
+<li>LangSmith 过滤：<code>has(metadata, &#39;&#123;&quot;lc_agent_name&quot;: &quot;research-agent&quot;&#125;&#39;)</code></li>
+</ul>
+<hr>
+<h2 id="9-L1-实验（完成）"><a href="#9-L1-实验（完成）" class="headerlink" title="9. L1 实验（完成）"></a>9. L1 实验（完成）</h2><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>同一任务：<strong>无 subagent</strong> 跑一轮，记录主 Agent <code>messages</code> 条数&#x2F;字符</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>有 research subagent</strong> 再跑，对比主 Agent messages</td>
+</tr>
+<tr>
+<td>3</td>
+<td>LangSmith 按 <code>lc_agent_name</code> 只看 subagent span</td>
+</tr>
+<tr>
+<td>4</td>
+<td>验证 single handoff：父 ToolMessage 仅一条子结果</td>
+</tr>
+</tbody></table>
+<p><strong>Done 判据</strong>：主 Agent context 明显变短；能解释 single handoff。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Deep Agents · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Planning</strong>：<code>write_todos</code> 轻量跟踪；非独立 Planner。</p>
+<p><strong>Subagent</strong>：<code>task</code> 工具；fresh context + <strong>single handoff</strong>。</p>
+<p><strong>类型</strong>：general-purpose &#x2F; Custom &#x2F; Compiled &#x2F; Async &#x2F; Dynamic。</p>
+<p><strong>路由</strong>：description 驱动；无独立 Routing API。</p>
+<p><strong>对比 LangGraph</strong>：委托 vs 显式拓扑；可 CompiledSubAgent 组合。</p>
+<p><strong>Deep Agents 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">（一）定位与 Harness 架构</a></li>
+<li><a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）Execution Environment</a></li>
+<li><a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）Context Management</a></li>
+<li><a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）Delegation · 规划与子 Agent</a>（本篇）</li>
+<li><a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）Steering · 定制与生产</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）Multi-Agent</a> · <a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">Deep Agents（三）</a></p>
+<p>下一篇：<a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">Deep Agents（五）· Steering · 定制与生产</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/DeepAgents/" rel="tag"># DeepAgents</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-DeepAgents(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-DeepAgents(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/" rel="next" title="AI-Agent工程学习-DeepAgents(五)">
+                  AI-Agent工程学习-DeepAgents(五) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

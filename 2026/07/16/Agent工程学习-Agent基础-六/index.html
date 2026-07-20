@@ -27,7 +27,7 @@
 <meta property="og:description" content="Skill 深化、MCP 认名、权限沙箱、Subagent；Agent 基础收口。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T08:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-17T11:04:49.979Z">
+<meta property="article:modified_time" content="2026-07-20T08:11:24.763Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -135,7 +135,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Skill-%E6%B7%B1%E5%8C%96%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">2.</span> <span class="nav-text">1. Skill 深化与边界</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%8E-Tool-Template-RAG-%E5%AE%8C%E6%95%B4%E5%AF%B9%E7%85%A7%EF%BC%88%E5%A4%8D%E4%B9%A0%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 与 Tool &#x2F; Template &#x2F; RAG 完整对照（复习）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E7%BC%96%E5%86%99%E4%B8%8E%E8%AF%84%E6%B5%8B"><span class="nav-number">2.3.</span> <span class="nav-text">1.3 编写与评测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-MCP-%E5%A4%96%E9%83%A8%E8%83%BD%E5%8A%9B%E6%80%BB%E7%BA%BF%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">2. MCP &#x2F; 外部能力总线（认名）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%9D%83%E9%99%90%E3%80%81%E6%B2%99%E7%AE%B1%E4%B8%8E%E5%AE%A1%E6%89%B9%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">3. 权限、沙箱与审批档</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%89%E6%A1%A3%E5%AE%A1%E6%89%B9"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 三档审批</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%B2%99%E7%AE%B1%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 沙箱（认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Subagent-%E4%B8%8E-Agent-as-Tool"><span class="nav-number">5.</span> <span class="nav-text">4. Subagent 与 Agent-as-Tool</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Environment-%E6%89%A9%E5%B1%95%E8%AE%A4%E5%90%8D%EF%BC%88%E5%8D%8A%E8%8A%82%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. Environment 扩展认名（半节）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Hooks%EF%BC%88%E8%AE%A4%E5%90%8D%E5%8D%8A%E8%8A%82%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. Hooks（认名半节）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">8.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Skill-%E6%B7%B1%E5%8C%96%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">2.</span> <span class="nav-text">1. Skill 深化与边界</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%8E-Tool-Template-RAG-%E5%AE%8C%E6%95%B4%E5%AF%B9%E7%85%A7%EF%BC%88%E5%A4%8D%E4%B9%A0%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 与 Tool &#x2F; Template &#x2F; RAG 完整对照（复习）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E7%BC%96%E5%86%99%E4%B8%8E%E8%AF%84%E6%B5%8B"><span class="nav-number">2.3.</span> <span class="nav-text">1.3 编写与评测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-MCP-%E5%A4%96%E9%83%A8%E8%83%BD%E5%8A%9B%E6%80%BB%E7%BA%BF%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">2. MCP &#x2F; 外部能力总线（认名）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%9D%83%E9%99%90%E3%80%81%E6%B2%99%E7%AE%B1%E4%B8%8E%E5%AE%A1%E6%89%B9%E6%A1%A3"><span class="nav-number">4.</span> <span class="nav-text">3. 权限、沙箱与审批档</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%89%E6%A1%A3%E5%AE%A1%E6%89%B9"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 三档审批</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%B2%99%E7%AE%B1%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 沙箱（认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Subagent-%E4%B8%8E-Agent-as-Tool"><span class="nav-number">5.</span> <span class="nav-text">4. Subagent 与 Agent-as-Tool</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Environment-%E6%89%A9%E5%B1%95%E8%AE%A4%E5%90%8D%EF%BC%88%E5%8D%8A%E8%8A%82%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. Environment 扩展认名（半节）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Hooks%EF%BC%88%E8%AE%A4%E5%90%8D%E5%8D%8A%E8%8A%82%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. Hooks（认名半节）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Harness-%E8%B0%B1%E7%B3%BB%E4%B8%8E%E5%90%8E%E7%BB%AD%E6%A1%86%E6%9E%B6"><span class="nav-number">8.</span> <span class="nav-text">7. Harness 谱系与后续框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">9.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-count">54</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -158,7 +158,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -221,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-17 19:04:49" itemprop="dateModified" datetime="2026-07-17T19:04:49+08:00">2026-07-17</time>
+      <time title="修改时间：2026-07-20 16:11:24" itemprop="dateModified" datetime="2026-07-20T16:11:24+08:00">2026-07-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -349,7 +349,7 @@
 <p>Prompt 写「禁止」不能替代 <strong>禁止档</strong>——须 Runtime 硬拦（回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#2-2-Prompt-%E4%B8%8D%E8%83%BD%E5%8D%95%E7%8B%AC%E6%89%9B%E5%AE%89%E5%85%A8">PE 四</a>）。</p>
 <h3 id="3-2-沙箱（认名）"><a href="#3-2-沙箱（认名）" class="headerlink" title="3.2 沙箱（认名）"></a>3.2 沙箱（认名）</h3><p>隔离 <strong>文件系统、网络、进程</strong> 的可见范围；缩小 Action Space 的实际破坏面。与 HITL 组合：沙箱内自动，越界须确认。</p>
 <hr>
-<h2 id="4-Subagent-与-Agent-as-Tool"><a href="#4-Subagent-与-Agent-as-Tool" class="headerlink" title="4. Subagent 与 Agent-as-Tool"></a>4. Subagent 与 Agent-as-Tool</h2><p>扩 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-%E5%A4%9A-Agent%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%8C%E5%8D%8A%E8%8A%82%EF%BC%89">（三）多 Agent 认名</a>：</p>
+<h2 id="4-Subagent-与-Agent-as-Tool"><a href="#4-Subagent-与-Agent-as-Tool" class="headerlink" title="4. Subagent 与 Agent-as-Tool"></a>4. Subagent 与 Agent-as-Tool</h2><p>扩 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#7-%E5%A4%9A-Agent%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%8C%E5%8D%8A%E8%8A%82%EF%BC%89">（三）多 Agent 认名</a>：</p>
 <table>
 <thead>
 <tr>
@@ -393,7 +393,7 @@
 </tbody></table>
 <p>共性：权限档要上移；Tool Result 须裁剪再写回（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">五 §2</a>）；Injection 风险更高（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/#1-%E6%94%BB%E5%87%BB%E9%9D%A2%EF%BC%9A%E8%B0%81%E5%9C%A8%E5%BE%80-Context-%E9%87%8C%E5%A1%9E%E3%80%8C%E5%81%87%E6%8C%87%E4%BB%A4%E3%80%8D">PE 四</a>）。</p>
 <hr>
-<h2 id="6-Hooks（认名半节）"><a href="#6-Hooks（认名半节）" class="headerlink" title="6. Hooks（认名半节）"></a>6. Hooks（认名半节）</h2><p>Runtime 在关键节点插入逻辑，<strong>不</strong>改 LLM 协议：</p>
+<h2 id="6-Hooks（认名半节）"><a href="#6-Hooks（认名半节）" class="headerlink" title="6. Hooks（认名半节）"></a>6. Hooks（认名半节）</h2><p>Hooks 是 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">（三）§6 Harness</a> 的 <strong>扩展插槽</strong>——在关键节点插入逻辑，<strong>不</strong>改 LLM 协议：</p>
 <table>
 <thead>
 <tr>
@@ -414,7 +414,40 @@
 <td>死循环检测、强制停止</td>
 </tr>
 </tbody></table>
-<p>字段级 API 与框架绑定留给 <strong>实现与框架</strong> 模块。</p>
+<p>实现层对应 <strong>LangChain Middleware</strong>、<strong>Deep Agents Middleware 栈</strong>（见 LangChain &#x2F; Deep Agents 系列）；invoke 生命周期中的挂载点见<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">（三）§6.3</a>。</p>
+<hr>
+<h2 id="7-Harness-谱系与后续框架"><a href="#7-Harness-谱系与后续框架" class="headerlink" title="7. Harness 谱系与后续框架"></a>7. Harness 谱系与后续框架</h2><p><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">（三）§6.4</a> 已在概念层列出 Harness 形态；此处补上 <strong>后续实现模块</strong> 的对应关系：</p>
+<table>
+<thead>
+<tr>
+<th>Harness 形态</th>
+<th>后续模块</th>
+<th>入口 &#x2F; API（认名）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>薄 Harness</strong></td>
+<td>LangChain</td>
+<td><code>create_agent</code> + Middleware</td>
+</tr>
+<tr>
+<td><strong>编排 Runtime</strong></td>
+<td>LangGraph</td>
+<td>StateGraph；Harness 的底层</td>
+</tr>
+<tr>
+<td><strong>自定义拓扑</strong></td>
+<td>LangGraph</td>
+<td>手画 Node&#x2F;Edge；CompiledSubAgent 嵌入</td>
+</tr>
+<tr>
+<td><strong>厚 Harness</strong></td>
+<td>Deep Agents</td>
+<td><code>create_deep_agent</code> 预装栈</td>
+</tr>
+</tbody></table>
+<p><strong>全路径一句话：</strong> Agent 基础之后，Loop &#x2F; LangChain &#x2F; LangGraph &#x2F; Deep Agents 不再学新 Agent 理论，而是学 <strong>同一 Harness 架构的不同落地</strong>。</p>
+<p><strong>与 Loop Engineering 的关系：</strong> Loop Engineering 约束 Harness 的 Done 判据与验证门——何时算完成、哪些 Observation 才算证据、Budget 耗尽如何降级（见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE（一）</a>）。Harness 负责跑环；LE 负责环 <strong>该不该停、停之前验什么</strong>。</p>
 <hr>
 <h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 基础 · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Skill</strong>：深化生命周期与编写评测；认名见（三）§1.4；≠ Tool。</p>
@@ -422,7 +455,8 @@
 <p><strong>权限沙箱</strong>：自动&#x2F;确认&#x2F;禁止三档 + 隔离；与 HITL、Injection 防御配合。</p>
 <p><strong>Subagent</strong>：委派 + Context 隔离；默认单 Agent + Skill 优先。</p>
 <p><strong>Environment 扩展</strong>：代码&#x2F;浏览器等放大风险与 Observation 体积。</p>
-<p><strong>Hooks</strong>：Runtime 扩展点；实现模块展开。</p>
+<p><strong>Hooks</strong>：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">（三）§6 Harness</a> 扩展点；LangChain &#x2F; Deep Agents Middleware 展开。</p>
+<p><strong>Harness 谱系</strong>：薄 &#x2F; 厚 &#x2F; 自定义拓扑；后续系列为实现层。</p>
 <p><strong>Agent 基础系列导航：</strong></p>
 <ul>
 <li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
@@ -437,9 +471,9 @@
 <li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
 <li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
 </ul>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">LLM（一）～（四，含调用韧性）</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四，含 Injection）</span><br><span class="line">    ↓</span><br><span class="line">Agent（一）闭环 →（二）模式 →（三）记忆/Runtime（含 Skill 认名）</span><br><span class="line">    →（四）评测/Research →（五）工程坑 →（六）Skill 深化与架构</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）～（三）</span><br><span class="line">    ↓</span><br><span class="line">实现与框架模块</span><br></pre></td></tr></table></figure>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">LLM（一）～（四，含调用韧性）</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四，含 Injection）</span><br><span class="line">    ↓</span><br><span class="line">Agent（一）闭环 →（二）模式 →（三）记忆/Runtime/Harness（含 Skill 认名）</span><br><span class="line">    →（四）评测/Research →（五）工程坑 →（六）Skill 深化与 Harness 谱系</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）～（三）</span><br><span class="line">    ↓</span><br><span class="line">LangChain（薄 Harness）→ LangGraph（编排 Runtime）→ Deep Agents（厚 Harness）</span><br></pre></td></tr></table></figure>
 
-<p>Agent 基础（组件与安全边界）到此收口。<strong>下一篇</strong>：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 基础 · 自检与面试</a>。下一模块：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering（一）· 合同与验证门</a>——把 Loop 工程化为可收敛、可验证、可安全停下的系统。</p>
+<p>Agent 基础（组件与安全边界）到此收口。<strong>下一篇</strong>：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 基础 · 自检与面试</a>。下一模块：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering（一）· 合同与验证门</a>——把 Loop 工程化为可收敛、可验证、可安全停下的系统；Harness 实现从 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">LangChain（一）</a> 开始。</p>
 
     </div>
 

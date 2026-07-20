@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Context Management：Skills、Memory、Summarization、offloading、Prompt caching、context_schema。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-DeepAgents(三)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Context Management：Skills、Memory、Summarization、offloading、Prompt caching、context_schema。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-20T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T08:11:24.765Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="DeepAgents">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/","path":"2026/07/20/Agent工程学习-DeepAgents-三/","title":"AI-Agent工程学习-DeepAgents(三)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-DeepAgents(三) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%8A%E4%B8%8B%E6%96%87%E5%9B%9B%E5%B1%82%E6%B5%81"><span class="nav-number">2.</span> <span class="nav-text">1. 上下文四层流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Skills"><span class="nav-number">3.</span> <span class="nav-text">2. Skills</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Progressive-disclosure"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 Progressive disclosure</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E4%B8%8E-Tools-Memory-%E5%88%86%E5%B7%A5"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 与 Tools &#x2F; Memory 分工</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E9%85%8D%E7%BD%AE"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Memory%EF%BC%88AGENTS-md%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. Memory（AGENTS.md）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Summarization"><span class="nav-number">5.</span> <span class="nav-text">4. Summarization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Context-Offloading"><span class="nav-number">6.</span> <span class="nav-text">5. Context Offloading</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Prompt-Caching"><span class="nav-number">7.</span> <span class="nav-text">6. Prompt Caching</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Runtime-Context%EF%BC%88context-schema%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">7. Runtime Context（context_schema）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-L1-%E5%AE%9E%E9%AA%8C%EF%BC%88%E5%89%8D%E5%8D%8A%EF%BC%89"><span class="nav-number">9.</span> <span class="nav-text">8. L1 实验（前半）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">10.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">11.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-DeepAgents(三) | 我的记录小站">
+      <meta itemprop="description" content="Context Management：Skills、Memory、Summarization、offloading、Prompt caching、context_schema。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-DeepAgents(三)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-20 12:00:00 / 修改时间：16:11:24" itemprop="dateCreated datePublished" datetime="2026-07-20T12:00:00+08:00">2026-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Context Management：Skills、Memory、Summarization、offloading、Prompt caching、context_schema。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">Deep Agents（二）</a>：Execution 解决 Agent <strong>在哪行动</strong>；<strong>Context management</strong> 解决 Agent <strong>知道什么、能跑多久、跨会话保留什么</strong>。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p><strong>Context management</strong> &#x3D; Skills + Memory + Summarization + Offloading + Prompt caching +（运行时）context_schema。</p>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/skills">Skills</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/memory">Memory</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/context-engineering">Context engineering</a></p>
+<p><strong>纠偏</strong>：Memory（<code>AGENTS.md</code>）≠ Context Compression（Summarization）。前者是启动全量注入的持久偏好；后者是对话&#x2F;大结果的压缩。</p>
+<hr>
+<h2 id="1-上下文四层流"><a href="#1-上下文四层流" class="headerlink" title="1. 上下文四层流"></a>1. 上下文四层流</h2><p>官方 Context engineering 将长任务上下文分为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Input context      system prompt + memory + skills + tool prompts</span><br><span class="line">       ↓</span><br><span class="line">Compression        summarization + context offloading（大结果落 FS）</span><br><span class="line">       ↓</span><br><span class="line">Isolation          Subagent 隔离重子任务，只回 final report（见四）</span><br><span class="line">       ↓</span><br><span class="line">Long-term memory   虚拟 FS / Store 跨 thread 持久</span><br></pre></td></tr></table></figure>
+
+<p>四者组合支撑 <strong>超出单窗口</strong> 的多步任务，减少手工 trim。</p>
+<hr>
+<h2 id="2-Skills"><a href="#2-Skills" class="headerlink" title="2. Skills"></a>2. Skills</h2><p>Skills 打包 <strong>领域工作流、知识与自定义指令</strong>（遵循 Agent Skills 标准：目录 + <code>SKILL.md</code> + 可选脚本&#x2F;模板）。</p>
+<h3 id="2-1-Progressive-disclosure"><a href="#2-1-Progressive-disclosure" class="headerlink" title="2.1 Progressive disclosure"></a>2.1 Progressive disclosure</h3><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>加载内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动</td>
+<td>读各 <code>SKILL.md</code> <strong>frontmatter</strong>（名称、描述）</td>
+</tr>
+<tr>
+<td>任务需要时</td>
+<td>读 <strong>全文</strong> 与附属资源</td>
+</tr>
+</tbody></table>
+<p>启动 context 保持紧凑，能力仍可按需展开。</p>
+<h3 id="2-2-与-Tools-Memory-分工"><a href="#2-2-与-Tools-Memory-分工" class="headerlink" title="2.2 与 Tools &#x2F; Memory 分工"></a>2.2 与 Tools &#x2F; Memory 分工</h3><table>
+<thead>
+<tr>
+<th>机制</th>
+<th>职责</th>
+<th>加载时机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Tools</strong></td>
+<td>可执行能力（API、搜索、DB）</td>
+<td>始终在 tool list</td>
+</tr>
+<tr>
+<td><strong>Skills</strong></td>
+<td>流程说明、领域知识、模板</td>
+<td>按需读 SKILL 文件</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>偏好、规范、项目约定</td>
+<td><strong>启动全量</strong>注入</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-配置"><a href="#2-3-配置" class="headerlink" title="2.3 配置"></a>2.3 配置</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Skills：StateBackend 预置 skill 文件 + skills 路径。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-01</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> deepagents.backends <span class="keyword">import</span> StateBackend</span><br><span class="line"><span class="keyword">from</span> deepagents.backends.utils <span class="keyword">import</span> create_file_data</span><br><span class="line"><span class="keyword">from</span> langgraph.checkpoint.memory <span class="keyword">import</span> MemorySaver</span><br><span class="line"></span><br><span class="line">checkpointer = MemorySaver()</span><br><span class="line">skill_content = <span class="string">&quot;---\nname: langgraph-docs\n---\n# LangGraph docs skill\n...&quot;</span></span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    backend=StateBackend(),</span><br><span class="line">    skills=[<span class="string">&quot;/skills/&quot;</span>],</span><br><span class="line">    checkpointer=checkpointer,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">result = agent.invoke(</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;What is LangGraph?&quot;</span>&#125;],</span><br><span class="line">        <span class="string">&quot;files&quot;</span>: &#123;<span class="string">&quot;/skills/langgraph-docs/SKILL.md&quot;</span>: create_file_data(skill_content)&#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    config=&#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;thread_id&quot;</span>: <span class="string">&quot;1&quot;</span>&#125;&#125;,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>Subagent：<strong>general-purpose</strong> 继承主 Agent skills；custom subagent 用 <code>skills=[...]</code> 独立配置，状态 <strong>双向隔离</strong>。</p>
+<hr>
+<h2 id="3-Memory（AGENTS-md）"><a href="#3-Memory（AGENTS-md）" class="headerlink" title="3. Memory（AGENTS.md）"></a>3. Memory（AGENTS.md）</h2><p><code>memory=</code> 传入一个或多个 <strong>AGENTS.md</strong> 路径；启动时 <strong>全量加载</strong> 进 system 侧 context。</p>
+<ul>
+<li>内容示例：编码风格、review 规则、项目结构约定。</li>
+<li>Agent 可基于交互 <strong>更新</strong> memory（偏好随使用演进）。</li>
+<li>存储取决于 Backend：<code>StateBackend</code> &#x2F; <code>StoreBackend</code> &#x2F; <code>FilesystemBackend</code>。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Memory：预置 AGENTS.md 到 StateBackend。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-01</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> deepagents.backends.utils <span class="keyword">import</span> create_file_data</span><br><span class="line"><span class="keyword">from</span> langgraph.checkpoint.memory <span class="keyword">import</span> MemorySaver</span><br><span class="line"></span><br><span class="line">agents_md = <span class="string">&quot;# Project conventions\n- Use type hints\n- Prefer logging over print\n&quot;</span></span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    memory=[<span class="string">&quot;/AGENTS.md&quot;</span>],</span><br><span class="line">    checkpointer=MemorySaver(),</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">agent.invoke(</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;Follow project conventions.&quot;</span>&#125;],</span><br><span class="line">        <span class="string">&quot;files&quot;</span>: &#123;<span class="string">&quot;/AGENTS.md&quot;</span>: create_file_data(agents_md)&#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    config=&#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;thread_id&quot;</span>: <span class="string">&quot;mem-1&quot;</span>&#125;&#125;,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>与 Skills 对比：Memory <strong>总是</strong>在 context 里；Skills 只有 frontmatter 常驻，正文按需。</p>
+<hr>
+<h2 id="4-Summarization"><a href="#4-Summarization" class="headerlink" title="4. Summarization"></a>4. Summarization</h2><p><code>SummarizationMiddleware</code>（默认栈）在对话接近 token 上限时 <strong>压缩历史</strong>，保留最近消息。</p>
+<p>覆盖默认实例以调整阈值：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">自定义 SummarizationMiddleware：100k tokens 触发，保留 20 条消息。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-01</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> deepagents.backends <span class="keyword">import</span> StateBackend</span><br><span class="line"><span class="keyword">from</span> deepagents.middleware <span class="keyword">import</span> SummarizationMiddleware</span><br><span class="line"></span><br><span class="line">backend = StateBackend()</span><br><span class="line">model = <span class="string">&quot;openai:gpt-4.1-mini&quot;</span></span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=model,</span><br><span class="line">    middleware=[</span><br><span class="line">        SummarizationMiddleware(</span><br><span class="line">            model=model,</span><br><span class="line">            backend=backend,</span><br><span class="line">            trigger=(<span class="string">&quot;tokens&quot;</span>, <span class="number">100_000</span>),</span><br><span class="line">            keep=(<span class="string">&quot;messages&quot;</span>, <span class="number">20</span>),</span><br><span class="line">        ),</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><code>trigger</code> 还支持 <code>(&quot;fraction&quot;, ...)</code> 或 OR 组合列表。<code>create_summarization_tool_middleware</code> 允许 Agent <strong>在任务间隙主动</strong>触发摘要。</p>
+<p>对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/">LE · 压缩</a>：摘要不得丢掉合同、预算等不可摘要字段（若放在 state 独立字段中）。</p>
+<hr>
+<h2 id="5-Context-Offloading"><a href="#5-Context-Offloading" class="headerlink" title="5. Context Offloading"></a>5. Context Offloading</h2><p>当 tool 返回或中间产物 <strong>过大</strong>，harness 将内容 <strong>写入虚拟 FS</strong>，messages 中只保留引用或短摘要。</p>
+<p>典型模式（可在 Subagent system_prompt 中要求）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 原始数据 → /data/raw_results.txt</span><br><span class="line">2. 在文件内处理分析</span><br><span class="line">3. 返回给主 Agent 的仅是分析摘要（&lt;500 words）</span><br></pre></td></tr></table></figure>
+
+<p>Offloading 与 Summarization <strong>互补</strong>：前者卸大单次结果，后者压整条对话历史。Backend 细节见<a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）</a>。</p>
+<hr>
+<h2 id="6-Prompt-Caching"><a href="#6-Prompt-Caching" class="headerlink" title="6. Prompt Caching"></a>6. Prompt Caching</h2><p>对 Anthropic &#x2F; Amazon Bedrock（Claude &#x2F; Nova），<code>create_deep_agent</code> <strong>默认</strong>对静态 system 段（base prompt、memory、skills）做 prompt caching，降低长运行 latency 与 cost。</p>
+<ul>
+<li>其他 provider：见 Middleware integrations 或手动挂 provider caching middleware。</li>
+<li>覆盖 TTL 示例：<code>AnthropicPromptCachingMiddleware(ttl=&quot;1h&quot;)</code>（见<a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）</a>）。</li>
+</ul>
+<p>Memory 更新可能 invalidate 缓存前缀——默认栈把 MemoryMiddleware 放在 caching <strong>之后</strong>  partly 为此（见<a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/#51-%E4%B8%BB-agent-%E9%BB%98%E8%AE%A4%E6%A0%88first--last">（一）§5</a>）。</p>
+<hr>
+<h2 id="7-Runtime-Context（context-schema）"><a href="#7-Runtime-Context（context-schema）" class="headerlink" title="7. Runtime Context（context_schema）"></a>7. Runtime Context（context_schema）</h2><p>与「上下文压缩」<strong>不同</strong>：指每次 <code>invoke</code> 传入的 <strong>运行时业务上下文</strong>（user_id、feature flags、租户…），经 <code>context_schema</code> 声明类型。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">context_schema：运行时上下文自动传播到 Subagent 及其 Tools。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-01</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> langchain.messages <span class="keyword">import</span> HumanMessage</span><br><span class="line"><span class="keyword">from</span> langchain.tools <span class="keyword">import</span> ToolRuntime, tool</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Context</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;单次 invoke 的运行时上下文。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    user_id: <span class="built_in">str</span></span><br><span class="line">    session_id: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@tool</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_user_data</span>(<span class="params">query: <span class="built_in">str</span>, runtime: ToolRuntime[Context]</span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;按当前 user_id 拉取数据。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;Data for user <span class="subst">&#123;runtime.context.user_id&#125;</span>: <span class="subst">&#123;query&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">research_subagent = &#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;researcher&quot;</span>,</span><br><span class="line">    <span class="string">&quot;description&quot;</span>: <span class="string">&quot;Conducts research for the current user&quot;</span>,</span><br><span class="line">    <span class="string">&quot;system_prompt&quot;</span>: <span class="string">&quot;You are a research assistant.&quot;</span>,</span><br><span class="line">    <span class="string">&quot;tools&quot;</span>: [get_user_data],</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    subagents=[research_subagent],</span><br><span class="line">    context_schema=Context,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">agent.invoke(</span><br><span class="line">    &#123;<span class="string">&quot;messages&quot;</span>: [HumanMessage(<span class="string">&quot;Look up my recent activity&quot;</span>)]&#125;,</span><br><span class="line">    context=Context(user_id=<span class="string">&quot;user-123&quot;</span>, session_id=<span class="string">&quot;abc&quot;</span>),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>所有 Subagent 收到 <strong>相同</strong> 父 context；per-subagent 配置可用 namespaced 字段（如 <code>researcher_max_depth</code>）或 dataclass 独立字段。</p>
+<p>工具内可用 <code>runtime.config[&quot;metadata&quot;][&quot;lc_agent_name&quot;]</code> 区分是哪个 Agent 发起的调用（与 LangSmith 过滤一致，见<a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）</a>）。</p>
+<hr>
+<h2 id="8-L1-实验（前半）"><a href="#8-L1-实验（前半）" class="headerlink" title="8. L1 实验（前半）"></a>8. L1 实验（前半）</h2><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>配置 <code>memory=[&quot;/AGENTS.md&quot;]</code> + seed 文件</td>
+</tr>
+<tr>
+<td>2</td>
+<td>配置 <code>skills=[&quot;/skills/&quot;]</code> + 一个 SKILL.md</td>
+</tr>
+<tr>
+<td>3</td>
+<td>LangSmith 或日志对比：<strong>仅 memory</strong> vs <strong>memory+skills frontmatter</strong> 的首轮 system 体积</td>
+</tr>
+<tr>
+<td>4</td>
+<td>提问触发 skill 全文加载，观察第二轮 prompt 变化</td>
+</tr>
+</tbody></table>
+<p><strong>Done 判据</strong>：能口述 Skills &#x2F; Memory &#x2F; Summarization 各解决什么问题。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Deep Agents · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>四层流</strong>：Input → Compression → Isolation → Long-term。</p>
+<p><strong>Skills</strong>：按需加载的领域包；≠ Tools ≠ Memory。</p>
+<p><strong>Memory</strong>：AGENTS.md 全量启动；可更新。</p>
+<p><strong>Summarization</strong>：历史压缩；可覆盖 trigger&#x2F;keep。</p>
+<p><strong>Offloading</strong>：大结果写 FS；配 Subagent 摘要回传。</p>
+<p><strong>Prompt caching</strong>：Anthropic&#x2F;Bedrock 静态段缓存。</p>
+<p><strong>context_schema</strong>：运行时注入；≠ 窗口压缩。</p>
+<p><strong>Deep Agents 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">（一）定位与 Harness 架构</a></li>
+<li><a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）Execution Environment</a></li>
+<li><a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）Context Management</a>（本篇）</li>
+<li><a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）Delegation · 规划与子 Agent</a></li>
+<li><a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）Steering · 定制与生产</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">Deep Agents（二）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent（五）压缩</a></p>
+<p>下一篇：<a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">Deep Agents（四）· Delegation</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/DeepAgents/" rel="tag"># DeepAgents</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/" rel="prev" title="AI-Agent工程学习-DeepAgents(二)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-DeepAgents(二)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/" rel="next" title="AI-Agent工程学习-DeepAgents(四)">
+                  AI-Agent工程学习-DeepAgents(四) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

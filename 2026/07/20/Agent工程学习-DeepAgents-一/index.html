@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Deep Agents 开篇：四层能力模型、create_deep_agent、默认 Middleware 栈、与 LangGraph 关系。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-DeepAgents(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Deep Agents 开篇：四层能力模型、create_deep_agent、默认 Middleware 栈、与 LangGraph 关系。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T08:11:24.765Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="DeepAgents">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/","path":"2026/07/20/Agent工程学习-DeepAgents-一/","title":"AI-Agent工程学习-DeepAgents(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-DeepAgents(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0-1-Deep-Agents-%E6%A8%A1%E5%9D%97%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">0.1 Deep Agents 模块地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8E%9A-Harness-%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">1. 厚 Harness 实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%9B%9B%E5%B1%82%E8%83%BD%E5%8A%9B%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">2. 四层能力模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Execution-environment%EF%BC%88%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">2.1 Execution environment（执行环境）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Context-management%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E6%B2%BB%E7%90%86%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">2.2 Context management（上下文治理）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Delegation%EF%BC%88%E4%BB%BB%E5%8A%A1%E5%A7%94%E6%89%98%EF%BC%89"><span class="nav-number">4.3.</span> <span class="nav-text">2.3 Delegation（任务委托）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Steering%EF%BC%88%E8%BF%90%E8%A1%8C%E7%AE%A1%E6%8E%A7%EF%BC%89"><span class="nav-number">4.4.</span> <span class="nav-text">2.4 Steering（运行管控）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B%EF%BC%9Acreate-deep-agent"><span class="nav-number">5.</span> <span class="nav-text">3. 快速上手：create_deep_agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-create-deep-agent-%E5%8F%82%E6%95%B0%E5%9C%B0%E5%9B%BE"><span class="nav-number">6.</span> <span class="nav-text">4. create_deep_agent 参数地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E9%BB%98%E8%AE%A4-Middleware-%E6%A0%88%EF%BC%88%E9%87%8D%E7%82%B9%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">5. 默认 Middleware 栈（重点）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E4%B8%BB-Agent-%E9%BB%98%E8%AE%A4%E6%A0%88%EF%BC%88first-%E2%86%92-last%EF%BC%89"><span class="nav-number">7.1.</span> <span class="nav-text">5.1 主 Agent 默认栈（first → last）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%90%8C%E6%AD%A5-Subagent-%E5%86%85%E5%B1%82%E6%A0%88%E5%B7%AE%E5%BC%82"><span class="nav-number">7.2.</span> <span class="nav-text">5.2 同步 Subagent 内层栈差异</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E8%A6%86%E7%9B%96%E8%A7%84%E5%88%99"><span class="nav-number">7.3.</span> <span class="nav-text">5.3 覆盖规则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E4%B8%8E-LangGraph-Runtime-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">8.</span> <span class="nav-text">6. 与 LangGraph Runtime 的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF%E9%A2%84%E5%91%8A"><span class="nav-number">9.</span> <span class="nav-text">7. 实践阶梯预告</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">10.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">11.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-DeepAgents(一) | 我的记录小站">
+      <meta itemprop="description" content="Deep Agents 开篇：四层能力模型、create_deep_agent、默认 Middleware 栈、与 LangGraph 关系。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-DeepAgents(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-20 10:00:00 / 修改时间：16:11:24" itemprop="dateCreated datePublished" datetime="2026-07-20T10:00:00+08:00">2026-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Deep Agents 开篇：四层能力模型、create_deep_agent、默认 Middleware 栈、与 LangGraph 关系。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）</a>：你已能用 StateGraph 拼 Multi-Agent 拓扑；当需要 <strong>开箱即用的规划、虚拟文件系统、Skills 与 Subagent 委托</strong> 来支撑长任务时，上升到 <strong>Deep Agents</strong>——<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#7-Harness-%E8%B0%B1%E7%B3%BB%E4%B8%8E%E5%90%8E%E7%BB%AD%E6%A1%86%E6%9E%B6">Agent（六）§7</a> 谱系中的 <strong>厚 Harness</strong> 一种产品形态。</p>
+<span id="more"></span>
+<h2 id="0-本系列在学习路径中的位置"><a href="#0-本系列在学习路径中的位置" class="headerlink" title="0. 本系列在学习路径中的位置"></a>0. 本系列在学习路径中的位置</h2><p><strong>LangChain</strong> 负责：Model + 可定制 Harness（<code>create_agent</code> + Middleware）。</p>
+<p><strong>LangGraph</strong> 负责：<strong>低层编排 Runtime</strong>——StateGraph、持久化、Interrupt、Multi-Agent 拓扑。</p>
+<p><strong>Deep Agents</strong> 负责：<strong>预装厚能力的 Agent Harness</strong>——Planning、Virtual FS、Skills、Memory、Subagent、Summarization 等一体交付。</p>
+<table>
+<thead>
+<tr>
+<th>产品</th>
+<th>层级</th>
+<th>本系列深度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td>Agent framework</td>
+<td>已学</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>Orchestration runtime</td>
+<td>已学</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td>厚 harness</td>
+<td><strong>主线</strong></td>
+</tr>
+</tbody></table>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/overview">Deep Agents overview</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/customization">Customization</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/concepts/products">Products 对比</a></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LangChain create_agent（薄 harness，Middleware 按需叠）</span><br><span class="line">        ↓</span><br><span class="line">LangGraph StateGraph（自定义拓扑 + durable runtime）</span><br><span class="line">        ↓</span><br><span class="line">Deep Agents create_deep_agent（预装 FS / Skills / Subagent / 压缩栈）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="0-1-Deep-Agents-模块地图"><a href="#0-1-Deep-Agents-模块地图" class="headerlink" title="0.1 Deep Agents 模块地图"></a>0.1 Deep Agents 模块地图</h2><p>官方将 Deep Agents 组织为 <strong>四层能力柱</strong>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Harness 入口    create_deep_agent → CompiledStateGraph（LangGraph Runnable）</span><br><span class="line">    ↓</span><br><span class="line">Execution       Tools / MCP · Virtual FS · Backends · Permissions · Sandbox/Interpreter</span><br><span class="line">    ↓</span><br><span class="line">Context         Skills · Memory(AGENTS.md) · Summarization · Offloading · Prompt caching</span><br><span class="line">    ↓</span><br><span class="line">Delegation      write_todos · task(Subagent) · general-purpose / Custom / Compiled</span><br><span class="line">    ↓</span><br><span class="line">Steering        interrupt_on(HITL) · permissions · Harness Profiles · Middleware 覆盖</span><br><span class="line">    ↓</span><br><span class="line">Runtime 底座    LangGraph checkpointer · durable execution · stream_events · LangSmith</span><br></pre></td></tr></table></figure>
+
+<p>本系列五篇与模块地图的对应：</p>
+<table>
+<thead>
+<tr>
+<th>篇</th>
+<th>覆盖模块</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>（一）</td>
+<td>定位、四层能力、参数地图、<strong>Middleware 栈</strong>、LangGraph 关系</td>
+</tr>
+<tr>
+<td>（二）</td>
+<td>Execution：Tools&#x2F;MCP、虚拟 FS、Backends、Permissions、Sandbox</td>
+</tr>
+<tr>
+<td>（三）</td>
+<td>Context：Skills、Memory、Summarization、offloading、context_schema</td>
+</tr>
+<tr>
+<td>（四）</td>
+<td>Delegation：write_todos、Subagent 全系、与 LangGraph 对比</td>
+</tr>
+<tr>
+<td>（五）</td>
+<td>Steering、定制、LangSmith、L0–L2 实践阶梯、选型收口</td>
+</tr>
+</tbody></table>
+<p><strong><code>create_deep_agent</code> 产物是 Runnable</strong>：与 <code>create_agent</code>、LangGraph 图一样支持 <code>invoke</code> &#x2F; <code>stream</code> &#x2F; <code>stream_events</code>。</p>
+<hr>
+<h2 id="1-厚-Harness-实现"><a href="#1-厚-Harness-实现" class="headerlink" title="1. 厚 Harness 实现"></a>1. 厚 Harness 实现</h2><p>Harness 完整定义见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">Agent（三）§6</a>；谱系定位见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#7-Harness-%E8%B0%B1%E7%B3%BB%E4%B8%8E%E5%90%8E%E7%BB%AD%E6%A1%86%E6%9E%B6">（六）§7</a>。本篇讲 <strong>厚 Harness</strong> 一种产品形态——预装长任务常见能力，而非重新定义 Harness。</p>
+<table>
+<thead>
+<tr>
+<th>Harness</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain <code>create_agent</code></strong></td>
+<td>薄 Harness；Middleware 按需叠加</td>
+</tr>
+<tr>
+<td><strong>Deep Agents <code>create_deep_agent</code></strong></td>
+<td><strong>厚 Harness</strong>；Planning、FS、Skills、Subagent、Summarization 等预装</td>
+</tr>
+</tbody></table>
+<p>Deep Agents <strong>不是</strong>替代 LangGraph 的新 Runtime——它 <strong>基于</strong> LangChain 积木 + LangGraph <strong>Orchestration Runtime</strong>（见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">（三）§6.5</a>），把长任务 Agent 常见能力打包成默认栈。</p>
+<p>何时选 Deep Agents（信号）：</p>
+<table>
+<thead>
+<tr>
+<th>需求</th>
+<th>Deep Agents 提供</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>长任务需 todo 跟踪</td>
+<td>内置 <code>write_todos</code></td>
+</tr>
+<tr>
+<td>大 tool 输出污染 context</td>
+<td>虚拟 FS + offloading + Subagent 隔离</td>
+</tr>
+<tr>
+<td>领域流程&#x2F;知识按需加载</td>
+<td>Skills（progressive disclosure）</td>
+</tr>
+<tr>
+<td>跨会话偏好与规范</td>
+<td>Memory（<code>AGENTS.md</code>）</td>
+</tr>
+<tr>
+<td>委托重研究&#x2F;编码子任务</td>
+<td><code>task</code> Subagent</td>
+</tr>
+<tr>
+<td>敏感写操作需审批</td>
+<td><code>interrupt_on</code> + checkpointer</td>
+</tr>
+</tbody></table>
+<p>何时 <strong>不</strong> 选：拓扑需精细确定性控制、每步都要图级门禁、或只需 2–3 个 Tool 的短环——继续 LangChain 或 LangGraph 自建（见<a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）</a>选型表）。</p>
+<hr>
+<h2 id="2-四层能力模型"><a href="#2-四层能力模型" class="headerlink" title="2. 四层能力模型"></a>2. 四层能力模型</h2><p>Deep Agents overview 将内置能力分为四组（本系列主线索引）：</p>
+<h3 id="2-1-Execution-environment（执行环境）"><a href="#2-1-Execution-environment（执行环境）" class="headerlink" title="2.1 Execution environment（执行环境）"></a>2.1 Execution environment（执行环境）</h3><p>Agent <strong>行动</strong>的场所：自定义 Tools、MCP、虚拟文件系统、Backend 路由、Sandbox&#x2F;Interpreter 代码执行、Streaming。</p>
+<p>→ 详见 <a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）</a>。</p>
+<h3 id="2-2-Context-management（上下文治理）"><a href="#2-2-Context-management（上下文治理）" class="headerlink" title="2.2 Context management（上下文治理）"></a>2.2 Context management（上下文治理）</h3><p>Agent <strong>知道什么、能跑多久</strong>：Skills、Memory、Summarization、Context offloading、Prompt caching。</p>
+<p>→ 详见 <a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）</a>。</p>
+<h3 id="2-3-Delegation（任务委托）"><a href="#2-3-Delegation（任务委托）" class="headerlink" title="2.3 Delegation（任务委托）"></a>2.3 Delegation（任务委托）</h3><p>把大问题拆成可并行、可隔离的子单元：<code>write_todos</code> + <code>task</code> Subagent。</p>
+<p>→ 详见 <a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）</a>。</p>
+<h3 id="2-4-Steering（运行管控）"><a href="#2-4-Steering（运行管控）" class="headerlink" title="2.4 Steering（运行管控）"></a>2.4 Steering（运行管控）</h3><p>人对 Agent 的干预：Human-in-the-loop、Filesystem permissions、Harness Profiles。</p>
+<p>→ 详见 <a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）</a>。</p>
+<hr>
+<h2 id="3-快速上手：create-deep-agent"><a href="#3-快速上手：create-deep-agent" class="headerlink" title="3. 快速上手：create_deep_agent"></a>3. 快速上手：create_deep_agent</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Deep Agents 最小示例：create_deep_agent + invoke。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-30</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_weather</span>(<span class="params">city: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;查询指定城市天气（演示用伪实现）。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;It&#x27;s always sunny in <span class="subst">&#123;city&#125;</span>!&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    tools=[get_weather],</span><br><span class="line">    system_prompt=<span class="string">&quot;You are a helpful assistant.&quot;</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">result = agent.invoke(</span><br><span class="line">    &#123;<span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;what is the weather in sf&quot;</span>&#125;]&#125;</span><br><span class="line">)</span><br><span class="line"><span class="comment"># result 为含 messages 等字段的状态字典；末条 AI 消息为最终回复。</span></span><br></pre></td></tr></table></figure>
+
+<p>要点：</p>
+<ul>
+<li><code>model</code> 支持 <code>provider:model</code> 字符串或已初始化的 ChatModel。</li>
+<li><code>system_prompt</code> <strong>prepend</strong> 到内置 base prompt 之前（base prompt 教模型如何使用 harness 工具）。</li>
+<li>返回类型为 <strong><code>CompiledStateGraph</code></strong>，即 LangGraph Runnable。</li>
+</ul>
+<p>带 Memory &#x2F; Skills 参数的骨架（细节在<a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）</a>展开）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Deep Agents 参数骨架：memory + skills + subagents 占位。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-30</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    tools=[...],</span><br><span class="line">    system_prompt=<span class="string">&quot;You are a research coordinator.&quot;</span>,</span><br><span class="line">    memory=[<span class="string">&quot;/AGENTS.md&quot;</span>],</span><br><span class="line">    skills=[<span class="string">&quot;/skills/&quot;</span>],</span><br><span class="line">    subagents=[...],</span><br><span class="line">    backend=...,  <span class="comment"># 默认 StateBackend</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-create-deep-agent-参数地图"><a href="#4-create-deep-agent-参数地图" class="headerlink" title="4. create_deep_agent 参数地图"></a>4. create_deep_agent 参数地图</h2><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+<th>触发 Middleware &#x2F; 能力</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>model=</code></td>
+<td>模型</td>
+<td>Prompt caching（Anthropic&#x2F;Bedrock 等）</td>
+</tr>
+<tr>
+<td><code>tools=</code></td>
+<td>领域工具</td>
+<td>与内置 harness 工具并列暴露给模型</td>
+</tr>
+<tr>
+<td><code>system_prompt=</code></td>
+<td>自定义指令</td>
+<td>prepend 到 base prompt</td>
+</tr>
+<tr>
+<td><code>memory=</code></td>
+<td><code>AGENTS.md</code> 路径列表</td>
+<td>MemoryMiddleware</td>
+</tr>
+<tr>
+<td><code>skills=</code></td>
+<td>Skills 目录</td>
+<td>SkillsMiddleware</td>
+</tr>
+<tr>
+<td><code>backend=</code></td>
+<td>虚拟 FS 后端</td>
+<td>FilesystemMiddleware 存储</td>
+</tr>
+<tr>
+<td><code>permissions=</code></td>
+<td>FS 读写规则</td>
+<td>FilesystemMiddleware 内 enforcement</td>
+</tr>
+<tr>
+<td><code>subagents=</code></td>
+<td>自定义 Subagent</td>
+<td>SubAgentMiddleware + <code>task</code> 工具</td>
+</tr>
+<tr>
+<td><code>middleware=</code></td>
+<td>额外&#x2F;覆盖 Middleware</td>
+<td>按 <code>.name</code> 替换默认实例</td>
+</tr>
+<tr>
+<td><code>interrupt_on=</code></td>
+<td>HITL 工具映射</td>
+<td>HumanInTheLoopMiddleware；<strong>需 checkpointer</strong></td>
+</tr>
+<tr>
+<td><code>response_format=</code></td>
+<td>结构化输出</td>
+<td>主 Agent 输出 schema</td>
+</tr>
+<tr>
+<td><code>state_schema=</code></td>
+<td>自定义图状态</td>
+<td>扩展 DeepAgentState</td>
+</tr>
+<tr>
+<td><code>context_schema=</code></td>
+<td>运行时上下文</td>
+<td>向 Subagent 传播（见三）</td>
+</tr>
+<tr>
+<td><code>checkpointer=</code></td>
+<td>持久化</td>
+<td>LangGraph checkpoint</td>
+</tr>
+<tr>
+<td><code>store=</code></td>
+<td>跨 thread 存储</td>
+<td>StoreBackend 等</td>
+</tr>
+<tr>
+<td><code>name=</code></td>
+<td>Agent 名称</td>
+<td>trace metadata</td>
+</tr>
+</tbody></table>
+<p>完整签名见 <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/customization">customization · Full function signature</a>。</p>
+<hr>
+<h2 id="5-默认-Middleware-栈（重点）"><a href="#5-默认-Middleware-栈（重点）" class="headerlink" title="5. 默认 Middleware 栈（重点）"></a>5. 默认 Middleware 栈（重点）</h2><p>Deep Agents 的「Runtime 感」 largely 来自 <strong>预装 Middleware 顺序</strong>。理解顺序才能正确覆盖、调试 Prompt caching 与 Memory 交互。</p>
+<h3 id="5-1-主-Agent-默认栈（first-→-last）"><a href="#5-1-主-Agent-默认栈（first-→-last）" class="headerlink" title="5.1 主 Agent 默认栈（first → last）"></a>5.1 主 Agent 默认栈（first → last）</h3><table>
+<thead>
+<tr>
+<th>序</th>
+<th>Middleware</th>
+<th>条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>TodoListMiddleware</strong></td>
+<td>始终</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>SkillsMiddleware</strong></td>
+<td>传了 <code>skills=</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>FilesystemMiddleware</strong></td>
+<td>始终（脚手架，不可 excluded）</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>SubAgentMiddleware</strong></td>
+<td>至少一个<strong>同步</strong> Subagent</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>SummarizationMiddleware</strong></td>
+<td>始终</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>PatchToolCallsMiddleware</strong></td>
+<td>始终</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>AsyncSubAgentMiddleware</strong></td>
+<td>配置了 async subagents</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>用户 <code>middleware=</code></strong></td>
+<td>按 <code>.name</code> 替换默认或插入</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Harness profile extras</td>
+<td>按 model provider</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Excluded-tool filtering</td>
+<td>profile 配置</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>Prompt caching</strong></td>
+<td>Anthropic &#x2F; Bedrock</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>MemoryMiddleware</strong></td>
+<td>传了 <code>memory=</code></td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>HumanInTheLoopMiddleware</strong></td>
+<td>传了 <code>interrupt_on=</code></td>
+</tr>
+</tbody></table>
+<p>Memory 放在 Prompt caching <strong>之后</strong>，是为减少 memory 更新 invalidate 缓存前缀（官方 implementation 注释）。</p>
+<h3 id="5-2-同步-Subagent-内层栈差异"><a href="#5-2-同步-Subagent-内层栈差异" class="headerlink" title="5.2 同步 Subagent 内层栈差异"></a>5.2 同步 Subagent 内层栈差异</h3><ul>
+<li><strong>无</strong> SubAgentMiddleware（子图内不能再 <code>task</code> 委托）。</li>
+<li>Skills 在 PatchToolCalls <strong>之后</strong>（主 Agent 上 Skills 在 Filesystem <strong>之前</strong>）。</li>
+<li>其余 broadly 与主 Agent 同形（Todo、FS、Summarization、Patch、caching…）。</li>
+</ul>
+<h3 id="5-3-覆盖规则"><a href="#5-3-覆盖规则" class="headerlink" title="5.3 覆盖规则"></a>5.3 覆盖规则</h3><ul>
+<li>传 <code>middleware=[SummarizationMiddleware(...)]</code> 且 <code>.name</code> 匹配默认 → <strong>替换</strong>该默认实例（非 merge）。</li>
+<li>替换 FilesystemMiddleware 时须自带 <code>backend=</code>（及 <code>permissions=</code>），不会继承 <code>create_deep_agent</code> 的 <code>backend=</code>。</li>
+<li><strong>禁止</strong>用 <code>excluded_middleware</code> 删 FilesystemMiddleware &#x2F; SubAgentMiddleware → 会 <code>ValueError</code>；隐藏 FS 工具用 <code>excluded_tools</code> 或 <code>FilesystemMiddleware(tools=[...])</code>。</li>
+</ul>
+<p>与 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">LangChain（六）</a> Middleware 生命周期对照：Deep Agents 把 Todo、FS、Subagent、Summarization 等 <strong>默认启用</strong>，LangChain 需自行叠加等价 middleware（成本高）。</p>
+<hr>
+<h2 id="6-与-LangGraph-Runtime-的关系"><a href="#6-与-LangGraph-Runtime-的关系" class="headerlink" title="6. 与 LangGraph Runtime 的关系"></a>6. 与 LangGraph Runtime 的关系</h2><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Durable execution</td>
+<td>LangGraph Runtime</td>
+</tr>
+<tr>
+<td>Checkpointer &#x2F; thread</td>
+<td>传 <code>checkpointer=</code>（HITL 必填）</td>
+</tr>
+<tr>
+<td>Store 跨 thread</td>
+<td><code>store=</code> + StoreBackend</td>
+</tr>
+<tr>
+<td>Streaming</td>
+<td><code>stream</code> &#x2F; <code>stream_events</code></td>
+</tr>
+<tr>
+<td>Interrupt &#x2F; Resume</td>
+<td><code>interrupt_on</code> → LangGraph interrupt</td>
+</tr>
+</tbody></table>
+<p>Deep Agents <strong>不画拓扑</strong>：标准「模型 ↔ 工具」环 + Middleware hooks，由 harness 编译成图。需要 <strong>确定性多节点编排</strong> 时仍用 LangGraph；需要 <strong>CompiledSubAgent</strong> 可把 LangGraph 图嵌入 Deep Agents 委托层（见<a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）</a>）。</p>
+<p>State 中常见字段（认名，分篇展开）：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>生命周期</th>
+<th>篇</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>messages</code></td>
+<td>对话 + tool 轨迹</td>
+<td>全系列</td>
+</tr>
+<tr>
+<td><code>todos</code></td>
+<td>write_todos 写入</td>
+<td>（四）</td>
+</tr>
+<tr>
+<td><code>files</code></td>
+<td>虚拟 FS（StateBackend）</td>
+<td>（二）（三）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-实践阶梯预告"><a href="#7-实践阶梯预告" class="headerlink" title="7. 实践阶梯预告"></a>7. 实践阶梯预告</h2><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>做什么</th>
+<th>证明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L0</strong></td>
+<td>Quickstart + FS 工具 + LangSmith trace</td>
+<td>harness 跑通</td>
+</tr>
+<tr>
+<td><strong>L1</strong></td>
+<td>memory + skills + subagent；对比 context 膨胀</td>
+<td>厚 harness 价值</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>interrupt_on + permissions + stream_events</td>
+<td>可治理长任务</td>
+</tr>
+</tbody></table>
+<p>完整阶梯见 <a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）</a>。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Deep Agents · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>定位</strong>：Deep Agents &#x3D; <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#7-Harness-%E8%B0%B1%E7%B3%BB%E4%B8%8E%E5%90%8E%E7%BB%AD%E6%A1%86%E6%9E%B6">Agent（六）§7</a> 谱系中的 <strong>厚 Harness</strong>；Harness 定义见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">（三）§6</a>；底层 LangGraph Orchestration Runtime + LangChain 工具环。</p>
+<p><strong>四层能力</strong>：Execution &#x2F; Context &#x2F; Delegation &#x2F; Steering。</p>
+<p><strong>入口</strong>：<code>create_deep_agent</code> → CompiledStateGraph（Runnable）。</p>
+<p><strong>Middleware 栈</strong>：Todo → Skills? → FS → SubAgent? → Summarization → Patch → … → Memory? → HITL?</p>
+<p><strong>选型</strong>：长任务 + 开箱 FS&#x2F;Skills&#x2F;Subagent 优先 Deep Agents；精细拓扑用 LangGraph。</p>
+<p><strong>Deep Agents 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">（一）定位与 Harness 架构</a>（本篇）</li>
+<li><a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）Execution Environment</a></li>
+<li><a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）Context Management</a></li>
+<li><a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）Delegation · 规划与子 Agent</a></li>
+<li><a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）Steering · 定制与生产</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">LangChain（六）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/">LE（三）</a></p>
+<p>下一篇：<a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">Deep Agents（二）· Execution Environment</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/DeepAgents/" rel="tag"># DeepAgents</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="prev" title="AI-Agent工程学习-LangGraph(自检与面试)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangGraph(自检与面试)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-DeepAgents(二)">
+                  AI-Agent工程学习-DeepAgents(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

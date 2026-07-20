@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Execution Environment：Tools&#x2F;MCP、虚拟 FS、Backends、Permissions、Sandbox&#x2F;Interpreter、Streaming。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-DeepAgents(二)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Execution Environment：Tools&#x2F;MCP、虚拟 FS、Backends、Permissions、Sandbox&#x2F;Interpreter、Streaming。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-20T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T08:11:24.765Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="DeepAgents">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/","path":"2026/07/20/Agent工程学习-DeepAgents-二/","title":"AI-Agent工程学习-DeepAgents(二)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-DeepAgents(二) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Tools-%E4%B8%8E-MCP"><span class="nav-number">2.</span> <span class="nav-text">1. Tools 与 MCP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E8%87%AA%E5%AE%9A%E4%B9%89-Tools"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 自定义 Tools</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-MCP-%E6%8E%A5%E5%85%A5"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 MCP 接入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E8%99%9A%E6%8B%9F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.</span> <span class="nav-text">2. 虚拟文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%86%85%E7%BD%AE%E6%96%87%E4%BB%B6%E5%B7%A5%E5%85%B7"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 内置文件工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E9%9A%90%E8%97%8F%E6%88%96%E9%99%90%E5%88%B6%E5%B7%A5%E5%85%B7"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 隐藏或限制工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Backends-%E4%BD%93%E7%B3%BB"><span class="nav-number">4.</span> <span class="nav-text">3. Backends 体系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E9%BB%98%E8%AE%A4%EF%BC%9AStateBackend"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 默认：StateBackend</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-CompositeBackend%EF%BC%88%E6%8E%A8%E8%8D%90%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 CompositeBackend（推荐模式）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-Sandbox"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 Sandbox</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Filesystem-Permissions"><span class="nav-number">5.</span> <span class="nav-text">4. Filesystem Permissions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Code-Execution%EF%BC%9ASandbox-vs-Interpreter"><span class="nav-number">6.</span> <span class="nav-text">5. Code Execution：Sandbox vs Interpreter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Streaming"><span class="nav-number">7.</span> <span class="nav-text">6. Streaming</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-L0-%E5%AE%9E%E9%AA%8C%EF%BC%88%E5%8A%A8%E6%89%8B%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">7. L0 实验（动手）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">9.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-DeepAgents(二) | 我的记录小站">
+      <meta itemprop="description" content="Execution Environment：Tools&#x2F;MCP、虚拟 FS、Backends、Permissions、Sandbox&#x2F;Interpreter、Streaming。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-DeepAgents(二)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-20 11:00:00 / 修改时间：16:11:24" itemprop="dateCreated datePublished" datetime="2026-07-20T11:00:00+08:00">2026-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Execution Environment：Tools/MCP、虚拟 FS、Backends、Permissions、Sandbox/Interpreter、Streaming。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">Deep Agents（一）</a>：四层能力中的 <strong>Execution environment</strong> 是 Agent 行动的场所——Tools、虚拟文件系统、Backend 与代码执行层。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p><strong>Execution environment</strong> &#x3D; Tools + Virtual FS + Permissions + Code execution + Streaming。</p>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/tools">Tools</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/backends">Backends</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/permissions">Permissions</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/sandboxes">Sandboxes</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/interpreters">Interpreters</a></p>
+<p>FilesystemMiddleware 在默认栈中 <strong>始终存在</strong>（见<a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/#5-%E9%BB%98%E8%AE%A4-middleware-%E6%A0%88%E9%87%8D%E7%82%B9">（一）§5</a>）。</p>
+<hr>
+<h2 id="1-Tools-与-MCP"><a href="#1-Tools-与-MCP" class="headerlink" title="1. Tools 与 MCP"></a>1. Tools 与 MCP</h2><h3 id="1-1-自定义-Tools"><a href="#1-1-自定义-Tools" class="headerlink" title="1.1 自定义 Tools"></a>1.1 自定义 Tools</h3><p>除 Planning、FS、Subagent 等 harness 内置工具外，通过 <code>tools=</code> 传入：</p>
+<ul>
+<li>Python 函数（自动转 Tool）</li>
+<li>LangChain <code>@tool</code> &#x2F; <code>BaseTool</code></li>
+<li>MCP 服务器提供的工具</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Deep Agents 自定义 Tool 示例。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-31</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">search</span>(<span class="params">query: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;搜索给定查询并返回摘要。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;results for <span class="subst">&#123;query&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    tools=[search],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-MCP-接入"><a href="#1-2-MCP-接入" class="headerlink" title="1.2 MCP 接入"></a>1.2 MCP 接入</h3><p>Deep Agents 完整支持 <a target="_blank" rel="noopener" href="https://modelcontextprotocol.io/">Model Context Protocol</a>：数据库、API、远程文件系统等经标准接口接入。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">通过 MCP 向 Deep Agent 注入工具（异步初始化示意）。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-31</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> langchain_mcp_adapters.client <span class="keyword">import</span> MultiServerMCPClient</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">main</span>() -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;连接 MCP 服务器并创建带远程工具的 Agent。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> MultiServerMCPClient(</span><br><span class="line">        &#123;<span class="string">&quot;my_server&quot;</span>: &#123;<span class="string">&quot;transport&quot;</span>: <span class="string">&quot;http&quot;</span>, <span class="string">&quot;url&quot;</span>: <span class="string">&quot;http://localhost:8000/mcp&quot;</span>&#125;&#125;</span><br><span class="line">    ) <span class="keyword">as</span> client:</span><br><span class="line">        tools = <span class="keyword">await</span> client.get_tools()</span><br><span class="line">        agent = create_deep_agent(model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>, tools=tools)</span><br><span class="line">        <span class="keyword">await</span> agent.ainvoke(</span><br><span class="line">            &#123;<span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;Use MCP tools to help me.&quot;</span>&#125;]&#125;,</span><br><span class="line">            config=&#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;thread_id&quot;</span>: <span class="string">&quot;1&quot;</span>&#125;&#125;,</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+
+<p>需安装 <code>langchain-mcp-adapters</code>。stdio、OAuth、工具过滤等见官方 MCP 指南。</p>
+<hr>
+<h2 id="2-虚拟文件系统"><a href="#2-虚拟文件系统" class="headerlink" title="2. 虚拟文件系统"></a>2. 虚拟文件系统</h2><p>Harness 提供 <strong>可插拔 Backend</strong> 支撑的虚拟 FS；模型可见一组文件工具（由 FilesystemMiddleware 注入 system prompt 说明）。</p>
+<h3 id="2-1-内置文件工具"><a href="#2-1-内置文件工具" class="headerlink" title="2.1 内置文件工具"></a>2.1 内置文件工具</h3><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ls</code></td>
+<td>列目录（含 size、modified time）</td>
+</tr>
+<tr>
+<td><code>read_file</code></td>
+<td>读文件；支持 offset&#x2F;limit；多模态（图片&#x2F;音视频&#x2F;pdf 等）</td>
+</tr>
+<tr>
+<td><code>write_file</code></td>
+<td>创建或覆盖文件</td>
+</tr>
+<tr>
+<td><code>edit_file</code></td>
+<td>精确字符串替换（可 global replace）</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td>删文件或递归删目录（≥0.7.a1）</td>
+</tr>
+<tr>
+<td><code>glob</code></td>
+<td>模式匹配找文件</td>
+</tr>
+<tr>
+<td><code>grep</code></td>
+<td>内容搜索（files &#x2F; content &#x2F; count 模式）</td>
+</tr>
+<tr>
+<td><code>execute</code></td>
+<td>Shell 命令（<strong>仅 Sandbox 类 Backend</strong>）</td>
+</tr>
+</tbody></table>
+<p>虚拟 FS 同时服务 Skills、Memory、代码执行与 <strong>Context offloading</strong>（大结果落盘，见<a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）</a>）。</p>
+<h3 id="2-2-隐藏或限制工具"><a href="#2-2-隐藏或限制工具" class="headerlink" title="2.2 隐藏或限制工具"></a>2.2 隐藏或限制工具</h3><p><strong>隐藏全部 FS 工具</strong>（Middleware 仍在，仅模型不可见）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> HarnessProfile, register_harness_profile</span><br><span class="line"></span><br><span class="line">register_harness_profile(</span><br><span class="line">    <span class="string">&quot;anthropic:claude-sonnet-4-6&quot;</span>,</span><br><span class="line">    HarnessProfile(</span><br><span class="line">        excluded_tools=<span class="built_in">frozenset</span>(</span><br><span class="line">            &#123;<span class="string">&quot;ls&quot;</span>, <span class="string">&quot;read_file&quot;</span>, <span class="string">&quot;write_file&quot;</span>, <span class="string">&quot;edit_file&quot;</span>, <span class="string">&quot;delete&quot;</span>, <span class="string">&quot;glob&quot;</span>, <span class="string">&quot;grep&quot;</span>&#125;</span><br><span class="line">        ),</span><br><span class="line">    ),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><strong>只读 Agent</strong>（allowlist，<code>read_file</code> 必填）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">只读 Deep Agent：FilesystemMiddleware 工具白名单。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-31</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> deepagents.backends <span class="keyword">import</span> StateBackend</span><br><span class="line"><span class="keyword">from</span> deepagents.middleware <span class="keyword">import</span> FilesystemMiddleware</span><br><span class="line"></span><br><span class="line">backend = StateBackend()</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    middleware=[</span><br><span class="line">        FilesystemMiddleware(</span><br><span class="line">            backend=backend,</span><br><span class="line">            tools=[<span class="string">&quot;read_file&quot;</span>, <span class="string">&quot;ls&quot;</span>, <span class="string">&quot;glob&quot;</span>, <span class="string">&quot;grep&quot;</span>],</span><br><span class="line">        ),</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><code>create_deep_agent</code> 的 <code>tools=</code> 自定义工具 <strong>不受</strong> FS allowlist 影响。</p>
+<hr>
+<h2 id="3-Backends-体系"><a href="#3-Backends-体系" class="headerlink" title="3. Backends 体系"></a>3. Backends 体系</h2><p>Backend 决定虚拟路径背后 <strong>数据存哪、能否 execute</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>Backend</th>
+<th>作用域</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>StateBackend</strong></td>
+<td>thread 内（checkpointer）</td>
+<td><strong>默认</strong>；working memory</td>
+</tr>
+<tr>
+<td><strong>FilesystemBackend</strong></td>
+<td>本地磁盘</td>
+<td>Coding agent；<code>virtual_mode=True</code> 限制在 root 内</td>
+</tr>
+<tr>
+<td><strong>LocalShellBackend</strong></td>
+<td>本地盘 + 主机 shell</td>
+<td>开发机；<strong>高风险</strong></td>
+</tr>
+<tr>
+<td><strong>StoreBackend</strong></td>
+<td>跨 thread</td>
+<td>用户级长期数据</td>
+</tr>
+<tr>
+<td><strong>CompositeBackend</strong></td>
+<td>路径路由</td>
+<td>项目文件 vs agent 内部数据分离</td>
+</tr>
+<tr>
+<td><strong>ContextHubBackend</strong></td>
+<td>LangSmith Hub</td>
+<td>团队共享上下文</td>
+</tr>
+<tr>
+<td><strong>Sandbox backends</strong></td>
+<td>隔离 VM&#x2F;容器</td>
+<td>生产代码执行 + <code>execute</code></td>
+</tr>
+</tbody></table>
+<h3 id="3-1-默认：StateBackend"><a href="#3-1-默认：StateBackend" class="headerlink" title="3.1 默认：StateBackend"></a>3.1 默认：StateBackend</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line"><span class="comment"># 默认即 StateBackend：files 存在 graph state，thread 内持久，不跨 thread 共享。</span></span><br><span class="line">agent = create_deep_agent(model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-CompositeBackend（推荐模式）"><a href="#3-2-CompositeBackend（推荐模式）" class="headerlink" title="3.2 CompositeBackend（推荐模式）"></a>3.2 CompositeBackend（推荐模式）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">CompositeBackend：工作区走 State，/memories/ 走 Store。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-31</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> deepagents.backends <span class="keyword">import</span> CompositeBackend, StateBackend, StoreBackend</span><br><span class="line"><span class="keyword">from</span> langgraph.store.memory <span class="keyword">import</span> InMemoryStore</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    backend=CompositeBackend(</span><br><span class="line">        default=StateBackend(),</span><br><span class="line">        routes=&#123;<span class="string">&quot;/memories/&quot;</span>: StoreBackend(namespace=<span class="keyword">lambda</span> _rt: (<span class="string">&quot;memories&quot;</span>,))&#125;,</span><br><span class="line">    ),</span><br><span class="line">    store=InMemoryStore(),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><code>store=</code> 传给 <code>create_deep_agent</code>，不是 Backend 构造参数。LangSmith Deployment 可省略 <code>store</code>（平台自动 provision）。</p>
+<h3 id="3-3-Sandbox"><a href="#3-3-Sandbox" class="headerlink" title="3.3 Sandbox"></a>3.3 Sandbox</h3><p>Sandbox 实现 <code>SandboxBackendProtocolV2</code> 时 harness 自动暴露 <code>execute</code>。提供商包括 LangSmith Sandbox、E2B、Modal、Daytona、Runloop、Vercel 等（见 <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/sandboxes">Sandboxes</a>）。</p>
+<p><strong>Sandbox vs LocalShellBackend</strong>：Sandbox 在隔离环境执行；LocalShell 直接在主机上跑命令——仅适合受控开发环境。</p>
+<hr>
+<h2 id="4-Filesystem-Permissions"><a href="#4-Filesystem-Permissions" class="headerlink" title="4. Filesystem Permissions"></a>4. Filesystem Permissions</h2><p>声明式规则控制 <strong>built-in FS 工具</strong> 的读写（first-match-wins）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Filesystem permissions：只允许读写 /workspace/ 下路径。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-31</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    permissions=[</span><br><span class="line">        &#123;<span class="string">&quot;operations&quot;</span>: [<span class="string">&quot;read&quot;</span>, <span class="string">&quot;write&quot;</span>], <span class="string">&quot;paths&quot;</span>: [<span class="string">&quot;/workspace/**&quot;</span>], <span class="string">&quot;mode&quot;</span>: <span class="string">&quot;allow&quot;</span>&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;operations&quot;</span>: [<span class="string">&quot;read&quot;</span>], <span class="string">&quot;paths&quot;</span>: [<span class="string">&quot;/skills/**&quot;</span>], <span class="string">&quot;mode&quot;</span>: <span class="string">&quot;allow&quot;</span>&#125;,</span><br><span class="line">        &#123;<span class="string">&quot;operations&quot;</span>: [<span class="string">&quot;write&quot;</span>], <span class="string">&quot;paths&quot;</span>: [<span class="string">&quot;.env&quot;</span>, <span class="string">&quot;**/credentials*&quot;</span>], <span class="string">&quot;mode&quot;</span>: <span class="string">&quot;deny&quot;</span>&#125;,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>每条规则含 <code>operations</code>（<code>read</code> &#x2F; <code>write</code>）、<code>paths</code>（glob）、<code>mode</code>（<code>allow</code> &#x2F; <code>deny</code>）。</p>
+<p>注意：<strong>Sandbox 的 <code>execute</code> 不受 permissions 约束</strong>（可 arbitrary shell）；敏感环境用 Sandbox 策略 hook 或限制 Backend 类型。Subagent 可设独立 <code>permissions</code> 列表，<strong>完全替换</strong>父 Agent 规则。</p>
+<hr>
+<h2 id="5-Code-Execution：Sandbox-vs-Interpreter"><a href="#5-Code-Execution：Sandbox-vs-Interpreter" class="headerlink" title="5. Code Execution：Sandbox vs Interpreter"></a>5. Code Execution：Sandbox vs Interpreter</h2><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>工具</th>
+<th>能力</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Sandbox</strong></td>
+<td><code>execute</code></td>
+<td>shell、装依赖、跑测试、OS FS</td>
+<td>编码 Agent、CI 式任务</td>
+</tr>
+<tr>
+<td><strong>Interpreter</strong></td>
+<td><code>eval</code></td>
+<td>QuickJS 内 JS；程序化 tool calling</td>
+<td>批处理、循环 dispatch、轻量变换</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">QuickJS Interpreter：CodeInterpreterMiddleware 添加 eval 工具。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-31</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> langchain_quickjs <span class="keyword">import</span> CodeInterpreterMiddleware</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    middleware=[CodeInterpreterMiddleware()],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>需 <code>pip install &quot;deepagents[quickjs]&quot;</code> 与 <code>langchain-quickjs&gt;=0.2.0</code>。Dynamic subagents（<a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）</a>）依赖 Interpreter。</p>
+<hr>
+<h2 id="6-Streaming"><a href="#6-Streaming" class="headerlink" title="6. Streaming"></a>6. Streaming</h2><p>Deep Agents 在 LangGraph streaming 之上增加 <strong><code>stream.subagents</code></strong>：每个委托任务独立 handle（<code>.name</code>、<code>.messages</code>、<code>.tool_calls</code>、<code>.output</code>）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">stream_events：交错消费 coordinator 与 subagent 流。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-31</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>, subagents=[...])</span><br><span class="line"></span><br><span class="line">stream = agent.stream_events(</span><br><span class="line">    &#123;<span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;...&quot;</span>&#125;]&#125;,</span><br><span class="line">    version=<span class="string">&quot;v3&quot;</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> name, item <span class="keyword">in</span> stream.interleave(<span class="string">&quot;messages&quot;</span>, <span class="string">&quot;subagents&quot;</span>):</span><br><span class="line">    <span class="keyword">if</span> name == <span class="string">&quot;messages&quot;</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[coordinator]&quot;</span>, item.text)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;[<span class="subst">&#123;item.name&#125;</span>] status: <span class="subst">&#123;item.status&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>Typed 投影：<code>messages</code>、<code>tool_calls</code>、<code>values</code>、<code>subagents</code> 可独立迭代。</p>
+<hr>
+<h2 id="7-L0-实验（动手）"><a href="#7-L0-实验（动手）" class="headerlink" title="7. L0 实验（动手）"></a>7. L0 实验（动手）</h2><p><strong>目标</strong>：证明 harness + FS + trace 跑通。</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>create_deep_agent</code> + 1 个伪 Tool</td>
+</tr>
+<tr>
+<td>2</td>
+<td>提示 Agent「用 write_file 写 &#x2F;notes&#x2F;plan.txt 再 read_file 读回」</td>
+</tr>
+<tr>
+<td>3</td>
+<td>检查返回 state 中 <code>files</code> 或 messages 含 Tool 轨迹</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>LANGSMITH_TRACING=true</code> 打开 trace，确认 Filesystem 工具 span</td>
+</tr>
+</tbody></table>
+<p><strong>Done 判据</strong>：一次 invoke 内出现 FS 工具调用且 trace 可回放。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Deep Agents · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Tools</strong>：自定义 + MCP；与 harness 内置工具并列。</p>
+<p><strong>虚拟 FS</strong>：八工具 + multimodal read；offloading 载体。</p>
+<p><strong>Backends</strong>：State 默认；Composite 分离内部&#x2F;长期数据；Sandbox 给 <code>execute</code>。</p>
+<p><strong>Permissions</strong>：声明式 allow&#x2F;deny；Sandbox execute 另论。</p>
+<p><strong>代码执行</strong>：Sandbox（shell）vs Interpreter（QuickJS）。</p>
+<p><strong>Streaming</strong>：<code>stream_events</code> + <code>stream.subagents</code>。</p>
+<p><strong>Deep Agents 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">（一）定位与 Harness 架构</a></li>
+<li><a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）Execution Environment</a>（本篇）</li>
+<li><a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）Context Management</a></li>
+<li><a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）Delegation · 规划与子 Agent</a></li>
+<li><a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）Steering · 定制与生产</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">Deep Agents（一）</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">LangGraph（三）Persistence</a></p>
+<p>下一篇：<a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">Deep Agents（三）· Context Management</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/DeepAgents/" rel="tag"># DeepAgents</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/" rel="prev" title="AI-Agent工程学习-DeepAgents(一)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-DeepAgents(一)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/" rel="next" title="AI-Agent工程学习-DeepAgents(三)">
+                  AI-Agent工程学习-DeepAgents(三) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
