@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Hybrid&#x2F;Rerank&#x2F;Query&#x2F;Multi-Query&#x2F;Compression&#x2F;Parent Document&#x2F;Metadata 检索增强；选型与降级。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-RAG(二)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/18/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%8C/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Hybrid&#x2F;Rerank&#x2F;Query&#x2F;Multi-Query&#x2F;Compression&#x2F;Parent Document&#x2F;Metadata 检索增强；选型与降级。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-20T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.982Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="RAG">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/18/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/18/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%8C/","path":"/2026/08/18/Agent工程学习-RAG-二/","title":"AI-Agent工程学习-RAG(二)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-RAG(二) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%A2%9E%E5%BC%BA%E6%A8%A1%E5%BC%8F%E6%80%BB%E8%A7%88"><span class="nav-number">2.</span> <span class="nav-text">1. 增强模式总览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Hybrid-Search"><span class="nav-number">3.</span> <span class="nav-text">2. Hybrid Search</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Reranking"><span class="nav-number">4.</span> <span class="nav-text">3. Reranking</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Query-Rewrite-%E4%B8%8E-Multi-Query-Retrieval"><span class="nav-number">5.</span> <span class="nav-text">4. Query Rewrite 与 Multi-Query Retrieval</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Contextual-Compression"><span class="nav-number">6.</span> <span class="nav-text">5. Contextual Compression</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Parent-Document-Retrieval"><span class="nav-number">7.</span> <span class="nav-text">6. Parent Document Retrieval</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Metadata-Filtering"><span class="nav-number">8.</span> <span class="nav-text">7. Metadata Filtering</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E9%99%8D%E7%BA%A7%E7%AD%96%E7%95%A5"><span class="nav-number">9.</span> <span class="nav-text">8. 降级策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-L1-%E5%AE%9E%E9%AA%8C"><span class="nav-number">10.</span> <span class="nav-text">9. L1 实验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">11.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/18/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-RAG(二) | 我的记录小站">
+      <meta itemprop="description" content="Hybrid&#x2F;Rerank&#x2F;Query&#x2F;Multi-Query&#x2F;Compression&#x2F;Parent Document&#x2F;Metadata 检索增强；选型与降级。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-RAG(二)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-20 20:00:00" itemprop="dateCreated datePublished" datetime="2026-07-20T20:00:00+08:00">2026-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Hybrid/Rerank/Query/Multi-Query/Compression/Parent Document/Metadata 检索增强；选型与降级。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">RAG（一）</a>：朴素 similarity 有 baseline 之后，按 <strong>可测瓶颈</strong> 叠加检索增强——不默认「全上」。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">朴素 Retriever（RAG 一 baseline）</span><br><span class="line">        ↓ 定位瓶颈</span><br><span class="line">Hybrid / Rerank / Query 改写 / Compression / Parent Doc / Metadata</span><br><span class="line">        ↓ 任一失败 → 降级回朴素</span><br><span class="line">Agentic 路由（RAG 三）</span><br></pre></td></tr></table></figure>
+
+<p>回链：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/#3-Retriever-%E4%B8%8E%E5%A2%9E%E5%BC%BA%E6%A8%A1%E5%BC%8F%EF%BC%88%E6%A8%A1%E5%BC%8F%E7%BA%A7%EF%BC%89">LangChain（四）§3</a> 已认名；本篇写 <strong>选型、组合与 LangChain 集成思路</strong>。</p>
+<hr>
+<h2 id="1-增强模式总览"><a href="#1-增强模式总览" class="headerlink" title="1. 增强模式总览"></a>1. 增强模式总览</h2><table>
+<thead>
+<tr>
+<th>失败症状</th>
+<th>优先尝试</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>专名、编号、SKU 检不到</td>
+<td><strong>Hybrid Search</strong></td>
+</tr>
+<tr>
+<td>召回多但 Top-K 噪声大</td>
+<td><strong>Reranker</strong></td>
+</tr>
+<tr>
+<td>用户问法与文档措辞差</td>
+<td><strong>Query Rewrite &#x2F; Multi-Query</strong></td>
+</tr>
+<tr>
+<td>检索块太长撑爆 Context</td>
+<td><strong>Contextual Compression</strong></td>
+</tr>
+<tr>
+<td>小块准但缺段落上下文</td>
+<td><strong>Parent Document Retrieval</strong></td>
+</tr>
+<tr>
+<td>多租户、多版本文档混库</td>
+<td><strong>Metadata Filtering</strong></td>
+</tr>
+</tbody></table>
+<p>原则：<strong>每次只加一种增强，在同一评测集上对比</strong>（RAG 一 L0 集）。</p>
+<hr>
+<h2 id="2-Hybrid-Search"><a href="#2-Hybrid-Search" class="headerlink" title="2. Hybrid Search"></a>2. Hybrid Search</h2><p><strong>向量</strong> 擅语义；<strong>BM25&#x2F;关键词</strong> 擅 exact match。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">query → [BM25 分支] ──┐</span><br><span class="line">     → [向量分支]  ──┼→ 融合（RRF / 加权）→ 候选集</span><br></pre></td></tr></table></figure>
+
+<p>LangChain 侧常见：<code>EnsembleRetriever</code> 组合多个 Retriever，或向量库原生 hybrid（视后端而定）。</p>
+<p>适用：产品型号、法规条文号、内部代号、中英混排术语。</p>
+<hr>
+<h2 id="3-Reranking"><a href="#3-Reranking" class="headerlink" title="3. Reranking"></a>3. Reranking</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">初检 Top-K₁（大，如 20–50）→ Cross-encoder / Cohere Rerank → Top-K₂（小，如 4–8）</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K₁</td>
+<td>够召回即可；过大增延迟</td>
+</tr>
+<tr>
+<td>K₂</td>
+<td>进 Prompt 的条数；对齐 Context 预算</td>
+</tr>
+</tbody></table>
+<p>Rerank 解决「召回了但排序错」；不能替代 Hybrid 解决「压根没召回」。</p>
+<hr>
+<h2 id="4-Query-Rewrite-与-Multi-Query-Retrieval"><a href="#4-Query-Rewrite-与-Multi-Query-Retrieval" class="headerlink" title="4. Query Rewrite 与 Multi-Query Retrieval"></a>4. Query Rewrite 与 Multi-Query Retrieval</h2><p><strong>Query Rewrite：</strong> LLM 将口语问题改写成检索友好表述（含关键词、实体）。</p>
+<p><strong>Multi-Query：</strong> 一次生成多条 query，分别检索后 <strong>去重合并</strong>（与 Expansion 同类工程目标）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;Multi-Query 思路示意：多 query 检索后按 doc_id 去重。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-20</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">multi_query_retrieve</span>(<span class="params">queries: <span class="built_in">list</span>[<span class="built_in">str</span>], retriever, max_docs: <span class="built_in">int</span> = <span class="number">8</span></span>) -&gt; <span class="built_in">list</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;对多条 query 检索并去重，同一 doc 保留最高相关分。&quot;&quot;&quot;</span></span><br><span class="line">    best: <span class="built_in">dict</span> = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> query <span class="keyword">in</span> queries:</span><br><span class="line">        <span class="keyword">for</span> document <span class="keyword">in</span> retriever.invoke(query):</span><br><span class="line">            doc_key = document.metadata.get(<span class="string">&quot;chunk_id&quot;</span>, document.page_content[:<span class="number">40</span>])</span><br><span class="line">            score = <span class="built_in">float</span>(document.metadata.get(<span class="string">&quot;score&quot;</span>, <span class="number">0.0</span>))</span><br><span class="line">            prev = best.get(doc_key)</span><br><span class="line">            <span class="keyword">if</span> prev <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">or</span> score &gt; <span class="built_in">float</span>(prev.metadata.get(<span class="string">&quot;score&quot;</span>, <span class="number">0.0</span>)):</span><br><span class="line">                best[doc_key] = document</span><br><span class="line">    ranked = <span class="built_in">sorted</span>(</span><br><span class="line">        best.values(),</span><br><span class="line">        key=<span class="keyword">lambda</span> d: <span class="built_in">float</span>(d.metadata.get(<span class="string">&quot;score&quot;</span>, <span class="number">0.0</span>)),</span><br><span class="line">        reverse=<span class="literal">True</span>,</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> ranked[:max_docs]</span><br></pre></td></tr></table></figure>
+
+<p>注意：改写增加 <strong>一次 LLM 调用</strong>；需计入 Budget（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-1-Budget">Agent 三 Budget</a>）。</p>
+<hr>
+<h2 id="5-Contextual-Compression"><a href="#5-Contextual-Compression" class="headerlink" title="5. Contextual Compression"></a>5. Contextual Compression</h2><p>检索块常含无关句。<strong>Compression</strong> 在进 Prompt 前抽取与 query 相关的句&#x2F;段。</p>
+<p>与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">Agent（五）Context 压缩</a> 对齐：<strong>硬规则、合同字段不可压没</strong>；只压检索冗余。</p>
+<p>LangChain：<code>ContextualCompressionRetriever</code> + <code>DocumentCompressor</code>（如 LLMChainExtractor）。</p>
+<hr>
+<h2 id="6-Parent-Document-Retrieval"><a href="#6-Parent-Document-Retrieval" class="headerlink" title="6. Parent Document Retrieval"></a>6. Parent Document Retrieval</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">索引：小块（child chunk）→ 检索命中</span><br><span class="line">生成：取 parent 大段（整节/整页）→ 更多上下文</span><br></pre></td></tr></table></figure>
+
+<p>适用：法条、API 文档——小块定位准，但回答需要整节定义。存储需 <code>parent_id</code> 或原文指针 metadata。</p>
+<hr>
+<h2 id="7-Metadata-Filtering"><a href="#7-Metadata-Filtering" class="headerlink" title="7. Metadata Filtering"></a>7. Metadata Filtering</h2><p>检索 <strong>前</strong> 过滤（非生成后过滤）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;带 tenant 过滤的检索示意。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-20</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">retriever = vectorstore.as_retriever(</span><br><span class="line">    search_kwargs=&#123;</span><br><span class="line">        <span class="string">&quot;k&quot;</span>: <span class="number">8</span>,</span><br><span class="line">        <span class="string">&quot;filter&quot;</span>: &#123;<span class="string">&quot;tenant_id&quot;</span>: current_tenant, <span class="string">&quot;doc_type&quot;</span>: <span class="string">&quot;policy&quot;</span>&#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>常见维度：<code>tenant_id</code>、<code>department</code>、<code>effective_date</code>、<code>language</code>、<code>classification</code>。与 RAG（五）ACL 衔接。</p>
+<hr>
+<h2 id="8-降级策略"><a href="#8-降级策略" class="headerlink" title="8. 降级策略"></a>8. 降级策略</h2><table>
+<thead>
+<tr>
+<th>情况</th>
+<th>降级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Rerank 服务超时</td>
+<td>仅用初检 Top-K</td>
+</tr>
+<tr>
+<td>Hybrid 一路为空</td>
+<td>回退纯向量</td>
+</tr>
+<tr>
+<td>Rewrite 产出空 query</td>
+<td>用原问</td>
+</tr>
+<tr>
+<td>全链路无 chunk 过阈值</td>
+<td><strong>拒答</strong> 或转人工，禁止编造</td>
+</tr>
+</tbody></table>
+<p>增强是 <strong>可选插件</strong>，不是单点故障源。</p>
+<hr>
+<h2 id="9-L1-实验"><a href="#9-L1-实验" class="headerlink" title="9. L1 实验"></a>9. L1 实验</h2><p>在 RAG（一）同一 <strong>10 问评测集</strong> 上对比：</p>
+<ol>
+<li>Baseline：similarity Top-4  </li>
+<li><ul>
+<li>Hybrid</li>
+</ul>
+</li>
+<li><ul>
+<li>Rerank</li>
+</ul>
+</li>
+<li><ul>
+<li>Metadata filter（若多租户）</li>
+</ul>
+</li>
+</ol>
+<p>记录 Recall@4、P95 延迟、单次 query 成本；选 <strong>收益&#x2F;成本比最高</strong> 的组合写入生产默认配置。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完 RAG 系列后，请到 <a href="/2026/08/22/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">RAG · 自检与面试</a>。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Hybrid</strong>：专名 + 语义；<strong>Rerank</strong>：精排降噪。</p>
+<p><strong>Query &#x2F; Multi-Query</strong>：措辞鸿沟；<strong>Compression</strong>：省窗位。</p>
+<p><strong>Parent Doc</strong>：小块定位、大块生成；<strong>Metadata</strong>：租户与类型隔离。</p>
+<p><strong>降级</strong>：增强失败回朴素 similarity 或拒答。</p>
+<p><strong>RAG 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">（一）基础管线</a></li>
+<li><a href="/2026/08/18/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%8C/">（二）高级检索增强</a>（本篇）</li>
+<li><a href="/2026/08/19/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%89/">（三）Agentic RAG</a></li>
+<li><a href="/2026/08/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E5%9B%9B/">（四）Graph RAG</a></li>
+<li><a href="/2026/08/21/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%94/">（五）生产与企业知识库</a></li>
+</ul>
+<p><strong>下一篇</strong>：<a href="/2026/08/19/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%89/">RAG（三）· Agentic RAG</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangChain/" rel="tag"># LangChain</a>
+              <a href="/tags/RAG/" rel="tag"># RAG</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/" rel="prev" title="AI-Agent工程学习-RAG(一)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-RAG(一)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/19/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%89/" rel="next" title="AI-Agent工程学习-RAG(三)">
+                  AI-Agent工程学习-RAG(三) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

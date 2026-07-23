@@ -27,7 +27,7 @@
 <meta property="og:description" content="create_agent 最小闭环、response_format、checkpointer 短时记忆、Streaming；与 LE 停止条件对齐；AgentExecutor 仅作历史。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-17T02:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-20T10:40:42.361Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.980Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="LangChain">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-count">87</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">27</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -222,7 +222,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-20 18:40:42" itemprop="dateModified" datetime="2026-07-20T18:40:42+08:00">2026-07-20</time>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -327,9 +327,35 @@
 </tr>
 <tr>
 <td><strong>store</strong></td>
-<td>跨线程长期记忆（认名；深挖可后置）</td>
+<td>跨线程长期记忆（认名）</td>
 </tr>
 </tbody></table>
+<p><strong>记忆三分法（面试口径）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>作用域</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>checkpointer</strong></td>
+<td>单 <code>thread_id</code> 内</td>
+<td>多轮 messages &#x2F; 短时会话恢复</td>
+</tr>
+<tr>
+<td><strong>store</strong></td>
+<td>跨 thread</td>
+<td>用户偏好、跨会话事实</td>
+</tr>
+<tr>
+<td><strong>context &#x2F; ToolRuntime</strong></td>
+<td>单次 invoke</td>
+<td>请求级依赖注入（DB 句柄、tenant）</td>
+</tr>
+</tbody></table>
+<p><code>store</code> 读写 API 与生产后端选型见官方 Short-term &#x2F; Long-term memory 文档；本篇只要求能口述三分法。深挖跨会话记忆也可后置 Deep Agents Memory。</p>
 <p>文档：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langchain/short-term-memory">Short-term memory</a>。生产环境用持久化 checkpointer，不要只用 InMemory。</p>
 <p><code>context_schema</code>（<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/#4-Runtime-Context%EF%BC%9A%E5%B7%A5%E5%85%B7%E5%A6%82%E4%BD%95%E8%AF%BB%E4%B8%8A%E4%B8%8B%E6%96%87">三</a>）与 <code>thread_id</code> 常一起用：前者 per-run 配置，后者会话历史。</p>
 <hr>
@@ -342,15 +368,15 @@
 </tr>
 </thead>
 <tbody><tr>
-<td><strong><code>agent.stream(..., stream_mode=...)</code></strong></td>
-<td>按模式输出 state 增量或 LLM token</td>
+<td><strong><code>agent.stream(..., stream_mode=..., version=&quot;v2&quot;)</code></strong></td>
+<td>按模式输出 state 增量或 LLM token；<code>version=&quot;v2&quot;</code> 时 chunk 为统一 <code>StreamPart</code>（dict），旧写法多为 <code>(mode, data)</code> 元组</td>
 </tr>
 <tr>
-<td><strong><code>agent.stream_events(..., version=&quot;v2&quot;)</code></strong></td>
-<td>细粒度事件（tool、interrupt、子图）</td>
+<td><strong><code>agent.stream_events(..., version=&quot;v3&quot;)</code></strong></td>
+<td>细粒度 Runnable 事件（tool、interrupt、子图）；新项目优先 v3；旧文&#x2F;示例若写 v2 仍可能可用，以当前文档为准</td>
 </tr>
 </tbody></table>
-<p>常用 <code>stream_mode</code>：</p>
+<p>常用 <code>stream_mode</code>（legacy 多 mode 列表时常产出 <code>(mode, data)</code>）：</p>
 <table>
 <thead>
 <tr>
@@ -408,7 +434,7 @@
 <li><strong>新项目统一 <code>create_agent</code></strong>；扩展用 Middleware，而不是堆 Executor 回调。</li>
 </ul>
 <hr>
-<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangChain · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangChain · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>主路径</strong>：<code>create_agent(model, tools, system_prompt)</code>。</p>
 <p><strong>结构</strong>：<code>response_format</code> → <code>structured_response</code>。</p>
 <p><strong>记忆</strong>：checkpointer + <code>thread_id</code>；可选 state_schema &#x2F; store。</p>

@@ -27,7 +27,7 @@
 <meta property="og:description" content="Context Management：Skills、Memory、Summarization、offloading、Prompt caching、context_schema。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-20T04:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-20T10:40:42.363Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.982Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="DeepAgents">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-count">87</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">27</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -214,9 +214,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2026-07-20 12:00:00 / 修改时间：18:40:42" itemprop="dateCreated datePublished" datetime="2026-07-20T12:00:00+08:00">2026-07-20</time>
+      <time title="创建时间：2026-07-20 12:00:00" itemprop="dateCreated datePublished" datetime="2026-07-20T12:00:00+08:00">2026-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -238,7 +244,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">Deep Agents（二）</a>：Execution 解决 Agent <strong>在哪行动</strong>；<strong>Context management</strong> 解决 Agent <strong>知道什么、能跑多久、跨会话保留什么</strong>。</p>
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">Deep Agents（二）</a>：Execution 解决 Agent <strong>在哪行动</strong>；<strong>Context management</strong> 解决 Agent <strong>知道什么、能跑多久、跨会话保留什么</strong>。</p>
 <span id="more"></span>
 <h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p><strong>Context management</strong> &#x3D; Skills + Memory + Summarization + Offloading + Prompt caching +（运行时）context_schema。</p>
 <p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/skills">Skills</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/memory">Memory</a> · <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/context-engineering">Context engineering</a></p>
@@ -316,20 +322,20 @@
 <p>典型模式（可在 Subagent system_prompt 中要求）：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 原始数据 → /data/raw_results.txt</span><br><span class="line">2. 在文件内处理分析</span><br><span class="line">3. 返回给主 Agent 的仅是分析摘要（&lt;500 words）</span><br></pre></td></tr></table></figure>
 
-<p>Offloading 与 Summarization <strong>互补</strong>：前者卸大单次结果，后者压整条对话历史。Backend 细节见<a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）</a>。</p>
+<p>Offloading 与 Summarization <strong>互补</strong>：前者卸大单次结果，后者压整条对话历史。Backend 细节见<a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）</a>。</p>
 <hr>
 <h2 id="6-Prompt-Caching"><a href="#6-Prompt-Caching" class="headerlink" title="6. Prompt Caching"></a>6. Prompt Caching</h2><p>对 Anthropic &#x2F; Amazon Bedrock（Claude &#x2F; Nova），<code>create_deep_agent</code> <strong>默认</strong>对静态 system 段（base prompt、memory、skills）做 prompt caching，降低长运行 latency 与 cost。</p>
 <ul>
 <li>其他 provider：见 Middleware integrations 或手动挂 provider caching middleware。</li>
-<li>覆盖 TTL 示例：<code>AnthropicPromptCachingMiddleware(ttl=&quot;1h&quot;)</code>（见<a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）</a>）。</li>
+<li>覆盖 TTL 示例：<code>AnthropicPromptCachingMiddleware(ttl=&quot;1h&quot;)</code>（见<a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）</a>）。</li>
 </ul>
-<p>Memory 更新可能 invalidate 缓存前缀——默认栈把 MemoryMiddleware 放在 caching <strong>之后</strong>  partly 为此（见<a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/#51-%E4%B8%BB-agent-%E9%BB%98%E8%AE%A4%E6%A0%88first--last">（一）§5</a>）。</p>
+<p>Memory 更新可能 invalidate 缓存前缀——默认栈把 MemoryMiddleware 放在 caching <strong>之后</strong>  partly 为此（见<a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/#51-%E4%B8%BB-agent-%E9%BB%98%E8%AE%A4%E6%A0%88first--last">（一）§5</a>）。</p>
 <hr>
 <h2 id="7-Runtime-Context（context-schema）"><a href="#7-Runtime-Context（context-schema）" class="headerlink" title="7. Runtime Context（context_schema）"></a>7. Runtime Context（context_schema）</h2><p>与「上下文压缩」<strong>不同</strong>：指每次 <code>invoke</code> 传入的 <strong>运行时业务上下文</strong>（user_id、feature flags、租户…），经 <code>context_schema</code> 声明类型。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">context_schema：运行时上下文自动传播到 Subagent 及其 Tools。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-08-01</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"><span class="keyword">from</span> langchain.messages <span class="keyword">import</span> HumanMessage</span><br><span class="line"><span class="keyword">from</span> langchain.tools <span class="keyword">import</span> ToolRuntime, tool</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Context</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;单次 invoke 的运行时上下文。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    user_id: <span class="built_in">str</span></span><br><span class="line">    session_id: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@tool</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_user_data</span>(<span class="params">query: <span class="built_in">str</span>, runtime: ToolRuntime[Context]</span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;按当前 user_id 拉取数据。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;Data for user <span class="subst">&#123;runtime.context.user_id&#125;</span>: <span class="subst">&#123;query&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">research_subagent = &#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;researcher&quot;</span>,</span><br><span class="line">    <span class="string">&quot;description&quot;</span>: <span class="string">&quot;Conducts research for the current user&quot;</span>,</span><br><span class="line">    <span class="string">&quot;system_prompt&quot;</span>: <span class="string">&quot;You are a research assistant.&quot;</span>,</span><br><span class="line">    <span class="string">&quot;tools&quot;</span>: [get_user_data],</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    subagents=[research_subagent],</span><br><span class="line">    context_schema=Context,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">agent.invoke(</span><br><span class="line">    &#123;<span class="string">&quot;messages&quot;</span>: [HumanMessage(<span class="string">&quot;Look up my recent activity&quot;</span>)]&#125;,</span><br><span class="line">    context=Context(user_id=<span class="string">&quot;user-123&quot;</span>, session_id=<span class="string">&quot;abc&quot;</span>),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
 
 <p>所有 Subagent 收到 <strong>相同</strong> 父 context；per-subagent 配置可用 namespaced 字段（如 <code>researcher_max_depth</code>）或 dataclass 独立字段。</p>
-<p>工具内可用 <code>runtime.config[&quot;metadata&quot;][&quot;lc_agent_name&quot;]</code> 区分是哪个 Agent 发起的调用（与 LangSmith 过滤一致，见<a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）</a>）。</p>
+<p>工具内可用 <code>runtime.config[&quot;metadata&quot;][&quot;lc_agent_name&quot;]</code> 区分是哪个 Agent 发起的调用（与 LangSmith 过滤一致，见<a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）</a>）。</p>
 <hr>
 <h2 id="8-L1-实验（前半）"><a href="#8-L1-实验（前半）" class="headerlink" title="8. L1 实验（前半）"></a>8. L1 实验（前半）</h2><table>
 <thead>
@@ -357,7 +363,7 @@
 </tbody></table>
 <p><strong>Done 判据</strong>：能口述 Skills &#x2F; Memory &#x2F; Summarization 各解决什么问题。</p>
 <hr>
-<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Deep Agents · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/08/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Deep Agents · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>四层流</strong>：Input → Compression → Isolation → Long-term。</p>
 <p><strong>Skills</strong>：按需加载的领域包；≠ Tools ≠ Memory。</p>
 <p><strong>Memory</strong>：AGENTS.md 全量启动；可更新。</p>
@@ -367,14 +373,14 @@
 <p><strong>context_schema</strong>：运行时注入；≠ 窗口压缩。</p>
 <p><strong>Deep Agents 系列导航：</strong></p>
 <ul>
-<li><a href="/2026/07/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">（一）定位与 Harness 架构</a></li>
-<li><a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）Execution Environment</a></li>
-<li><a href="/2026/08/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）Context Management</a>（本篇）</li>
-<li><a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）Delegation · 规划与子 Agent</a></li>
-<li><a href="/2026/08/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）Steering · 定制与生产</a></li>
+<li><a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">（一）定位与 Harness 架构</a></li>
+<li><a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">（二）Execution Environment</a></li>
+<li><a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%89/">（三）Context Management</a>（本篇）</li>
+<li><a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">（四）Delegation · 规划与子 Agent</a></li>
+<li><a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">（五）Steering · 定制与生产</a></li>
 </ul>
-<p><strong>前置：</strong> <a href="/2026/07/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">Deep Agents（二）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent（五）压缩</a></p>
-<p>下一篇：<a href="/2026/08/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">Deep Agents（四）· Delegation</a>。</p>
+<p><strong>前置：</strong> <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%8C/">Deep Agents（二）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent（五）压缩</a></p>
+<p>下一篇：<a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">Deep Agents（四）· Delegation</a>。</p>
 
     </div>
 

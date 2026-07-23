@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Agent 基础模块学习自检与面试导向问答；含完整推荐回答。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Agent基础(自检与面试)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Agent 基础模块学习自检与面试导向问答；含完整推荐回答。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-16T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.979Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/","path":"/2026/07/17/Agent工程学习-Agent基础-自检与面试/","title":"AI-Agent工程学习-Agent基础(自检与面试)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Agent基础(自检与面试) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">0. 使用说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AD%A6%E4%B9%A0%E8%87%AA%E6%A3%80"><span class="nav-number">2.</span> <span class="nav-text">1. 学习自检</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E9%97%AD%E7%8E%AF%E4%B8%8E%E9%80%89%E5%9E%8B%EF%BC%88%E4%B8%80%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 闭环与选型（一）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-Agent-%E4%B8%8E-Chat%E3%80%81Workflow-%E7%9A%84%E6%A0%B9%E6%9C%AC%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">S1. Agent 与 Chat、Workflow 的根本区别是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-Agent-%E4%BA%94%E4%BB%B6%E5%A5%97%E5%88%86%E5%88%AB%E8%B4%9F%E8%B4%A3%E4%BB%80%E4%B9%88%EF%BC%9F%E7%BC%BA%E5%B0%91-Runtime-%E4%BC%9A%E6%80%8E%E6%A0%B7%EF%BC%9F"><span class="nav-number">2.3.</span> <span class="nav-text">S2. Agent 五件套分别负责什么？缺少 Runtime 会怎样？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S3-Environment%E3%80%81Action-Space%E3%80%81Action-%E4%B8%8E-Observation-%E5%A6%82%E4%BD%95%E5%AF%B9%E5%BA%94%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">S3. Environment、Action Space、Action 与 Observation 如何对应？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S4-%E8%AF%B7%E5%AE%8C%E6%95%B4%E6%8F%8F%E8%BF%B0-Agent-Loop%EF%BC%8C%E5%B9%B6%E8%AF%B4%E6%98%8E%E6%AF%8F%E4%B8%80%E7%8E%AF%E7%94%B1%E8%B0%81%E8%B4%9F%E8%B4%A3%E3%80%82"><span class="nav-number">2.5.</span> <span class="nav-text">S4. 请完整描述 Agent Loop，并说明每一环由谁负责。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S5-Thought%E3%80%81Action%E3%80%81Observation%E3%80%81Reflection-%E5%90%84%E8%87%AA%E5%BA%94%E4%BA%A7%E5%87%BA%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.6.</span> <span class="nav-text">S5. Thought、Action、Observation、Reflection 各自应产出什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S6-Agent-%E7%9A%84-State-%E8%87%B3%E5%B0%91%E5%BA%94%E5%8C%85%E5%90%AB%E5%93%AA%E4%BA%9B%E5%AD%97%E6%AE%B5%EF%BC%9F"><span class="nav-number">2.7.</span> <span class="nav-text">S6. Agent 的 State 至少应包含哪些字段？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S7-Agent-%E5%BA%94%E6%9C%89%E5%93%AA%E4%BA%9B%E5%81%9C%E6%AD%A2%E6%9D%A1%E4%BB%B6%EF%BC%9F%E6%A8%A1%E5%9E%8B%E7%BA%A7%E5%81%9C%E6%AD%A2%E4%B8%8E%E7%B3%BB%E7%BB%9F%E7%BA%A7%E5%81%9C%E6%AD%A2%E6%9C%89%E4%BD%95%E4%B8%8D%E5%90%8C%EF%BC%9F"><span class="nav-number">2.8.</span> <span class="nav-text">S7. Agent 应有哪些停止条件？模型级停止与系统级停止有何不同？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S8-%E7%A9%BA%E8%BD%AC%E3%80%81%E5%B7%A5%E5%85%B7%E6%AD%BB%E5%BE%AA%E7%8E%AF%E5%92%8C%E5%81%87%E5%AE%8C%E6%88%90%E5%88%86%E5%88%AB%E5%A6%82%E4%BD%95%E8%AF%86%E5%88%AB%E4%B8%8E%E9%98%BB%E6%96%AD%EF%BC%9F"><span class="nav-number">2.9.</span> <span class="nav-text">S8. 空转、工具死循环和假完成分别如何识别与阻断？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E6%8E%A8%E7%90%86%E4%B8%8E%E8%A7%84%E5%88%92%EF%BC%88%E4%BA%8C%EF%BC%89"><span class="nav-number">2.10.</span> <span class="nav-text">1.2 推理与规划（二）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S9-ReAct-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%8E%E5%8E%9F%E7%94%9F-Tool-Calling-%E6%98%AF%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">2.11.</span> <span class="nav-text">S9. ReAct 是什么？与原生 Tool Calling 是什么关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S10-ReAct-%E4%B8%8E-Plan-and-Execute-%E5%A6%82%E4%BD%95%E9%80%89%E5%9E%8B%EF%BC%9F"><span class="nav-number">2.12.</span> <span class="nav-text">S10. ReAct 与 Plan-and-Execute 如何选型？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S11-Goal-Decomposition-%E4%B8%8E-Task-Decomposition-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">2.13.</span> <span class="nav-text">S11. Goal Decomposition 与 Task Decomposition 有什么区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S12-DAG-Planning-%E6%9C%89%E4%BB%80%E4%B9%88%E4%BB%B7%E5%80%BC%EF%BC%9F%E5%93%AA%E4%BA%9B%E8%8A%82%E7%82%B9%E5%8F%AF%E4%BB%A5%E5%B9%B6%E8%A1%8C%EF%BC%9F"><span class="nav-number">2.14.</span> <span class="nav-text">S12. DAG Planning 有什么价值？哪些节点可以并行？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S13-Dynamic-Planning-%E5%BA%94%E5%9C%A8%E4%BD%95%E6%97%B6%E8%A7%A6%E5%8F%91%EF%BC%9F%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E5%8F%8D%E5%A4%8D%E9%87%8D%E8%A7%84%E5%88%92%EF%BC%9F"><span class="nav-number">2.15.</span> <span class="nav-text">S13. Dynamic Planning 应在何时触发？如何避免反复重规划？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S14-Hierarchical-Planning-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%82%E5%90%88%E9%95%BF%E4%BB%BB%E5%8A%A1%EF%BC%9F"><span class="nav-number">2.16.</span> <span class="nav-text">S14. Hierarchical Planning 为什么适合长任务？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S15-Reflection-%E4%B8%8E-Self-Refine-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB%EF%BC%9F%E4%BD%95%E6%97%B6%E5%BA%94%E8%AF%A5%E5%81%9C%E6%AD%A2%EF%BC%9F"><span class="nav-number">2.17.</span> <span class="nav-text">S15. Reflection 与 Self-Refine 有何区别？何时应该停止？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S16-Debate%E3%80%81Tree-Search-%E4%B8%8E%E5%A4%96%E9%83%A8%E5%B7%A5%E5%85%B7%E6%8E%A2%E7%B4%A2%E5%BA%94%E5%A6%82%E4%BD%95%E5%8F%96%E8%88%8D%EF%BC%9F"><span class="nav-number">2.18.</span> <span class="nav-text">S16. Debate、Tree Search 与外部工具探索应如何取舍？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E8%AE%B0%E5%BF%86%E5%B7%A5%E5%85%B7%E4%B8%8E-Runtime%EF%BC%88%E4%B8%89%EF%BC%89"><span class="nav-number">2.19.</span> <span class="nav-text">1.3 记忆工具与 Runtime（三）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S17-%E8%AE%B0%E5%BF%86%E5%9B%9B%E5%B1%82%E5%88%86%E5%88%AB%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">2.20.</span> <span class="nav-text">S17. 记忆四层分别解决什么问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S18-Checkpoint-%E4%B8%8E-Trace-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E9%95%BF%E4%BB%BB%E5%8A%A1%E9%9C%80%E8%A6%81-Checkpoint%EF%BC%9F"><span class="nav-number">2.21.</span> <span class="nav-text">S18. Checkpoint 与 Trace 有何区别？为什么长任务需要 Checkpoint？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S19-RAG-%E4%BD%9C%E4%B8%BA-Retrieval-Tool-%E4%B8%8E-Runtime-%E9%A2%84%E6%B3%A8%E5%85%A5%E5%A6%82%E4%BD%95%E9%80%89%EF%BC%9F"><span class="nav-number">2.22.</span> <span class="nav-text">S19. RAG 作为 Retrieval Tool 与 Runtime 预注入如何选？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S20-Skill-%E4%B8%8E-Tool%E3%80%81Prompt-Template%E3%80%81RAG-%E6%96%87%E6%A1%A3%E5%90%84%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.23.</span> <span class="nav-text">S20. Skill 与 Tool、Prompt Template、RAG 文档各解决什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S21-Tool-Schema-%E6%80%8E%E6%A0%B7%E5%86%99%EF%BC%8C%E6%89%8D%E8%83%BD%E9%99%8D%E4%BD%8E%E8%AF%AF%E9%80%89%E4%B8%8E%E5%8F%82%E6%95%B0%E5%B9%BB%E8%A7%89%EF%BC%9F"><span class="nav-number">2.24.</span> <span class="nav-text">S21. Tool Schema 怎样写，才能降低误选与参数幻觉？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S22-RAG-%E4%B8%8E-Memory-%E7%9A%84%E5%85%B3%E7%B3%BB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9FSemantic-Memory-%E4%B8%80%E5%AE%9A%E5%AD%98%E5%9C%A8%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E9%87%8C%E5%90%97%EF%BC%9F"><span class="nav-number">2.25.</span> <span class="nav-text">S22. RAG 与 Memory 的关系是什么？Semantic Memory 一定存在模型参数里吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S23-Runtime-%E8%87%B3%E5%B0%91%E5%BA%94%E6%8F%90%E4%BE%9B%E5%93%AA%E4%BA%9B%E6%B2%BB%E7%90%86%E8%83%BD%E5%8A%9B%EF%BC%9F"><span class="nav-number">2.26.</span> <span class="nav-text">S23. Runtime 至少应提供哪些治理能力？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S24-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%A1%AC%E8%A7%84%E5%88%99%E4%B8%8D%E8%83%BD%E9%9A%8F%E8%BD%A8%E8%BF%B9%E4%B8%80%E8%B5%B7%E6%91%98%E8%A6%81%EF%BC%9F"><span class="nav-number">2.27.</span> <span class="nav-text">S24. 为什么硬规则不能随轨迹一起摘要？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S25-%E5%A4%9A%E4%B8%AA-Tool-Calls-%E5%B9%B6%E8%A1%8C%E6%89%A7%E8%A1%8C%E6%97%B6%EF%BC%8CState-%E9%9C%80%E8%A6%81%E6%BB%A1%E8%B6%B3%E4%BB%80%E4%B9%88%E8%A6%81%E6%B1%82%EF%BC%9F"><span class="nav-number">2.28.</span> <span class="nav-text">S25. 多个 Tool Calls 并行执行时，State 需要满足什么要求？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3b-Harness%EF%BC%88%E4%B8%89-%C2%A76%E3%80%81%E5%85%AD-%C2%A77%EF%BC%89"><span class="nav-number">2.29.</span> <span class="nav-text">1.3b Harness（三 §6、六 §7）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S25b-Runtime-%E4%B8%8E-Harness-%E6%98%AF%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB%EF%BC%9F%E4%B8%8E%E4%BA%94%E4%BB%B6%E5%A5%97%E5%85%AC%E5%BC%8F%E6%98%AF%E5%90%A6%E7%9F%9B%E7%9B%BE%EF%BC%9F"><span class="nav-number">2.30.</span> <span class="nav-text">S25b. Runtime 与 Harness 是什么关系？与五件套公式是否矛盾？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S25c-Harness-%E5%86%85%E9%83%A8%E5%88%86%E5%87%A0%E5%B1%82%EF%BC%9FMemory-Tools-Planning-%E5%A6%82%E4%BD%95%E6%98%A0%E5%B0%84%E8%BF%9B%E5%8E%BB%EF%BC%9F"><span class="nav-number">2.31.</span> <span class="nav-text">S25c. Harness 内部分几层？Memory &#x2F; Tools &#x2F; Planning 如何映射进去？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S25d-%E8%96%84-Harness%E3%80%81%E5%8E%9A-Harness%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8B%93%E6%89%91%E5%90%84%E9%80%82%E5%90%88%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="nav-number">2.32.</span> <span class="nav-text">S25d. 薄 Harness、厚 Harness、自定义拓扑各适合什么场景？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S25e-Agent-Harness-%E4%B8%8E-LangGraph-Orchestration-Runtime-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">2.33.</span> <span class="nav-text">S25e. Agent Harness 与 LangGraph Orchestration Runtime 有何区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E8%AF%84%E6%B5%8B%E4%B8%8E-Research%EF%BC%88%E5%9B%9B%EF%BC%89"><span class="nav-number">2.34.</span> <span class="nav-text">1.4 评测与 Research（四）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S26-Agent-%E8%AF%84%E6%B5%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%88%86%E4%B8%BA%E8%8A%82%E7%82%B9%E3%80%81%E8%BD%A8%E8%BF%B9%E3%80%81%E4%BB%BB%E5%8A%A1%E5%92%8C%E5%AE%89%E5%85%A8%E5%9B%9B%E5%B1%82%EF%BC%9F"><span class="nav-number">2.35.</span> <span class="nav-text">S26. Agent 评测为什么要分为节点、轨迹、任务和安全四层？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S27-Task-Success-Rate-%E5%BA%94%E5%A6%82%E4%BD%95%E5%AE%9A%E4%B9%89%E6%89%8D%E5%8F%AF%E8%AE%A1%E7%AE%97%EF%BC%9F"><span class="nav-number">2.36.</span> <span class="nav-text">S27. Task Success Rate 应如何定义才可计算？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S28-Hallucination-Rate-%E5%A6%82%E4%BD%95%E4%BB%8E%E8%BD%A8%E8%BF%B9%E4%B8%AD%E8%AE%A1%E7%AE%97%EF%BC%9F%E4%B8%8E%E5%81%87%E5%AE%8C%E6%88%90%E6%9C%89%E4%BD%95%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">2.37.</span> <span class="nav-text">S28. Hallucination Rate 如何从轨迹中计算？与假完成有何关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S29-Tool-Accuracy-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%8F%AA%E7%9C%8B%E2%80%9C%E5%B7%A5%E5%85%B7%E6%9C%89%E6%B2%A1%E6%9C%89%E8%B0%83%E6%88%90%E5%8A%9F%E2%80%9D%EF%BC%9F"><span class="nav-number">2.38.</span> <span class="nav-text">S29. Tool Accuracy 为什么不能只看“工具有没有调成功”？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S30-%E5%A6%82%E4%BD%95%E5%8C%BA%E5%88%86-Prompt%E3%80%81%E6%A8%A1%E5%9E%8B%E3%80%81%E5%B7%A5%E5%85%B7%E3%80%81%E8%AE%B0%E5%BF%86%E5%92%8C-Runtime-%E5%AF%BC%E8%87%B4%E7%9A%84%E5%A4%B1%E8%B4%A5%EF%BC%9F"><span class="nav-number">2.39.</span> <span class="nav-text">S30. 如何区分 Prompt、模型、工具、记忆和 Runtime 导致的失败？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S31-Research-Agent-%E7%9A%84%E9%BB%98%E8%AE%A4%E7%BB%84%E5%90%88%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%A0%B7%E7%BB%84%E5%90%88%EF%BC%9F"><span class="nav-number">2.40.</span> <span class="nav-text">S31. Research Agent 的默认组合是什么？为什么这样组合？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S32-Research-Agent-%E5%A6%82%E4%BD%95%E6%8A%8A-Planner%E3%80%81Tools%E3%80%81Memory-%E4%B8%8E-Rubric-%E4%B8%B2%E8%B5%B7%E6%9D%A5%EF%BC%9F"><span class="nav-number">2.41.</span> <span class="nav-text">S32. Research Agent 如何把 Planner、Tools、Memory 与 Rubric 串起来？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S33-%E4%B8%80%E4%B8%AA-Research-Agent-%E4%BB%8E-L0-%E5%88%B0-L2-%E5%BA%94%E5%A6%82%E4%BD%95%E9%80%92%E8%BF%9B%E9%AA%8C%E6%94%B6%EF%BC%9F"><span class="nav-number">2.42.</span> <span class="nav-text">S33. 一个 Research Agent 从 L0 到 L2 应如何递进验收？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S54-%E5%8F%91%E7%89%88%E5%89%8D%E5%BA%94%E5%9B%BA%E5%AE%9A%E5%93%AA%E4%BA%9B%E5%8F%98%E9%87%8F%EF%BC%9FChecklist-%E4%BA%94%E5%9F%9F%E6%8C%87%E6%A0%87%E5%90%84%E4%B8%BE%E4%B8%80%E4%BE%8B%E3%80%82"><span class="nav-number">2.43.</span> <span class="nav-text">S54. 发版前应固定哪些变量？Checklist 五域指标各举一例。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S55-LangSmith-trace-%E4%B8%8E-dataset-experiment-%E5%88%86%E5%88%AB%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%8E-Agent%EF%BC%88%E5%9B%9B%EF%BC%89%E5%9B%9B%E5%B1%82%E8%AF%84%E6%B5%8B%E5%A6%82%E4%BD%95%E5%AF%B9%E5%BA%94%EF%BC%9F"><span class="nav-number">2.44.</span> <span class="nav-text">S55. LangSmith trace 与 dataset experiment 分别解决什么？与 Agent（四）四层评测如何对应？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5-%E5%B7%A5%E7%A8%8B%E5%9D%91%EF%BC%88%E4%BA%94%EF%BC%89"><span class="nav-number">2.45.</span> <span class="nav-text">1.5 工程坑（五）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S34-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%83%BD%E5%8A%9B%E7%9B%AE%E5%BD%95%E5%8F%AF%E4%BB%A5%E5%BE%88%E5%A4%A7%EF%BC%8C%E4%BD%86%E6%9C%AC%E6%AC%A1-Action-Space-%E5%BF%85%E9%A1%BB%E5%B0%8F%EF%BC%9F"><span class="nav-number">2.46.</span> <span class="nav-text">S34. 为什么能力目录可以很大，但本次 Action Space 必须小？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S35-%E8%A3%81%E5%89%AA-Action-Space-%E4%B8%8E-Progressive-Disclosure-%E6%9C%89%E4%BD%95%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">2.47.</span> <span class="nav-text">S35. 裁剪 Action Space 与 Progressive Disclosure 有何区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S36-%E5%8A%A0%E5%85%A5%E4%B8%80%E6%89%B9-Skills-%E5%90%8E%EF%BC%8C%E5%BA%94%E4%BC%98%E5%85%88%E8%A7%82%E5%AF%9F%E5%93%AA%E4%BA%9B%E6%8C%87%E6%A0%87%EF%BC%9F"><span class="nav-number">2.48.</span> <span class="nav-text">S36. 加入一批 Skills 后，应优先观察哪些指标？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S37-Context-%E5%8E%8B%E7%BC%A9%E5%BA%94%E5%9C%A8%E4%BB%80%E4%B9%88%E6%97%B6%E6%9C%BA%E8%A7%A6%E5%8F%91%EF%BC%9F"><span class="nav-number">2.49.</span> <span class="nav-text">S37. Context 压缩应在什么时机触发？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S38-Context-%E4%B8%AD%E5%93%AA%E4%BA%9B%E5%AD%97%E6%AE%B5%E4%B8%8D%E5%8F%AF%E6%91%98%E8%A6%81%EF%BC%8C%E5%93%AA%E4%BA%9B%E5%86%85%E5%AE%B9%E5%8F%AF%E5%8E%8B%E7%BC%A9%EF%BC%9F"><span class="nav-number">2.50.</span> <span class="nav-text">S38. Context 中哪些字段不可摘要，哪些内容可压缩？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S39-%E5%8E%8B%E7%BC%A9%E5%90%8E%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%85%E9%A1%BB%E5%90%8C%E6%AD%A5-Working-state%EF%BC%9F"><span class="nav-number">2.51.</span> <span class="nav-text">S39. 压缩后为什么必须同步 Working state？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S40-%E5%86%99%E6%B1%A1%E6%9F%93%E4%B8%8E%E8%84%8F%E8%AF%BB%E5%88%86%E5%88%AB%E5%8F%91%E7%94%9F%E5%9C%A8%E5%93%AA%E4%B8%80%E7%8E%AF%EF%BC%9F%E5%A6%82%E4%BD%95%E9%98%B2%E6%8A%A4%EF%BC%9F"><span class="nav-number">2.52.</span> <span class="nav-text">S40. 写污染与脏读分别发生在哪一环？如何防护？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S41-Checkpoint-%E8%AF%AF%E7%94%A8%E9%80%9A%E5%B8%B8%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%EF%BC%9F"><span class="nav-number">2.53.</span> <span class="nav-text">S41. Checkpoint 误用通常是什么？如何避免？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S42-%E6%8E%92%E9%9A%9C%E6%97%B6%E2%80%9C%E9%80%89%E9%94%99%E5%B7%A5%E5%85%B7%E3%80%81%E5%BF%98%E7%BA%A6%E6%9D%9F%E3%80%81%E8%AE%B0%E9%94%99%E4%BA%8B%E5%AE%9E%E2%80%9D%E5%88%86%E5%88%AB%E5%85%88%E6%9F%A5%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.54.</span> <span class="nav-text">S42. 排障时“选错工具、忘约束、记错事实”分别先查什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-6-%E8%83%BD%E5%8A%9B%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%AE%89%E5%85%A8%EF%BC%88%E5%85%AD%EF%BC%89"><span class="nav-number">2.55.</span> <span class="nav-text">1.6 能力组件与安全（六）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S43-Skill-%E7%9A%84%E6%9C%80%E5%B0%8F%E7%BB%93%E6%9E%84%E5%92%8C%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.56.</span> <span class="nav-text">S43. Skill 的最小结构和生命周期是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S44-MCP-%E7%9A%84-Tools%E3%80%81Resources%E3%80%81Prompts-%E5%A6%82%E4%BD%95%E6%98%A0%E5%B0%84%E5%88%B0-Agent-%E5%B7%A5%E7%A8%8B%EF%BC%9F"><span class="nav-number">2.57.</span> <span class="nav-text">S44. MCP 的 Tools、Resources、Prompts 如何映射到 Agent 工程？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S45-MCP-%E4%B8%8E-Function-Calling-%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.58.</span> <span class="nav-text">S45. MCP 与 Function Calling 的区别是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S46-%E8%87%AA%E5%8A%A8%E3%80%81%E7%A1%AE%E8%AE%A4%E3%80%81%E7%A6%81%E6%AD%A2%E4%B8%89%E6%A1%A3%E5%AE%A1%E6%89%B9%E5%BA%94%E5%A6%82%E4%BD%95%E5%88%92%E5%88%86%EF%BC%9F"><span class="nav-number">2.59.</span> <span class="nav-text">S46. 自动、确认、禁止三档审批应如何划分？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S47-%E4%B8%BA%E4%BB%80%E4%B9%88-Prompt-%E5%86%99%E2%80%9C%E7%A6%81%E6%AD%A2%E8%B6%8A%E6%9D%83%E2%80%9D%E4%B8%8D%E8%83%BD%E6%9B%BF%E4%BB%A3%E6%B2%99%E7%AE%B1%E4%B8%8E%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6%EF%BC%9F"><span class="nav-number">2.60.</span> <span class="nav-text">S47. 为什么 Prompt 写“禁止越权”不能替代沙箱与权限控制？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S48-%E4%BD%95%E6%97%B6%E4%BD%BF%E7%94%A8-Subagent%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E7%BB%A7%E7%BB%AD%E5%8A%A0%E8%BD%BD%E4%B8%80%E4%B8%AA-Skill%EF%BC%9F"><span class="nav-number">2.61.</span> <span class="nav-text">S48. 何时使用 Subagent，而不是继续加载一个 Skill？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S49-Subagent-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Context-Isolation%EF%BC%9FHandoff-%E5%BF%85%E9%A1%BB%E6%90%BA%E5%B8%A6%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.62.</span> <span class="nav-text">S49. Subagent 为什么需要 Context Isolation？Handoff 必须携带什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S50-%E7%BD%91%E9%A1%B5%E3%80%81Tool-Result-%E4%B8%8E-Code-Interpreter-%E8%BE%93%E5%87%BA%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%BD%93%E4%BD%9C-system-%E6%8C%87%E4%BB%A4%EF%BC%9F"><span class="nav-number">2.63.</span> <span class="nav-text">S50. 网页、Tool Result 与 Code Interpreter 输出为什么不能当作 system 指令？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%9D%A2%E8%AF%95%E7%9C%9F%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">2. 面试真题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E8%AF%B7%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%94%9F%E4%BA%A7%E7%BA%A7-Agent-%E7%9A%84%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%EF%BC%8C%E5%B9%B6%E8%AF%B4%E6%98%8E%E5%90%84%E5%B1%82%E8%BE%B9%E7%95%8C%E3%80%82"><span class="nav-number">3.1.</span> <span class="nav-text">I1. 请设计一个生产级 Agent 的分层架构，并说明各层边界。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I2-ReAct%E3%80%81Plan-and-Execute-%E4%B8%8E%E7%8A%B6%E6%80%81%E5%9B%BE%E5%BA%94%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%EF%BC%9F"><span class="nav-number">3.2.</span> <span class="nav-text">I2. ReAct、Plan-and-Execute 与状态图应如何选择？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I3-%E5%B7%A5%E5%85%B7%E6%9C%89%E5%87%A0%E5%8D%81%E7%94%9A%E8%87%B3%E4%B8%8A%E7%99%BE%E4%B8%AA%E6%97%B6%EF%BC%8C%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E8%B7%AF%E7%94%B1%EF%BC%9F"><span class="nav-number">3.3.</span> <span class="nav-text">I3. 工具有几十甚至上百个时，如何设计路由？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I4-%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%E5%A4%B1%E8%B4%A5%E6%98%AF%E8%B7%AF%E7%94%B1%E3%80%81%E5%8F%82%E6%95%B0%E3%80%81%E6%89%A7%E8%A1%8C%E8%BF%98%E6%98%AF%E7%BB%93%E6%9E%9C%E4%BD%BF%E7%94%A8%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">3.4.</span> <span class="nav-text">I4. 如何判断工具调用失败是路由、参数、执行还是结果使用问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I5-%E6%80%8E%E6%A0%B7%E5%AE%9A%E4%B9%89%E5%B9%B6%E6%A3%80%E6%B5%8B-Agent-%E7%9A%84%E2%80%9C%E5%81%87%E5%AE%8C%E6%88%90%E2%80%9D%EF%BC%9F"><span class="nav-number">3.5.</span> <span class="nav-text">I5. 怎样定义并检测 Agent 的“假完成”？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I6-Agent-%E8%AF%84%E6%B5%8B%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E5%81%9A%E5%88%B0%E6%8C%87%E6%A0%87%E5%8F%AF%E8%AE%A1%E7%AE%97%E4%B8%94%E5%A4%B1%E8%B4%A5%E5%8F%AF%E5%BD%92%E5%9B%A0%EF%BC%9F"><span class="nav-number">3.6.</span> <span class="nav-text">I6. Agent 评测中，如何做到指标可计算且失败可归因？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I7-%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E5%8F%AF%E6%81%A2%E5%A4%8D%E3%80%81%E4%B8%8D%E4%BC%9A%E9%87%8D%E5%A4%8D%E5%89%AF%E4%BD%9C%E7%94%A8%E7%9A%84%E9%95%BF%E4%BB%BB%E5%8A%A1-Agent%EF%BC%9F"><span class="nav-number">3.7.</span> <span class="nav-text">I7. 如何设计一个可恢复、不会重复副作用的长任务 Agent？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I8-%E8%AF%B7%E8%AF%B4%E6%98%8E-MCP%E3%80%81Function-Calling-%E5%92%8C-Agent-Runtime-%E7%9A%84%E5%85%B3%E7%B3%BB%E3%80%82"><span class="nav-number">3.8.</span> <span class="nav-text">I8. 请说明 MCP、Function Calling 和 Agent Runtime 的关系。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I9-%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E6%81%B6%E6%84%8F-MCP-Server-%E6%88%96-Tool-Result-%E8%AF%B1%E5%AF%BC-Agent-%E8%B6%8A%E6%9D%83%EF%BC%9F"><span class="nav-number">3.9.</span> <span class="nav-text">I9. 如何防止恶意 MCP Server 或 Tool Result 诱导 Agent 越权？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I10-%E4%BD%A0%E4%BC%9A%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E8%87%AA%E5%8A%A8%E3%80%81%E7%A1%AE%E8%AE%A4%E3%80%81%E7%A6%81%E6%AD%A2%E4%B8%89%E6%A1%A3%E5%AE%A1%E6%89%B9%E7%AD%96%E7%95%A5%EF%BC%9F"><span class="nav-number">3.10.</span> <span class="nav-text">I10. 你会如何设计自动、确认、禁止三档审批策略？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I11-Context-%E8%B6%8A%E6%9D%A5%E8%B6%8A%E9%95%BF%E5%AF%BC%E8%87%B4-Agent-%E5%BF%98%E8%AE%B0%E7%BA%A6%E6%9D%9F%EF%BC%8C%E4%BD%A0%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">3.11.</span> <span class="nav-text">I11. Context 越来越长导致 Agent 忘记约束，你如何处理？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I12-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%BA%94%E8%AF%A5%E5%BC%95%E5%85%A5-Subagent%EF%BC%9F%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E5%A4%9A-Agent-%E5%A4%B1%E6%8E%A7%EF%BC%9F"><span class="nav-number">3.12.</span> <span class="nav-text">I12. 什么时候应该引入 Subagent？如何避免多 Agent 失控？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I13-Research-Agent-%E6%90%9C%E7%B4%A2%E7%BB%93%E6%9E%9C%E4%BA%92%E7%9B%B8%E5%86%B2%E7%AA%81%E6%97%B6%EF%BC%8C%E5%A6%82%E4%BD%95%E7%BB%A7%E7%BB%AD%E5%B9%B6%E5%AE%8C%E6%88%90%E6%8A%A5%E5%91%8A%EF%BC%9F"><span class="nav-number">3.13.</span> <span class="nav-text">I13. Research Agent 搜索结果互相冲突时，如何继续并完成报告？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I14-Agent-%E8%BF%9E%E7%BB%AD%E5%8F%8D%E6%80%9D%E4%B8%89%E6%AC%A1%E4%BB%8D%E5%A4%B1%E8%B4%A5%EF%BC%8C%E7%B3%BB%E7%BB%9F%E5%BA%94%E8%AF%A5%E6%80%8E%E4%B9%88%E6%94%B6%E5%B0%BE%EF%BC%9F"><span class="nav-number">3.14.</span> <span class="nav-text">I14. Agent 连续反思三次仍失败，系统应该怎么收尾？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%9D%A2%E7%BB%8F%E4%B8%8E%E9%A2%98%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">参考面经与题库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%AF%BC%E8%88%AA"><span class="nav-number">5.</span> <span class="nav-text">3. 导航</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Agent基础(自检与面试) | 我的记录小站">
+      <meta itemprop="description" content="Agent 基础模块学习自检与面试导向问答；含完整推荐回答。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Agent基础(自检与面试)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-16 20:00:00" itemprop="dateCreated datePublished" datetime="2026-07-16T20:00:00+08:00">2026-07-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Agent 基础模块学习自检与面试导向问答；含完整推荐回答。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文是 Agent 基础（一）～（六）的阶段验收。目标不是背名词，而是能从目标闭环、推理规划、记忆工具、Runtime、评测、安全和能力扩展等层面，说明一个 Agent 为什么能工作、为什么会失败，以及如何把失败变成可观察、可归因、可修复的问题。</p>
+<span id="more"></span>
+
+<h2 id="0-使用说明"><a href="#0-使用说明" class="headerlink" title="0. 使用说明"></a>0. 使用说明</h2><p>建议先遮住“推荐回答”，在 90～120 秒内口述。合格答案通常包含四部分：<strong>概念边界、选型条件、主要风险、工程措施</strong>。遇到场景题时，还应说出可观察字段和验收标准，不能只回答“优化 Prompt”或“换更强模型”。另请自检：能否区分 <strong>Agent Harness</strong> 与 <strong>LangGraph Orchestration Runtime</strong>。</p>
+<p>本文共 56 道自检题、14 道面试题。自检题覆盖六篇正文，并吸收（四）（五）（六）的全部阶段收口问题；面试题结合公开真实面经，侧重架构、路由、评测归因、假完成、MCP 与审批分级。</p>
+<hr>
+<h2 id="1-学习自检"><a href="#1-学习自检" class="headerlink" title="1. 学习自检"></a>1. 学习自检</h2><h3 id="1-1-闭环与选型（一）"><a href="#1-1-闭环与选型（一）" class="headerlink" title="1.1 闭环与选型（一）"></a>1.1 闭环与选型（一）</h3><h3 id="S1-Agent-与-Chat、Workflow-的根本区别是什么？"><a href="#S1-Agent-与-Chat、Workflow-的根本区别是什么？" class="headerlink" title="S1. Agent 与 Chat、Workflow 的根本区别是什么？"></a>S1. Agent 与 Chat、Workflow 的根本区别是什么？</h3><p><strong>推荐回答：</strong> Chat 主要完成当前一轮生成，下一步通常由用户触发；Workflow 的控制流由人预先写成固定步骤或 DAG；Agent 则围绕 Goal 在循环中读取 State、选择 Action、观察结果并决定继续、改道或停止。路径固定、可枚举时优先 Workflow，只有任务需要边观察边决策时才值得使用 Agent。调用一次搜索工具只是 Tool-augmented Chat，不自动等于 Agent。</p>
+<h3 id="S2-Agent-五件套分别负责什么？缺少-Runtime-会怎样？"><a href="#S2-Agent-五件套分别负责什么？缺少-Runtime-会怎样？" class="headerlink" title="S2. Agent 五件套分别负责什么？缺少 Runtime 会怎样？"></a>S2. Agent 五件套分别负责什么？缺少 Runtime 会怎样？</h3><p><strong>推荐回答：</strong> LLM 负责理解状态与提出决策，Memory 决定哪些历史和知识进入当前 Context，Tools 查询或改变外部世界，Planning 拆解目标并组织步骤，Runtime 驱动循环、执行工具、维护状态并落实校验、预算、权限和停止。缺少 Runtime 时，模型的 Action 只是自然语言提案，系统无法确认工具是否真执行，也难以阻止无限循环、越权调用和无证据的假完成。</p>
+<h3 id="S3-Environment、Action-Space、Action-与-Observation-如何对应？"><a href="#S3-Environment、Action-Space、Action-与-Observation-如何对应？" class="headerlink" title="S3. Environment、Action Space、Action 与 Observation 如何对应？"></a>S3. Environment、Action Space、Action 与 Observation 如何对应？</h3><p><strong>推荐回答：</strong> Environment 是 Agent 所处的外部世界，如搜索、数据库、文件系统或 HTTP 服务；Action Space 是当前被允许的动作集合，通常由工具白名单和 Schema 描述；Action 是模型从集合中提出的一次调用或最终回答；Observation 是 Runtime 真正执行后的结果、错误或超时。Observation 必须关联调用 ID 写回 State 与 messages，否则下一轮模型看不到现实反馈，只能继续猜测。</p>
+<h3 id="S4-请完整描述-Agent-Loop，并说明每一环由谁负责。"><a href="#S4-请完整描述-Agent-Loop，并说明每一环由谁负责。" class="headerlink" title="S4. 请完整描述 Agent Loop，并说明每一环由谁负责。"></a>S4. 请完整描述 Agent Loop，并说明每一环由谁负责。</h3><p><strong>推荐回答：</strong> Runtime 在预算内循环：模型根据 Goal 和 State 进行 Reason，选择工具、追问或 Final；Runtime 校验工具名、参数与权限后 Execute；工具返回 Observation；Runtime 更新 messages、Trace、Working state 和预算，再进入下一轮。模型主要负责 Reason 与 Select，应用负责 Execute、Observe、Update 和硬停止。Reflection 可显式成为一步，也可隐含在下一轮判断中，但不能替代真实校验。</p>
+<h3 id="S5-Thought、Action、Observation、Reflection-各自应产出什么？"><a href="#S5-Thought、Action、Observation、Reflection-各自应产出什么？" class="headerlink" title="S5. Thought、Action、Observation、Reflection 各自应产出什么？"></a>S5. Thought、Action、Observation、Reflection 各自应产出什么？</h3><p><strong>推荐回答：</strong> Thought 表示基于当前状态形成的判断或假设；Action 是可执行的工具 Invocation、向用户追问或 Final Answer；Observation 是工具的真实 Result、Error、超时等环境反馈；Reflection 对照目标和验收标准判断缺口、纠错或停止。工程上不要求向用户暴露完整隐藏推理，应优先保存结构化计划、调用参数、证据指针和评估结论，让轨迹可审计而不过度泄露内部思维。</p>
+<h3 id="S6-Agent-的-State-至少应包含哪些字段？"><a href="#S6-Agent-的-State-至少应包含哪些字段？" class="headerlink" title="S6. Agent 的 State 至少应包含哪些字段？"></a>S6. Agent 的 State 至少应包含哪些字段？</h3><p><strong>推荐回答：</strong> 最小 State 应有 Goal 与成功标准、当前 Working state、已执行 Trace、剩余 Budget 和停止信号。Working state 可拆成当前子目标、<code>open[]</code>、<code>done[]</code>、关键实体与待确认问题；Trace 记录工具名、参数、结果摘要、错误和副作用状态；Budget 包含步数、Token、费用与墙钟。显式结构化 State 比只依赖长对话更容易恢复、压缩、并行合并和编写确定性校验。</p>
+<h3 id="S7-Agent-应有哪些停止条件？模型级停止与系统级停止有何不同？"><a href="#S7-Agent-应有哪些停止条件？模型级停止与系统级停止有何不同？" class="headerlink" title="S7. Agent 应有哪些停止条件？模型级停止与系统级停止有何不同？"></a>S7. Agent 应有哪些停止条件？模型级停止与系统级停止有何不同？</h3><p><strong>推荐回答：</strong> 系统级停止至少包括：满足 Rubric 的成功、不可恢复错误或目标冲突导致的失败、步数或 Token 等预算耗尽，以及高风险动作前转人工。EOS、<code>stop</code> 和 <code>max_tokens</code> 只结束某一次模型生成；<code>max_steps</code>、总超时和费用上限结束整个 Agent 运行。可靠系统不能只等模型说“完成”，而应由 Runtime 根据结果、证据和状态机决定是否落到终态。</p>
+<h3 id="S8-空转、工具死循环和假完成分别如何识别与阻断？"><a href="#S8-空转、工具死循环和假完成分别如何识别与阻断？" class="headerlink" title="S8. 空转、工具死循环和假完成分别如何识别与阻断？"></a>S8. 空转、工具死循环和假完成分别如何识别与阻断？</h3><p><strong>推荐回答：</strong> 空转表现为连续生成分析却没有有效 Action；工具死循环表现为相同工具与相同参数重复调用且 Observation 无新增；假完成则是没有成功 Result 或证据指针却把任务标成 Success。Runtime 可通过最大步数、相同调用指纹、连续错误计数、进展字段和 Final Gate 阻断：无进展则换策略或降级，无 Observation 不准成功，高风险副作用还需执行后状态核验。</p>
+<h3 id="1-2-推理与规划（二）"><a href="#1-2-推理与规划（二）" class="headerlink" title="1.2 推理与规划（二）"></a>1.2 推理与规划（二）</h3><h3 id="S9-ReAct-是什么？与原生-Tool-Calling-是什么关系？"><a href="#S9-ReAct-是什么？与原生-Tool-Calling-是什么关系？" class="headerlink" title="S9. ReAct 是什么？与原生 Tool Calling 是什么关系？"></a>S9. ReAct 是什么？与原生 Tool Calling 是什么关系？</h3><p><strong>推荐回答：</strong> ReAct 让 Reason 与 Act 交替，工具执行结果作为 Observation 进入下一轮推理，适合路径不能预先写死的中短任务。经典论文常用 <code>Thought/Action/Observation</code> 文本格式，现代工程更适合原生 Tool Calling：模型输出结构化 Invocation，Runtime 执行并用 tool 消息回写。二者循环语义一致，后者协议更硬、更容易校验，也不需要把完整思维链暴露出来。</p>
+<h3 id="S10-ReAct-与-Plan-and-Execute-如何选型？"><a href="#S10-ReAct-与-Plan-and-Execute-如何选型？" class="headerlink" title="S10. ReAct 与 Plan-and-Execute 如何选型？"></a>S10. ReAct 与 Plan-and-Execute 如何选型？</h3><p><strong>推荐回答：</strong> 工具较少、任务较短、下一步高度依赖刚获得的反馈时，ReAct 边走边想更灵活；任务较长、步骤和依赖可预见、需要进度展示或并行时，先由 Planner 产出步骤或 DAG，再由 Executor 执行更可控。规划式的风险是错误计划被一路执行，因此必须设置中间校验和 Replan 触发；常见组合是高层计划、底层叶子节点使用 ReAct。</p>
+<h3 id="S11-Goal-Decomposition-与-Task-Decomposition-有什么区别？"><a href="#S11-Goal-Decomposition-与-Task-Decomposition-有什么区别？" class="headerlink" title="S11. Goal Decomposition 与 Task Decomposition 有什么区别？"></a>S11. Goal Decomposition 与 Task Decomposition 有什么区别？</h3><p><strong>推荐回答：</strong> Goal Decomposition 先回答“什么结果才算成功”，把模糊目标拆成可验收维度，如覆盖范围、证据、时效与安全；Task Decomposition 再回答“要做哪些动作”，形成搜索、分析、核验、成稿等步骤。若只拆任务不拆成功标准，执行完所有步骤仍可能产出无证据报告；若只有标准没有动作，又无法落地。正确顺序通常是先定 Goal Rubric，再拆 Task 与依赖。</p>
+<h3 id="S12-DAG-Planning-有什么价值？哪些节点可以并行？"><a href="#S12-DAG-Planning-有什么价值？哪些节点可以并行？" class="headerlink" title="S12. DAG Planning 有什么价值？哪些节点可以并行？"></a>S12. DAG Planning 有什么价值？哪些节点可以并行？</h3><p><strong>推荐回答：</strong> DAG 用节点表示子任务、用边表示数据或顺序依赖，使无依赖节点可并行、失败影响范围可定位、局部重规划可操作。只有输入互不依赖、没有冲突副作用、资源允许的节点才能并行，例如搜索多个独立来源；综合成文必须等待证据节点完成。并行结果需带稳定 ID、独立状态和错误，合并时处理重复、冲突和部分失败，不能把“同时发起”误当成天然安全。</p>
+<h3 id="S13-Dynamic-Planning-应在何时触发？如何避免反复重规划？"><a href="#S13-Dynamic-Planning-应在何时触发？如何避免反复重规划？" class="headerlink" title="S13. Dynamic Planning 应在何时触发？如何避免反复重规划？"></a>S13. Dynamic Planning 应在何时触发？如何避免反复重规划？</h3><p><strong>推荐回答：</strong> 当 Observation 与预期不符、工具不可用、发现新约束、关键证据冲突或预算明显不足时，应触发 Replan。优先做局部替换、删除或重排受影响节点，只有核心假设失效才推翻全局计划。Runtime 应限制重规划次数，记录触发原因与计划版本，并要求新计划说明相对旧计划的变化和剩余验收缺口，避免每一步都重画地图、成本上升却没有实际进展。</p>
+<h3 id="S14-Hierarchical-Planning-为什么适合长任务？"><a href="#S14-Hierarchical-Planning-为什么适合长任务？" class="headerlink" title="S14. Hierarchical Planning 为什么适合长任务？"></a>S14. Hierarchical Planning 为什么适合长任务？</h3><p><strong>推荐回答：</strong> 分层规划把长期稳定的阶段目标放在高层，把阶段内依赖组织成中层 DAG，再让底层用 ReAct 处理具体工具参数。这样高层保持方向和验收不漂移，底层又能根据局部 Observation 灵活纠错。Research 场景可用“调研—分析—成稿”作高层，多源搜索作并行节点。层间必须传递 Goal、完成项、未完成项和硬规则，否则分层只是增加调用次数。</p>
+<h3 id="S15-Reflection-与-Self-Refine-有何区别？何时应该停止？"><a href="#S15-Reflection-与-Self-Refine-有何区别？何时应该停止？" class="headerlink" title="S15. Reflection 与 Self-Refine 有何区别？何时应该停止？"></a>S15. Reflection 与 Self-Refine 有何区别？何时应该停止？</h3><p><strong>推荐回答：</strong> Reflection 偏向评价当前 Action、计划或答案是否满足标准，并决定继续、纠正还是停止；Self-Refine 是“生成—反馈—改写”的产物迭代循环。二者都会增加模型调用、延迟与成本，且自评未必可靠。应由固定 Rubric、最大轮次或分数提升阈值控制，事实性问题还要用工具与规则核验。若连续两轮没有可测提升，就应停止、降级或转人工，而非无限“再想想”。</p>
+<h3 id="S16-Debate、Tree-Search-与外部工具探索应如何取舍？"><a href="#S16-Debate、Tree-Search-与外部工具探索应如何取舍？" class="headerlink" title="S16. Debate、Tree Search 与外部工具探索应如何取舍？"></a>S16. Debate、Tree Search 与外部工具探索应如何取舍？</h3><p><strong>推荐回答：</strong> Debate 通过不同角色提出对立观点并由裁判汇总，适合高不确定判断；Tree Search 保留多个候选状态并执行扩展、评估、剪枝和回溯，适合大搜索空间。两者调用成本都高，且模型自评可能同源偏差。若搜索、编译、测试、仿真等工具能给出真实反馈，应优先在工具空间探索；简单任务使用单链 ReAct 或 Workflow，不能把高级模式当成默认装饰。</p>
+<h3 id="1-3-记忆工具与-Runtime（三）"><a href="#1-3-记忆工具与-Runtime（三）" class="headerlink" title="1.3 记忆工具与 Runtime（三）"></a>1.3 记忆工具与 Runtime（三）</h3><h3 id="S17-记忆四层分别解决什么问题？"><a href="#S17-记忆四层分别解决什么问题？" class="headerlink" title="S17. 记忆四层分别解决什么问题？"></a>S17. 记忆四层分别解决什么问题？</h3><p><strong>推荐回答：</strong> 会话内 Context 保存近期消息、当前约束和最新 Observation；任务 Trace 记录本次执行轨迹，Checkpoint 则保存可恢复运行态；外存知识保存跨会话事实和文档，通常经检索重新注入；Procedural 保存“怎么做”的流程、模板和技能。Long-term 是跨会话持久化策略，可覆盖外存知识、轨迹摘要和偏好字段，并非神秘第五层。任何记忆只有进入本轮 Context，模型才真正可见。</p>
+<h3 id="S18-Checkpoint-与-Trace-有何区别？为什么长任务需要-Checkpoint？"><a href="#S18-Checkpoint-与-Trace-有何区别？为什么长任务需要-Checkpoint？" class="headerlink" title="S18. Checkpoint 与 Trace 有何区别？为什么长任务需要 Checkpoint？"></a>S18. Checkpoint 与 Trace 有何区别？为什么长任务需要 Checkpoint？</h3><p><strong>推荐回答：</strong> Trace 面向复盘与观测，记录发生过什么；Checkpoint 面向恢复，保存计划版本、当前节点、<code>open/done</code>、预算、已完成副作用和必要输入等可继续执行的状态。长任务可能因超时、进程故障或人工审批暂停，没有 Checkpoint 就只能从头重跑，并可能重复写库或发送消息。恢复时还要校验外部副作用的真实状态，不能把一段自然语言“任务故事”直接当可执行快照。</p>
+<h3 id="S19-RAG-作为-Retrieval-Tool-与-Runtime-预注入如何选？"><a href="#S19-RAG-作为-Retrieval-Tool-与-Runtime-预注入如何选？" class="headerlink" title="S19. RAG 作为 Retrieval Tool 与 Runtime 预注入如何选？"></a>S19. RAG 作为 Retrieval Tool 与 Runtime 预注入如何选？</h3><p><strong>推荐回答：</strong> 当“是否检索、检索什么、是否再次检索”需要模型根据中间结果判断时，把 RAG 暴露为 Tool；当业务每次都必须查固定知识、追求稳定延迟与可预测路径时，由 Runtime 在推理前预检索并注入。两者可以组合，例如先预注入权限政策，再允许按需搜索案例。无论哪种挂法，都要做权限过滤、相关性阈值、长度预算和来源保留，RAG 也不能保证答案一定忠实。</p>
+<h3 id="S20-Skill-与-Tool、Prompt-Template、RAG-文档各解决什么？"><a href="#S20-Skill-与-Tool、Prompt-Template、RAG-文档各解决什么？" class="headerlink" title="S20. Skill 与 Tool、Prompt Template、RAG 文档各解决什么？"></a>S20. Skill 与 Tool、Prompt Template、RAG 文档各解决什么？</h3><p><strong>推荐回答：</strong> Tool 是模型可提议、Runtime 真执行的动作；Skill 是可发现、可版本、按需注入的程序性知识包，教 Agent 如何完成一类任务；Prompt Template 是某个推理节点的输入合同；RAG 文档提供事实材料。加载 Skill 只是把其 body 放进 Context，不会新增消息角色，也不自动授予工具权限。Skill 可指导组合多个 Tool，但 allowed-tools 仍须受 Runtime 白名单和审批策略约束。</p>
+<h3 id="S21-Tool-Schema-怎样写，才能降低误选与参数幻觉？"><a href="#S21-Tool-Schema-怎样写，才能降低误选与参数幻觉？" class="headerlink" title="S21. Tool Schema 怎样写，才能降低误选与参数幻觉？"></a>S21. Tool Schema 怎样写，才能降低误选与参数幻觉？</h3><p><strong>推荐回答：</strong> 工具名应稳定、语义明确，description 同时说明何时使用和何时不要使用；参数 Schema 要定义类型、必填、枚举、范围和格式，并减少模型不应决定的身份或权限字段。相似工具应合并、分组或通过路由裁剪，避免描述重叠。Runtime 在执行前仍需做 Schema、业务和权限三层校验，失败时返回结构化 Error，让 Agent 修正或换策略，而不是把非法请求打到真实系统。</p>
+<h3 id="S22-RAG-与-Memory-的关系是什么？Semantic-Memory-一定存在模型参数里吗？"><a href="#S22-RAG-与-Memory-的关系是什么？Semantic-Memory-一定存在模型参数里吗？" class="headerlink" title="S22. RAG 与 Memory 的关系是什么？Semantic Memory 一定存在模型参数里吗？"></a>S22. RAG 与 Memory 的关系是什么？Semantic Memory 一定存在模型参数里吗？</h3><p><strong>推荐回答：</strong> RAG 是从外部知识中检索并注入 Context 的机制，Semantic Memory 在 Agent 工程中通常就是带来源、时间和权限的外存事实，而不是模型“记在脑子里”。Memory 负责存什么、何时读写和冲突规则，RAG 可作为它的读取路径之一。模型参数知识不可精确更新和审计，不能承担用户订单、最新政策等动态事实；持久化内容也必须重新检索进本轮 Context 才可使用。</p>
+<h3 id="S23-Runtime-至少应提供哪些治理能力？"><a href="#S23-Runtime-至少应提供哪些治理能力？" class="headerlink" title="S23. Runtime 至少应提供哪些治理能力？"></a>S23. Runtime 至少应提供哪些治理能力？</h3><p><strong>推荐回答：</strong> 最小 Runtime 应驱动循环，维护 State 与 Checkpoint，执行工具并处理超时、重试和错误分类；还要控制步数、Token、费用和墙钟预算，落实工具白名单、参数与业务校验、高风险 HITL、最终答案格式校验，以及 Trace、指标和审计。模型只负责提出候选决策。把鉴权、幂等或停止交给 Prompt，会因模型概率性、Context 漂移和注入而失效。</p>
+<h3 id="S24-为什么硬规则不能随轨迹一起摘要？"><a href="#S24-为什么硬规则不能随轨迹一起摘要？" class="headerlink" title="S24. 为什么硬规则不能随轨迹一起摘要？"></a>S24. 为什么硬规则不能随轨迹一起摘要？</h3><p><strong>推荐回答：</strong> 摘要是有损压缩，可能漏掉否定词、权限范围、金额上限或禁止事项；一旦这些硬约束从 Context 中消失，后续模型就可能行为漂移。Goal、验收标准、安全边界、工具白名单要点和未完成副作用记录应作为不可摘要字段，以全文、结构化字段或稳定引用保留。压缩主要作用于冷 Trace、重复轮次和冗长 Observation，并在压缩后运行约束完整性检查。</p>
+<h3 id="S25-多个-Tool-Calls-并行执行时，State-需要满足什么要求？"><a href="#S25-多个-Tool-Calls-并行执行时，State-需要满足什么要求？" class="headerlink" title="S25. 多个 Tool Calls 并行执行时，State 需要满足什么要求？"></a>S25. 多个 Tool Calls 并行执行时，State 需要满足什么要求？</h3><p><strong>推荐回答：</strong> 每个调用必须有唯一 call ID、独立参数、超时、重试和状态，且 State 更新不能依赖不可控的完成顺序。并行前要确认无数据依赖和冲突副作用；结果用类似 <code>allSettled</code> 的语义分别记录成功与失败，再按稳定规则合并 Observation。若共享实体可被修改，应串行、加锁或使用事务。部分失败不能把整批标成成功，也不能盲目重放已经产生副作用的调用。</p>
+<h3 id="1-3b-Harness（三-§6、六-§7）"><a href="#1-3b-Harness（三-§6、六-§7）" class="headerlink" title="1.3b Harness（三 §6、六 §7）"></a>1.3b Harness（三 §6、六 §7）</h3><h3 id="S25b-Runtime-与-Harness-是什么关系？与五件套公式是否矛盾？"><a href="#S25b-Runtime-与-Harness-是什么关系？与五件套公式是否矛盾？" class="headerlink" title="S25b. Runtime 与 Harness 是什么关系？与五件套公式是否矛盾？"></a>S25b. Runtime 与 Harness 是什么关系？与五件套公式是否矛盾？</h3><p><strong>推荐回答：</strong> Runtime 是理论分解名，Harness 是实现层产品名，指同一层——环绕 Model 工具环、把概率性提案变成可验证运行的工程化执行架。常见压缩表述 <code>Agent = Model + Harness</code>（Deep Agents &#x2F; 业界语境）与五件套 <code>Agent = LLM + Memory + Tools + Planning + Runtime</code> 不矛盾：Memory &#x2F; Tools &#x2F; Planning 在 Harness <strong>内部被调度</strong>，不是与 Harness 并列的第二套公式。五件套帮助理解职责边界；Harness 帮助理解实现层如何打包这些职责。</p>
+<h3 id="S25c-Harness-内部分几层？Memory-Tools-Planning-如何映射进去？"><a href="#S25c-Harness-内部分几层？Memory-Tools-Planning-如何映射进去？" class="headerlink" title="S25c. Harness 内部分几层？Memory &#x2F; Tools &#x2F; Planning 如何映射进去？"></a>S25c. Harness 内部分几层？Memory &#x2F; Tools &#x2F; Planning 如何映射进去？</h3><p><strong>推荐回答：</strong> 概念上可分 Prompt 层（system、skill、memory 注入）、Tool 层（registry、MCP、Execute）、State 层（messages、todos、files、checkpoint）、治理层（Budget、HITL、Guardrails、Permissions）、扩展层（Hooks &#x2F; Middleware）、观测层（Trace、Metrics、Audit）。Memory 对应上下文组装与外存策略；Tools 对应注册、Schema 校验与 Result 写回；Planning 对应 plan&#x2F;todo 状态与子任务委托接口；Runtime 五件套项则对应 Harness 本体——循环、Budget、HITL、Guardrails、Trace。</p>
+<h3 id="S25d-薄-Harness、厚-Harness、自定义拓扑各适合什么场景？"><a href="#S25d-薄-Harness、厚-Harness、自定义拓扑各适合什么场景？" class="headerlink" title="S25d. 薄 Harness、厚 Harness、自定义拓扑各适合什么场景？"></a>S25d. 薄 Harness、厚 Harness、自定义拓扑各适合什么场景？</h3><p><strong>推荐回答：</strong> 薄 Harness（如 LangChain <code>create_agent</code>）适合标准单 Agent 环，Middleware 按需叠加。厚 Harness（如 Deep Agents <code>create_deep_agent</code>）预装 FS、Skills、Subagent、压缩等，适合长任务 coding &#x2F; research。自定义拓扑（LangGraph 手画 Node&#x2F;Edge）适合复杂企业流程、确定性步骤与 Agent 步骤混合。手写 while 适合学习与极简原型。选型看任务长度、是否需要预装 context 治理、以及控制流是否需显式图级表达。</p>
+<h3 id="S25e-Agent-Harness-与-LangGraph-Orchestration-Runtime-有何区别？"><a href="#S25e-Agent-Harness-与-LangGraph-Orchestration-Runtime-有何区别？" class="headerlink" title="S25e. Agent Harness 与 LangGraph Orchestration Runtime 有何区别？"></a>S25e. Agent Harness 与 LangGraph Orchestration Runtime 有何区别？</h3><p><strong>推荐回答：</strong> Agent Harness 是跑 Agent 工具环的那一层——维护 prompt、tools、state、治理与扩展。LangGraph Orchestration Runtime 是更底层的图调度引擎，负责 checkpoint 通道、interrupt、superstep、durable execution 等。关系：<code>create_agent</code> &#x2F; <code>create_deep_agent</code> 编译产物是图，Harness 逻辑跑在 Orchestration Runtime 之上。LangGraph 不是 Harness 本身，而是 Harness 常借用的编排底座；需要精细拓扑或多 Agent 图时直接下沉 LangGraph。</p>
+<h3 id="1-4-评测与-Research（四）"><a href="#1-4-评测与-Research（四）" class="headerlink" title="1.4 评测与 Research（四）"></a>1.4 评测与 Research（四）</h3><h3 id="S26-Agent-评测为什么要分为节点、轨迹、任务和安全四层？"><a href="#S26-Agent-评测为什么要分为节点、轨迹、任务和安全四层？" class="headerlink" title="S26. Agent 评测为什么要分为节点、轨迹、任务和安全四层？"></a>S26. Agent 评测为什么要分为节点、轨迹、任务和安全四层？</h3><p><strong>推荐回答：</strong> 节点评单次 Prompt、工具选择和参数合法；轨迹评循环是否健康，如重复调用、恢复和假完成；任务评最终是否达到用户验收；安全评越权、泄露和危险动作是否被拦。分层后才能定位“参数对但结果没用”“答案对但过程越权”等问题。只看最终文本会掩盖偶然成功和高风险路径，只看局部节点又可能出现局部全绿、端到端失败。</p>
+<h3 id="S27-Task-Success-Rate-应如何定义才可计算？"><a href="#S27-Task-Success-Rate-应如何定义才可计算？" class="headerlink" title="S27. Task Success Rate 应如何定义才可计算？"></a>S27. Task Success Rate 应如何定义才可计算？</h3><p><strong>推荐回答：</strong> 先为每类 Scenario 写明确成功 Rubric，如输出结构合法、关键事实有 Observation 指针、要求的副作用状态已核验、在预算内结束。Task Success Rate 等于满足全部硬验收的任务数除以总任务数；开放质量可另设分项分数，但关键安全条件不应被平均分抵消。评测需固定模型、Prompt、Tool Schema、工具桩和数据版本，确保不同版本可重放比较。</p>
+<h3 id="S28-Hallucination-Rate-如何从轨迹中计算？与假完成有何关系？"><a href="#S28-Hallucination-Rate-如何从轨迹中计算？与假完成有何关系？" class="headerlink" title="S28. Hallucination Rate 如何从轨迹中计算？与假完成有何关系？"></a>S28. Hallucination Rate 如何从轨迹中计算？与假完成有何关系？</h3><p><strong>推荐回答：</strong> 可把关键事实声明拆成原子断言，检查是否存在有效 Observation、可信来源或用户确认支撑；无依据断言数除以总断言数，可作为 Hallucination Rate。假完成是更具体的轨迹故障：Agent 声称任务或副作用已完成，却没有对应成功 Observation 或状态核验。两者可能重合，但幻觉还包括错误引用和曲解证据。评测必须保存声明到证据 ID 的映射，不能靠主观阅读。</p>
+<h3 id="S29-Tool-Accuracy-为什么不能只看“工具有没有调成功”？"><a href="#S29-Tool-Accuracy-为什么不能只看“工具有没有调成功”？" class="headerlink" title="S29. Tool Accuracy 为什么不能只看“工具有没有调成功”？"></a>S29. Tool Accuracy 为什么不能只看“工具有没有调成功”？</h3><p><strong>推荐回答：</strong> Tool Accuracy 至少拆成三段：是否选对工具、参数是否结构与业务合法、返回结果是否被最终决策正确使用。HTTP 200 只能说明调用完成，不代表工具选对；参数合法也可能查错实体；拿到正确结果却在答案中忽略或反着解释，同样是失败。分段指标能分别归因 description、Planner、Schema、执行服务和总结 Prompt，避免所有问题都被归为“工具调用不准”。</p>
+<h3 id="S30-如何区分-Prompt、模型、工具、记忆和-Runtime-导致的失败？"><a href="#S30-如何区分-Prompt、模型、工具、记忆和-Runtime-导致的失败？" class="headerlink" title="S30. 如何区分 Prompt、模型、工具、记忆和 Runtime 导致的失败？"></a>S30. 如何区分 Prompt、模型、工具、记忆和 Runtime 导致的失败？</h3><p><strong>推荐回答：</strong> 沿 Trace 做因果定位：计划或工具选择一开始就错，检查 Prompt、路由和模型；Invocation 合法但服务返回错误，检查工具与网络；检索到错误或过期事实，检查 Memory 写入、检索和冲突规则；有成功 Observation 却没被使用，检查上下文组装和总结节点；模型提出越权动作却真被执行，则是 Runtime 门禁失败。一次只改一个变量，用固定 Scenario 做消融验证。</p>
+<h3 id="S31-Research-Agent-的默认组合是什么？为什么这样组合？"><a href="#S31-Research-Agent-的默认组合是什么？为什么这样组合？" class="headerlink" title="S31. Research Agent 的默认组合是什么？为什么这样组合？"></a>S31. Research Agent 的默认组合是什么？为什么这样组合？</h3><p><strong>推荐回答：</strong> 常用组合是高层 Hierarchical 或 DAG Planner、叶子节点 ReAct + 搜索工具、成稿阶段轻量 Reflection。高层计划保证调研范围、依赖和验收稳定，多源搜索可并行；叶子 ReAct 能根据空结果、冲突和新线索改 query；成稿使用结构化 Working state、证据指针和模板，Reflection 只检查覆盖、引用与不确定性。全程由 Runtime 控制预算、Checkpoint、错误恢复和 Final Gate。</p>
+<h3 id="S32-Research-Agent-如何把-Planner、Tools、Memory-与-Rubric-串起来？"><a href="#S32-Research-Agent-如何把-Planner、Tools、Memory-与-Rubric-串起来？" class="headerlink" title="S32. Research Agent 如何把 Planner、Tools、Memory 与 Rubric 串起来？"></a>S32. Research Agent 如何把 Planner、Tools、Memory 与 Rubric 串起来？</h3><p><strong>推荐回答：</strong> 先把问题转成 Goal 与 Rubric，再由 Planner 产出子问题和依赖；Executor 调搜索或读取工具，把结果、来源和错误写入 Trace，并把去重后的证据摘要放入 Working state；遇到空结果或冲突时改 query 或 Replan；Writer 只基于已收集证据成稿；最后按覆盖度、引用忠实、事实与推测区分、预算和安全执行 Rubric，未通过则局部补证或明确失败。</p>
+<h3 id="S33-一个-Research-Agent-从-L0-到-L2-应如何递进验收？"><a href="#S33-一个-Research-Agent-从-L0-到-L2-应如何递进验收？" class="headerlink" title="S33. 一个 Research Agent 从 L0 到 L2 应如何递进验收？"></a>S33. 一个 Research Agent 从 L0 到 L2 应如何递进验收？</h3><p><strong>推荐回答：</strong> L0 用两三个 mock 工具走通 Invocation、执行、Observation 回写与停止，证明闭环正确；L1 接真实搜索，并让 Planner 生成三到五步静态计划，证明任务能分解和按序执行；L2 加入空结果、冲突和超时，使 Agent 能改 query、换来源或局部 Replan。每级都要求关键事实可追溯、在预算内结束、工具失败可见且不假装成功，不能只展示一次理想 Demo。</p>
+<h3 id="S54-发版前应固定哪些变量？Checklist-五域指标各举一例。"><a href="#S54-发版前应固定哪些变量？Checklist-五域指标各举一例。" class="headerlink" title="S54. 发版前应固定哪些变量？Checklist 五域指标各举一例。"></a>S54. 发版前应固定哪些变量？Checklist 五域指标各举一例。</h3><p><strong>推荐回答：</strong> 固定 model_id、Prompt Registry 各节点 version、tool_schema_version &#x2F; mcp_server_version、RAG 的 embedding_model_id + index_version、loop contract_id + gate_version + budget_profile、scenario_set_id。五域各一例：RAG 域 Recall@K 或 Citation 正确率；Context 域压缩后硬规则抽检或 Unnecessary Tool Calls；Loop&#x2F;Agent 域 Task Success Rate 或假完成率；安全域越权拦截 fixture；成本域 Cost per Success 或 avg tokens&#x2F;成功。完整表见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a>。</p>
+<h3 id="S55-LangSmith-trace-与-dataset-experiment-分别解决什么？与-Agent（四）四层评测如何对应？"><a href="#S55-LangSmith-trace-与-dataset-experiment-分别解决什么？与-Agent（四）四层评测如何对应？" class="headerlink" title="S55. LangSmith trace 与 dataset experiment 分别解决什么？与 Agent（四）四层评测如何对应？"></a>S55. LangSmith trace 与 dataset experiment 分别解决什么？与 Agent（四）四层评测如何对应？</h3><p><strong>推荐回答：</strong> Trace 解决单次 run 排障——打开成功&#x2F;失败轨迹查 tool_calls、Middleware 事件、token、P95 与 Gate 拦截，对应节点与轨迹层细查。Dataset + Experiment 在固定 Scenario 集上批量回归，算 Task Success、假完成率、重复工具率，对应任务与轨迹层发版对比。安全 fixture 仍须单独跑。Trace 看「这一次为什么错」，Experiment 看「这一版是否整体退化」；二者互补，见 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/#4-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89">LangChain（六）§4</a> 与 Agent（四）§6。</p>
+<h3 id="1-5-工程坑（五）"><a href="#1-5-工程坑（五）" class="headerlink" title="1.5 工程坑（五）"></a>1.5 工程坑（五）</h3><h3 id="S34-为什么能力目录可以很大，但本次-Action-Space-必须小？"><a href="#S34-为什么能力目录可以很大，但本次-Action-Space-必须小？" class="headerlink" title="S34. 为什么能力目录可以很大，但本次 Action Space 必须小？"></a>S34. 为什么能力目录可以很大，但本次 Action Space 必须小？</h3><p><strong>推荐回答：</strong> 把全部 Tools 和 Skills 正文塞入 Context，会消耗 Token、稀释 Goal 与硬规则，并因描述相似增加误选、漏参和假调用。合理做法是 L0 常驻少量核心规则与工具，L1 只暴露能力名称和“何时用”的目录摘要，L2 在路由命中后才加载完整 Skill body 或细 Schema。目录规模与当前可见集合解耦，既保留扩展性，也提高选择准确率和安全可控性。</p>
+<h3 id="S35-裁剪-Action-Space-与-Progressive-Disclosure-有何区别？"><a href="#S35-裁剪-Action-Space-与-Progressive-Disclosure-有何区别？" class="headerlink" title="S35. 裁剪 Action Space 与 Progressive Disclosure 有何区别？"></a>S35. 裁剪 Action Space 与 Progressive Disclosure 有何区别？</h3><p><strong>推荐回答：</strong> 裁剪 Action Space 是根据任务类型、租户、权限或当前阶段，直接限定本轮允许选择的工具子集，强调“哪些动作可见且可用”；Progressive Disclosure 是先展示目录级摘要，选中后再注入详细说明或 Skill body，强调“信息分阶段展开”。二者常组合：先用路由得到候选白名单，再按需加载细节。前者涉及权限与选择空间，后者主要优化 Context 与认知负担。</p>
+<h3 id="S36-加入一批-Skills-后，应优先观察哪些指标？"><a href="#S36-加入一批-Skills-后，应优先观察哪些指标？" class="headerlink" title="S36. 加入一批 Skills 后，应优先观察哪些指标？"></a>S36. 加入一批 Skills 后，应优先观察哪些指标？</h3><p><strong>推荐回答：</strong> 首先看 Tool 或 Skill 选型准确率是否下降，以及 Unnecessary Tool Calls 是否上升；同时观察输入 Token、平均步数、成功一单成本、延迟和注入安全回归。若退化，先检查 description 是否清楚说明适用与禁用场景、候选是否重叠、路由是否裁剪正确，而不是继续把所有 body 塞进 System。新增能力的收益必须在固定 Scenario 上超过它带来的选择噪声和成本。</p>
+<h3 id="S37-Context-压缩应在什么时机触发？"><a href="#S37-Context-压缩应在什么时机触发？" class="headerlink" title="S37. Context 压缩应在什么时机触发？"></a>S37. Context 压缩应在什么时机触发？</h3><p><strong>推荐回答：</strong> 常见触发包括输入达到窗口水位、每 K 步或阶段结束、单次 Tool Result 过大、从搜索切换到分析或成稿、以及剩余 Token 或步数告急。单次结果过大时应先裁剪该 Result，再考虑压缩历史，避免它一写回就挤掉关键约束。阈值需结合模型窗口和任务评测调整，压缩事件、输入输出 Token 与被丢弃内容指针都应写入 Trace 以便审计。</p>
+<h3 id="S38-Context-中哪些字段不可摘要，哪些内容可压缩？"><a href="#S38-Context-中哪些字段不可摘要，哪些内容可压缩？" class="headerlink" title="S38. Context 中哪些字段不可摘要，哪些内容可压缩？"></a>S38. Context 中哪些字段不可摘要，哪些内容可压缩？</h3><p><strong>推荐回答：</strong> Goal、成功标准、安全与权限硬规则、工具白名单要点、当前 <code>open[]</code>、关键实体 ID、未完成副作用和恢复所需 Checkpoint 字段不可随意摘要。冗长 Thought、重复历史轮次、已完成节点的详细 Observation、早期网页全文和低相关检索片段可以裁剪或摘要。关键事实即使压缩也应保留来源和原文指针，让后续需要时能重新检索核对。</p>
+<h3 id="S39-压缩后为什么必须同步-Working-state？"><a href="#S39-压缩后为什么必须同步-Working-state？" class="headerlink" title="S39. 压缩后为什么必须同步 Working state？"></a>S39. 压缩后为什么必须同步 Working state？</h3><p><strong>推荐回答：</strong> messages 被压缩后，若 Working state 仍指向已删除的上下文，Agent 会忘记未完成项、重复已完成动作，或错误恢复副作用。压缩应产生阶段摘要，并同步更新 Goal、<code>open[]</code>、<code>done[]</code>、关键实体、证据索引和 Budget，再记录一条压缩事件。随后执行一致性检查，确认不可摘要字段仍在、计划状态与 Trace 对齐。压缩不是纯文本操作，而是一次状态迁移。</p>
+<h3 id="S40-写污染与脏读分别发生在哪一环？如何防护？"><a href="#S40-写污染与脏读分别发生在哪一环？如何防护？" class="headerlink" title="S40. 写污染与脏读分别发生在哪一环？如何防护？"></a>S40. 写污染与脏读分别发生在哪一环？如何防护？</h3><p><strong>推荐回答：</strong> 写污染发生在存储阶段，例如把模型猜测当用户偏好或事实持久化；脏读发生在读取阶段，例如过期事实、旧偏好或错误版本被检索并覆盖新信息。写入侧要求 Observation 或用户确认、字段级权限、来源与时间戳、冲突检测；读取侧要求权限过滤、时效和来源优先级、相关性阈值及冲突显式呈现。高风险记忆还应支持撤销、审计和污染 fixture 回归。</p>
+<h3 id="S41-Checkpoint-误用通常是什么？如何避免？"><a href="#S41-Checkpoint-误用通常是什么？如何避免？" class="headerlink" title="S41. Checkpoint 误用通常是什么？如何避免？"></a>S41. Checkpoint 误用通常是什么？如何避免？</h3><p><strong>推荐回答：</strong> 常见误用是把自然语言 Trace 摘要当成可恢复运行态，恢复后不知道具体节点、工具调用 ID、预算和副作用状态，导致重复执行或跳步。Checkpoint 应使用版本化结构保存计划、当前节点、输入输出引用、<code>open/done</code>、幂等键与外部状态，恢复时先验证 Schema 和依赖版本，再查询已有副作用。Trace 可帮助人理解发生了什么，但不能替代确定性恢复协议。</p>
+<h3 id="S42-排障时“选错工具、忘约束、记错事实”分别先查什么？"><a href="#S42-排障时“选错工具、忘约束、记错事实”分别先查什么？" class="headerlink" title="S42. 排障时“选错工具、忘约束、记错事实”分别先查什么？"></a>S42. 排障时“选错工具、忘约束、记错事实”分别先查什么？</h3><p><strong>推荐回答：</strong> 选错工具先查候选 Action Space、Tool&#x2F;Skill description、路由和相似工具重叠；忘约束先查 Context 组装、Lost in the Middle、压缩记录以及不可摘要字段是否保留；记错事实先查 Memory 写入依据、检索结果、时间戳、来源优先级和冲突规则。若表现为空转或假完成，则进一步查 Runtime 的进展检测、Observation 指针和 Final Gate。先定位层级，再修改对应组件。</p>
+<h3 id="1-6-能力组件与安全（六）"><a href="#1-6-能力组件与安全（六）" class="headerlink" title="1.6 能力组件与安全（六）"></a>1.6 能力组件与安全（六）</h3><h3 id="S43-Skill-的最小结构和生命周期是什么？"><a href="#S43-Skill-的最小结构和生命周期是什么？" class="headerlink" title="S43. Skill 的最小结构和生命周期是什么？"></a>S43. Skill 的最小结构和生命周期是什么？</h3><p><strong>推荐回答：</strong> 最小结构包括稳定的 name、说明何时用与何时不用的 description、包含步骤和检查清单的 body，以及可选 allowed-tools。生命周期是目录发现或检索、模型或 Runtime 选择、把 body 注入当前 Context、执行中引用并配合工具、任务结束后卸载或摘要。Skill 应版本化、评审并做选型与安全回归；它是 Procedural 的产品形态，不是新的执行权限。</p>
+<h3 id="S44-MCP-的-Tools、Resources、Prompts-如何映射到-Agent-工程？"><a href="#S44-MCP-的-Tools、Resources、Prompts-如何映射到-Agent-工程？" class="headerlink" title="S44. MCP 的 Tools、Resources、Prompts 如何映射到 Agent 工程？"></a>S44. MCP 的 Tools、Resources、Prompts 如何映射到 Agent 工程？</h3><p><strong>推荐回答：</strong> MCP Tools 暴露可调用动作，对应 Tool Schema；Resources 暴露可读取的 URI、文件或数据内容，不一定通过函数调用；Prompts 提供可复用提示模板。MCP 解决外部能力的标准化描述、发现与接入，但不替代 Agent Loop：模型仍提出 Invocation，Runtime 仍要校验、执行并把 Result 写回。鉴权、租户隔离、超时、审批和审计也必须由 Client、Server 与 Runtime 共同落实。</p>
+<h3 id="S45-MCP-与-Function-Calling-的区别是什么？"><a href="#S45-MCP-与-Function-Calling-的区别是什么？" class="headerlink" title="S45. MCP 与 Function Calling 的区别是什么？"></a>S45. MCP 与 Function Calling 的区别是什么？</h3><p><strong>推荐回答：</strong> Function Calling 是模型输出结构化工具调用意图的交互机制，关注一次推理如何选择工具和生成参数；MCP 是 Client 与外部 Server 之间发现、描述和访问 Tools、Resources、Prompts 的标准协议，关注能力如何跨应用接入和复用。MCP Tool 最终仍可被转换为模型可见 Schema，并走 Function Calling 闭环。接入 MCP 不代表工具可信，更不意味着可以省略参数校验、权限与审批。</p>
+<h3 id="S46-自动、确认、禁止三档审批应如何划分？"><a href="#S46-自动、确认、禁止三档审批应如何划分？" class="headerlink" title="S46. 自动、确认、禁止三档审批应如何划分？"></a>S46. 自动、确认、禁止三档审批应如何划分？</h3><p><strong>推荐回答：</strong> 只读、幂等、低风险且数据权限明确的动作可自动执行，如查询公开文档；写文件、发消息、改库、外联请求等有副作用或可造成损失的动作应先确认，并展示目标、参数和影响；读取密钥、任意 Shell、未授权网络或超出业务能力范围的动作应禁止。分档依据是副作用、可逆性、敏感度和授权，而非模型信心；策略必须由 Runtime 硬执行。</p>
+<h3 id="S47-为什么-Prompt-写“禁止越权”不能替代沙箱与权限控制？"><a href="#S47-为什么-Prompt-写“禁止越权”不能替代沙箱与权限控制？" class="headerlink" title="S47. 为什么 Prompt 写“禁止越权”不能替代沙箱与权限控制？"></a>S47. 为什么 Prompt 写“禁止越权”不能替代沙箱与权限控制？</h3><p><strong>推荐回答：</strong> Prompt 只是概率性约束，可能被长 Context 稀释、被注入干扰或因模型版本变化而失效；沙箱和权限控制在模型之外确定性限制文件、网络、进程、工具和数据范围。正确分工是 Prompt 帮模型理解边界，Runtime 用白名单、鉴权、参数校验、审批和沙箱决定 Action 能否真正执行。即使模型完全被诱导，最小权限仍能限制事故半径并留下审计证据。</p>
+<h3 id="S48-何时使用-Subagent，而不是继续加载一个-Skill？"><a href="#S48-何时使用-Subagent，而不是继续加载一个-Skill？" class="headerlink" title="S48. 何时使用 Subagent，而不是继续加载一个 Skill？"></a>S48. 何时使用 Subagent，而不是继续加载一个 Skill？</h3><p><strong>推荐回答：</strong> Skill 适合教当前 Agent 一套流程，仍共享主 Agent 的 Context 和工具边界；Subagent 适合可独立验收、需要不同工具或大量局部材料、可并行处理且希望隔离 Trace 的子任务。若只是补充几条固定步骤，加载 Skill 更轻；若安全扫描、独立调研等会产生大量中间信息，可委派 Subagent，只回传结论与证据。默认先把单 Agent + Skill + 分层规划做稳，避免过早多 Agent 化。</p>
+<h3 id="S49-Subagent-为什么需要-Context-Isolation？Handoff-必须携带什么？"><a href="#S49-Subagent-为什么需要-Context-Isolation？Handoff-必须携带什么？" class="headerlink" title="S49. Subagent 为什么需要 Context Isolation？Handoff 必须携带什么？"></a>S49. Subagent 为什么需要 Context Isolation？Handoff 必须携带什么？</h3><p><strong>推荐回答：</strong> 独立 Context 可防止子任务的网页、日志和长 Trace 挤占主窗口，也减少角色规则和不可信内容互相污染。主 Agent 只向子 Agent 传最小 Goal、输入材料、允许工具、预算和硬规则；返回时至少携带 Goal 摘要、已完成与未完成项、结构化结果、证据或错误，以及硬规则引用。若把完整子轨迹无差别灌回，隔离收益会消失，压缩和安全风险反而放大。</p>
+<h3 id="S50-网页、Tool-Result-与-Code-Interpreter-输出为什么不能当作-system-指令？"><a href="#S50-网页、Tool-Result-与-Code-Interpreter-输出为什么不能当作-system-指令？" class="headerlink" title="S50. 网页、Tool Result 与 Code Interpreter 输出为什么不能当作 system 指令？"></a>S50. 网页、Tool Result 与 Code Interpreter 输出为什么不能当作 system 指令？</h3><p><strong>推荐回答：</strong> 它们来自外部环境，可能过期、错误或包含 Prompt Injection，本质上都是不可信 Observation，而不是应用制定的高优先级规则。应以 tool role 或带 source、time、error、untrusted 标记的数据块进入 Context，必要时清洗、裁剪和摘要；材料中的命令只作为文本，不直接执行。后续任何 Action 仍要经过工具白名单、参数校验、权限档和沙箱，不能因来源“看起来像系统”就升格。</p>
+<hr>
+<h2 id="2-面试真题"><a href="#2-面试真题" class="headerlink" title="2. 面试真题"></a>2. 面试真题</h2><blockquote>
+<p>以下题目按主题归纳、改写自公开面经与题库，用于训练表达，并非逐题对应某一场真实面试；综合参考来源见文末「参考面经与题库」。</p>
+</blockquote>
+<h3 id="I1-请设计一个生产级-Agent-的分层架构，并说明各层边界。"><a href="#I1-请设计一个生产级-Agent-的分层架构，并说明各层边界。" class="headerlink" title="I1. 请设计一个生产级 Agent 的分层架构，并说明各层边界。"></a>I1. 请设计一个生产级 Agent 的分层架构，并说明各层边界。</h3><p><strong>推荐回答：</strong> 我会拆为接入层、编排与状态层、模型层、工具与知识层、记忆层、Runtime 执行层、观测评测层和安全层。接入层做鉴权限流；编排层维护 Goal、计划、状态机和 Checkpoint；模型层只负责规划、选择和总结；工具&#x2F;知识层提供外部事实与动作；记忆层负责受控读写；Runtime 校验、执行、重试、预算和停止；观测层保存 Trace；安全层统一做最小权限、审批、沙箱与审计。分层重点是模型提案、系统执行。</p>
+<h3 id="I2-ReAct、Plan-and-Execute-与状态图应如何选择？"><a href="#I2-ReAct、Plan-and-Execute-与状态图应如何选择？" class="headerlink" title="I2. ReAct、Plan-and-Execute 与状态图应如何选择？"></a>I2. ReAct、Plan-and-Execute 与状态图应如何选择？</h3><p><strong>推荐回答：</strong> 中短任务、工具少且下一步强依赖刚返回结果时用 ReAct；步骤可预见、需要并行和进度管理时用 Plan-and-Execute；存在循环、分支、人工审批、失败恢复或必须持久化的复杂流程时，用显式状态图承载控制流。三者不是互斥：状态图可作为 Runtime 骨架，高层 Planner 生成 DAG，具体节点内部再用受预算限制的 ReAct。路径完全固定时直接 Workflow，避免不必要的自主决策。</p>
+<h3 id="I3-工具有几十甚至上百个时，如何设计路由？"><a href="#I3-工具有几十甚至上百个时，如何设计路由？" class="headerlink" title="I3. 工具有几十甚至上百个时，如何设计路由？"></a>I3. 工具有几十甚至上百个时，如何设计路由？</h3><p><strong>推荐回答：</strong> 我不会把所有 Schema 一次塞给模型，而会采用“权限过滤—任务粗分类—语义召回 Top-K—模型精排”的分层路由。L0 常驻核心工具，L1 只放名称和适用边界，命中后再加载 L2 详细 Schema 或 Skill body。description 必须写清何时用与禁用场景，候选工具还要按租户和阶段裁剪。上线用选型准确率、无效调用、输入 Token 和成本回归；Runtime 最终只允许白名单中的工具执行。</p>
+<h3 id="I4-如何判断工具调用失败是路由、参数、执行还是结果使用问题？"><a href="#I4-如何判断工具调用失败是路由、参数、执行还是结果使用问题？" class="headerlink" title="I4. 如何判断工具调用失败是路由、参数、执行还是结果使用问题？"></a>I4. 如何判断工具调用失败是路由、参数、执行还是结果使用问题？</h3><p><strong>推荐回答：</strong> 我会为每次 Invocation 记录候选工具集、最终工具、参数校验、执行状态、Observation ID 和最终答案引用。选错工具属于路由或 description；工具正确但 Schema&#x2F;业务校验失败是参数生成；校验通过却超时、5xx 或权限拒绝是执行层；成功 Result 未进入 Context 或被答案曲解是结果使用。分别统计选择准确率、参数合法率、执行成功率和 Observation 利用率，做同一 Scenario 的回放，避免用一个总成功率掩盖归因。</p>
+<h3 id="I5-怎样定义并检测-Agent-的“假完成”？"><a href="#I5-怎样定义并检测-Agent-的“假完成”？" class="headerlink" title="I5. 怎样定义并检测 Agent 的“假完成”？"></a>I5. 怎样定义并检测 Agent 的“假完成”？</h3><p><strong>推荐回答：</strong> 假完成是 Agent 把任务标成 Success 或声称副作用已发生，但 Trace 中没有满足验收的成功 Observation。检测时先为任务定义完成证据：查询类要求关键断言绑定来源 ID，写操作要求执行回执、幂等键和执行后状态核验，Research 要求关键事实可追溯。Final Gate 只读取结构化证据，不采信模型自述；证据不足则继续、降级、明确失败或转人工，并把假完成率作为轨迹级阻断指标。</p>
+<h3 id="I6-Agent-评测中，如何做到指标可计算且失败可归因？"><a href="#I6-Agent-评测中，如何做到指标可计算且失败可归因？" class="headerlink" title="I6. Agent 评测中，如何做到指标可计算且失败可归因？"></a>I6. Agent 评测中，如何做到指标可计算且失败可归因？</h3><p><strong>推荐回答：</strong> 我会建立带工具桩和失败注入的 Scenario 集，分节点、轨迹、任务、安全四层。节点看路由、参数和 Schema；轨迹看重复调用、恢复、步数和假完成；任务按 Rubric 算 Success；安全看越权拦截与误拒。所有指标绑定 Trace 字段，如 call ID、Observation ID、状态迁移和版本。失败后沿“计划—调用—执行—证据使用—Final Gate”归因，再做固定变量的消融，不能看到答案错就只改 Prompt。</p>
+<h3 id="I7-如何设计一个可恢复、不会重复副作用的长任务-Agent？"><a href="#I7-如何设计一个可恢复、不会重复副作用的长任务-Agent？" class="headerlink" title="I7. 如何设计一个可恢复、不会重复副作用的长任务 Agent？"></a>I7. 如何设计一个可恢复、不会重复副作用的长任务 Agent？</h3><p><strong>推荐回答：</strong> 状态图每个稳定边界保存版本化 Checkpoint，包括计划、当前节点、<code>open/done</code>、预算、工具调用 ID、幂等键和副作用状态。执行写操作前先记录 Intent，使用幂等键调用，执行后查询真实状态再提交节点完成；崩溃恢复时先校验依赖版本和外部状态，而不是直接重放。Trace 用于审计，Checkpoint 用于续跑。不可恢复冲突转人工，超过总时限或重试上限则安全落到失败终态。</p>
+<h3 id="I8-请说明-MCP、Function-Calling-和-Agent-Runtime-的关系。"><a href="#I8-请说明-MCP、Function-Calling-和-Agent-Runtime-的关系。" class="headerlink" title="I8. 请说明 MCP、Function Calling 和 Agent Runtime 的关系。"></a>I8. 请说明 MCP、Function Calling 和 Agent Runtime 的关系。</h3><p><strong>推荐回答：</strong> MCP 负责让 Client 以统一协议发现并访问外部 Server 暴露的 Tools、Resources 和 Prompts；Function Calling 负责模型在一次推理里输出工具名和结构化参数；Runtime 则把两者接成可靠闭环：过滤可见能力、校验 Invocation、执行 MCP Tool、处理超时鉴权，把 Result 写回并更新 State。MCP 是接入标准，不是执行授权，也不替代模型工具协议。生产中还需租户隔离、最小权限、审批、审计和服务端信任管理。</p>
+<h3 id="I9-如何防止恶意-MCP-Server-或-Tool-Result-诱导-Agent-越权？"><a href="#I9-如何防止恶意-MCP-Server-或-Tool-Result-诱导-Agent-越权？" class="headerlink" title="I9. 如何防止恶意 MCP Server 或 Tool Result 诱导 Agent 越权？"></a>I9. 如何防止恶意 MCP Server 或 Tool Result 诱导 Agent 越权？</h3><p><strong>推荐回答：</strong> Server 的描述和返回内容都按不可信外部数据处理，不能升格为 system。接入前固定可信 Server 清单、能力与版本，运行时按任务和身份裁剪工具；Invocation 做 Schema、业务、权限与目标域校验，高风险动作进入确认档，文件、网络和进程运行在沙箱。Result 带来源和信任标记，清洗其中的伪指令，只提取任务相关事实。还要审计能力变更、敏感信息外发和异常调用，支持立即禁用 Server。</p>
+<h3 id="I10-你会如何设计自动、确认、禁止三档审批策略？"><a href="#I10-你会如何设计自动、确认、禁止三档审批策略？" class="headerlink" title="I10. 你会如何设计自动、确认、禁止三档审批策略？"></a>I10. 你会如何设计自动、确认、禁止三档审批策略？</h3><p><strong>推荐回答：</strong> 我会根据副作用、可逆性、数据敏感度、外联范围和用户授权分档。公开信息查询、只读且幂等的操作可自动；写文件、发邮件、改订单、调用外网等需展示工具、目标、关键参数和影响，获得一次性确认；读取密钥、绕过权限、任意 Shell 或未授权网络直接禁止。策略由 Runtime 根据身份和环境执行，不由模型信心决定。审批结果写入 Trace，参数变化后原确认失效，避免“确认 A、执行 B”。</p>
+<h3 id="I11-Context-越来越长导致-Agent-忘记约束，你如何处理？"><a href="#I11-Context-越来越长导致-Agent-忘记约束，你如何处理？" class="headerlink" title="I11. Context 越来越长导致 Agent 忘记约束，你如何处理？"></a>I11. Context 越来越长导致 Agent 忘记约束，你如何处理？</h3><p><strong>推荐回答：</strong> 先从 Trace 确认是窗口超限、Lost in the Middle、检索噪声还是压缩丢规则。然后把 Goal、验收、安全边界、当前 <code>open[]</code> 和副作用状态设为不可摘要字段；旧 Trace、网页全文和重复轮次按水位或阶段压缩，单次大 Result 先裁剪；事实转外存并按需检索。压缩后同步 Working state 和 Checkpoint，运行约束完整性校验。若角色或阶段差异大，可用 Context Isolation，而不是只换更长窗口。</p>
+<h3 id="I12-什么时候应该引入-Subagent？如何避免多-Agent-失控？"><a href="#I12-什么时候应该引入-Subagent？如何避免多-Agent-失控？" class="headerlink" title="I12. 什么时候应该引入 Subagent？如何避免多 Agent 失控？"></a>I12. 什么时候应该引入 Subagent？如何避免多 Agent 失控？</h3><p><strong>推荐回答：</strong> 当子任务边界清晰、可独立验收、需要不同工具或会产生大量局部 Context，并且并行收益超过交接成本时才引入 Subagent；简单流程优先单 Agent + Skill。主 Agent 只分发最小 Goal、输入、预算、工具白名单和硬规则，子 Agent 返回结构化结果、证据与未完成项，不回灌全部 Trace。Runtime 限制层级、并发、预算和超时，合并时处理冲突与部分失败，高风险工具仍统一走主权限策略。</p>
+<h3 id="I13-Research-Agent-搜索结果互相冲突时，如何继续并完成报告？"><a href="#I13-Research-Agent-搜索结果互相冲突时，如何继续并完成报告？" class="headerlink" title="I13. Research Agent 搜索结果互相冲突时，如何继续并完成报告？"></a>I13. Research Agent 搜索结果互相冲突时，如何继续并完成报告？</h3><p><strong>推荐回答：</strong> 我会先保留来源、时间、版本和原文指针，不让 Writer 自行选边；按权威性、时效和独立来源数评估，必要时由 Planner 新增针对性检索或查一手资料。Working state 把“已确认事实、冲突项、缺口”分开，预算内仍无法消解时，在报告中并列证据并声明不确定性。评测同时看引用忠实、冲突披露和无依据断言，而不是强迫 Agent 给唯一结论。高风险业务可转专家确认。</p>
+<h3 id="I14-Agent-连续反思三次仍失败，系统应该怎么收尾？"><a href="#I14-Agent-连续反思三次仍失败，系统应该怎么收尾？" class="headerlink" title="I14. Agent 连续反思三次仍失败，系统应该怎么收尾？"></a>I14. Agent 连续反思三次仍失败，系统应该怎么收尾？</h3><p><strong>推荐回答：</strong> 首先不能继续无限 Reflection。Runtime 应检查三次是否产生了新 Observation 或指标提升；若只是重复同一策略，触发熔断。根据任务选择降级：只返回已验证的检索片段、明确说明材料不足、换备用工具或模型、保存 Checkpoint 后转人工。最终回答要区分已完成、未完成和失败原因，不能伪装成功。Trace 保留每次策略、错误和预算，失败样本进入离线 Scenario，用于判断应改 Prompt、工具、数据还是流程。</p>
+<hr>
+<h2 id="参考面经与题库"><a href="#参考面经与题库" class="headerlink" title="参考面经与题库"></a>参考面经与题库</h2><p>本篇面试题按主题归纳、改写自以下公开面经与题库，非逐题一一对应原帖，请以各平台原文为准：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/866256218979954688">牛客·滴滴 AI Agent 开发一面</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/866674466628169728">牛客·滴滴 AI Agent 开发二面</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/875341436902785024">牛客·滴滴一面 Tool Calling &#x2F; MCP</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/864161797517946880">牛客·Momenta AI Agent 开发一面</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/864163633633169408">牛客·Momenta AI Agent 开发二面</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/882634966025175040">牛客·字节 AI 应用岗</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/discuss/878709844730003456">牛客·字节 Agent 框架与工具调用</a></li>
+</ul>
+<hr>
+<h2 id="3-导航"><a href="#3-导航" class="headerlink" title="3. 导航"></a>3. 导航</h2><p><strong>Agent 基础系列：</strong></p>
+<ul>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）闭环与状态</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）推理与规划</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）记忆、工具与 Runtime</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）评测与 Research Agent</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）工程常见问题</a></li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）能力组件与安全边界</a></li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 基础·自检与面试</a>（本篇）</li>
+</ul>
+<p><strong>下一模块：</strong></p>
+<ul>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">Loop Engineering（一）· 合同与验证门</a></li>
+</ul>
+<p><strong>前置自检：</strong></p>
+<ul>
+<li><a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LLM 基础学习·自检与面试</a></li>
+<li><a href="/2026/07/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Prompt Engineering·自检与面试</a></li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">LLM：理解模型、Context 与调用协议</span><br><span class="line">    ↓</span><br><span class="line">Prompt Engineering：输入合同、推理编排、版本评测与安全</span><br><span class="line">    ↓</span><br><span class="line">Agent 基础：闭环 → 规划 → 记忆/Runtime/Harness → 评测 → 工程坑 → 能力与安全</span><br><span class="line">    ↓</span><br><span class="line">Agent 基础自检与面试（本篇）</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering：合同、验证门与可收敛执行</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/" rel="prev" title="AI-Agent工程学习-Agent基础(六)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Agent基础(六)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/" rel="next" title="AI-Agent工程学习-Loop Engineering(一)">
+                  AI-Agent工程学习-Loop Engineering(一) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

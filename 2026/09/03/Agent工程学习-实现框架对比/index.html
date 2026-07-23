@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="八框架全体对比：主路径 LangChain &#x2F; LangGraph &#x2F; Deep Agents &#x2F; CrewAI + 巡览 OpenAI Agents &#x2F; AutoGen &#x2F; LlamaIndex &#x2F; Google ADK；唯一 canonical 选型文档。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-实现框架对比">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="八框架全体对比：主路径 LangChain &#x2F; LangGraph &#x2F; Deep Agents &#x2F; CrewAI + 巡览 OpenAI Agents &#x2F; AutoGen &#x2F; LlamaIndex &#x2F; Google ADK；唯一 canonical 选型文档。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-22T11:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.983Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="LangGraph">
+<meta property="article:tag" content="DeepAgents">
+<meta property="article:tag" content="CrewAI">
+<meta property="article:tag" content="OpenAI Agents">
+<meta property="article:tag" content="AutoGen">
+<meta property="article:tag" content="LlamaIndex">
+<meta property="article:tag" content="Google ADK">
+<meta property="article:tag" content="Agent工程化">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/","path":"/2026/09/03/Agent工程学习-实现框架对比/","title":"AI-Agent工程学习-实现框架对比"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-实现框架对比 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E6%96%87%E6%A1%A3%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本文档在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0-1-%E4%B8%BB%E8%B7%AF%E5%BE%84-vs-%E5%B7%A1%E8%A7%88%E8%B7%AF%E5%BE%84"><span class="nav-number">2.</span> <span class="nav-text">0.1 主路径 vs 巡览路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%AE%9A%E4%BD%8D%EF%BC%88%E5%AE%98%E6%96%B9%E5%8F%A3%E5%BE%84%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">1. 一句话定位（官方口径）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%BB%E8%B7%AF%E5%BE%84%E5%9B%9B%E6%A1%86%E6%9E%B6"><span class="nav-number">3.1.</span> <span class="nav-text">1.1 主路径四框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%B7%A1%E8%A7%88%E5%9B%9B%E6%A1%86%E6%9E%B6"><span class="nav-number">3.2.</span> <span class="nav-text">1.2 巡览四框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-LangChain-%E5%AE%98%E6%96%B9%E4%B8%89%E5%B1%82%E4%BA%A7%E5%93%81-taxonomy"><span class="nav-number">3.3.</span> <span class="nav-text">1.3 LangChain 官方三层产品 taxonomy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E4%B8%80%E5%8F%A5%E8%AF%9D%E8%AE%B0%E5%BF%86%EF%BC%88%E9%80%89%E5%9E%8B%E9%80%9F%E6%9F%A5%EF%BC%89"><span class="nav-number">3.4.</span> <span class="nav-text">1.4 一句话记忆（选型速查）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%EF%BC%88%E8%87%AA%E4%B8%8A%E8%80%8C%E4%B8%8B%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">2. 分层架构（自上而下）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%A0%B8%E5%BF%83%E6%8A%BD%E8%B1%A1%E5%AF%B9%E7%85%A7"><span class="nav-number">5.</span> <span class="nav-text">3. 核心抽象对照</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%BB%E8%B7%AF%E5%BE%84"><span class="nav-number">5.1.</span> <span class="nav-text">3.1 主路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%B7%A1%E8%A7%88%E5%9B%9B%E6%A1%86%E6%9E%B6"><span class="nav-number">5.2.</span> <span class="nav-text">3.2 巡览四框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%BC%80%E5%8F%91%E4%BD%93%E9%AA%8C%E4%B8%8E%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%88%E4%B8%BB%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">5.3.</span> <span class="nav-text">3.3 开发体验与复杂度（主路径）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E6%8E%A7%E5%88%B6%E6%B5%81%E4%B8%8E%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%9E%8B"><span class="nav-number">6.</span> <span class="nav-text">4. 控制流与执行模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E4%B8%BB%E8%B7%AF%E5%BE%84%E9%BB%98%E8%AE%A4%E6%89%A7%E8%A1%8C%E5%BD%A2%E6%80%81"><span class="nav-number">6.1.</span> <span class="nav-text">4.1 主路径默认执行形态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%B7%A1%E8%A7%88%E5%AF%B9%E7%85%A7"><span class="nav-number">6.2.</span> <span class="nav-text">4.2 巡览对照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Middleware-Hooks%EF%BC%88%E4%B8%BB%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">6.3.</span> <span class="nav-text">4.3 Middleware &#x2F; Hooks（主路径）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%A4%9A-Agent-%E6%A8%A1%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="nav-number">7.</span> <span class="nav-text">5. 多 Agent 模式对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E4%B8%BB%E8%B7%AF%E5%BE%84"><span class="nav-number">7.1.</span> <span class="nav-text">5.1 主路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%B7%A1%E8%A7%88"><span class="nav-number">7.2.</span> <span class="nav-text">5.2 巡览</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E7%8A%B6%E6%80%81%E3%80%81%E6%8C%81%E4%B9%85%E5%8C%96%E3%80%81%E6%81%A2%E5%A4%8D"><span class="nav-number">8.</span> <span class="nav-text">6. 状态、持久化、恢复</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E4%B8%BB%E8%B7%AF%E5%BE%84"><span class="nav-number">8.1.</span> <span class="nav-text">6.1 主路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E5%B7%A1%E8%A7%88"><span class="nav-number">8.2.</span> <span class="nav-text">6.2 巡览</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Context-Memory-Knowledge"><span class="nav-number">9.</span> <span class="nav-text">7. Context &#x2F; Memory &#x2F; Knowledge</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E4%B8%BB%E8%B7%AF%E5%BE%84"><span class="nav-number">9.1.</span> <span class="nav-text">7.1 主路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-%E5%B7%A1%E8%A7%88"><span class="nav-number">9.2.</span> <span class="nav-text">7.2 巡览</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-Tools-MCP-Structured-Output"><span class="nav-number">10.</span> <span class="nav-text">8. Tools &#x2F; MCP &#x2F; Structured Output</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E4%B8%BB%E8%B7%AF%E5%BE%84"><span class="nav-number">10.1.</span> <span class="nav-text">8.1 主路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-%E5%B7%A1%E8%A7%88"><span class="nav-number">10.2.</span> <span class="nav-text">8.2 巡览</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-Human-in-the-Loop-%E5%AF%B9%E6%AF%94"><span class="nav-number">11.</span> <span class="nav-text">9. Human-in-the-Loop 对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#9-1-%E4%B8%BB%E8%B7%AF%E5%BE%84"><span class="nav-number">11.1.</span> <span class="nav-text">9.1 主路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-2-%E5%B7%A1%E8%A7%88"><span class="nav-number">11.2.</span> <span class="nav-text">9.2 巡览</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E8%A7%82%E6%B5%8B%E4%B8%8E%E5%8F%91%E7%89%88"><span class="nav-number">12.</span> <span class="nav-text">10. 观测与发版</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#10-1-%E8%A7%82%E6%B5%8B%E5%B9%B3%E5%8F%B0"><span class="nav-number">12.1.</span> <span class="nav-text">10.1 观测平台</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-2-%E5%8F%91%E7%89%88-Checklist-%E6%98%A0%E5%B0%84"><span class="nav-number">12.2.</span> <span class="nav-text">10.2 发版 Checklist 映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-3-%E7%94%9F%E4%BA%A7%E7%BA%A7%E8%83%BD%E5%8A%9B%E5%AF%B9%E7%85%A7%EF%BC%88%E4%B8%BB%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">12.3.</span> <span class="nav-text">10.3 生产级能力对照（主路径）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-4-%E6%8E%92%E9%9A%9C%E7%B2%92%E5%BA%A6%EF%BC%88%E4%B8%BB%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">12.4.</span> <span class="nav-text">10.4 排障粒度（主路径）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E9%80%89%E5%9E%8B%E5%86%B3%E7%AD%96%E6%A0%91"><span class="nav-number">13.</span> <span class="nav-text">11. 选型决策树</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#11-1-%E6%8C%89%E5%9C%BA%E6%99%AF%E9%A6%96%E9%80%89%EF%BC%88%E4%B8%BB%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">13.1.</span> <span class="nav-text">11.1 按场景首选（主路径）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-2-%E4%BD%95%E6%97%B6%E5%80%9F%E9%89%B4%E5%A4%96%E9%83%A8-%E4%BD%95%E6%97%B6%E4%B8%8D%E6%8D%A2%E6%A0%88"><span class="nav-number">13.2.</span> <span class="nav-text">11.2 何时借鉴外部 &#x2F; 何时不换栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-3-%E7%BB%84%E5%90%88%E6%96%B9%E6%A1%88%EF%BC%88%E5%B8%B8%E8%A7%81%EF%BC%89"><span class="nav-number">13.3.</span> <span class="nav-text">11.3 组合方案（常见）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-4-%E9%80%80%E5%9B%9E%E6%9D%A1%E4%BB%B6%EF%BC%88%E4%B8%BB%E8%B7%AF%E5%BE%84%E5%86%85%EF%BC%89"><span class="nav-number">13.4.</span> <span class="nav-text">11.4 退回条件（主路径内）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-5-%E6%8E%A8%E8%8D%90%E7%BB%84%E5%90%88%E6%9E%B6%E6%9E%84%EF%BC%88%E5%8F%8C%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">13.5.</span> <span class="nav-text">11.5 推荐组合架构（双路径）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12-%E5%85%A8%E8%B7%AF%E5%BE%84%E6%94%B6%E5%8F%A3%E4%B8%8E%E7%B3%BB%E5%88%97%E7%B4%A2%E5%BC%95"><span class="nav-number">14.</span> <span class="nav-text">12. 全路径收口与系列索引</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#12-1-%E7%B3%BB%E5%88%97%E5%BF%AB%E9%80%9F%E7%B4%A2%E5%BC%95"><span class="nav-number">14.1.</span> <span class="nav-text">12.1 系列快速索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-2-%E6%9C%AC%E6%96%87%E6%A1%A3%E8%A7%92%E8%89%B2"><span class="nav-number">14.2.</span> <span class="nav-text">12.2 本文档角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-3-%E5%AD%A6%E4%B9%A0%E9%A1%BA%E5%BA%8F"><span class="nav-number">14.3.</span> <span class="nav-text">12.3 学习顺序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">15.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-实现框架对比 | 我的记录小站">
+      <meta itemprop="description" content="八框架全体对比：主路径 LangChain &#x2F; LangGraph &#x2F; Deep Agents &#x2F; CrewAI + 巡览 OpenAI Agents &#x2F; AutoGen &#x2F; LlamaIndex &#x2F; Google ADK；唯一 canonical 选型文档。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-实现框架对比
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-22 19:00:00" itemprop="dateCreated datePublished" datetime="2026-07-22T19:00:00+08:00">2026-07-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">八框架全体对比：主路径 LangChain / LangGraph / Deep Agents / CrewAI + 巡览 OpenAI Agents / AutoGen / LlamaIndex / Google ADK；唯一 canonical 选型文档。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E5%9B%9B/">外部框架巡览（四）</a> 与 <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 工程化 · 自检</a>：主路径四框架、生产工程层与外部四框架巡览均已齐；本篇是 <strong>八框架唯一 canonical 全体对比</strong>——各系列正文只回链此处，不另建「对比（二）」。</p>
+<span id="more"></span>
+<h2 id="0-本文档在学习路径中的位置"><a href="#0-本文档在学习路径中的位置" class="headerlink" title="0. 本文档在学习路径中的位置"></a>0. 本文档在学习路径中的位置</h2><p><strong>阅读顺序说明：</strong> 建议学习顺序为「主路径四框架 → Agent 工程化 → 外部框架巡览 → <strong>回看本文选型</strong>」。本文 permalink 日期可能早于巡览&#x2F;工程化（排期所致），请按文末导航与系列链接阅读，<strong>勿按时间线跳读</strong>。</p>
+<p><strong>前置已学：</strong></p>
+<ul>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">LangChain（一）～（六）</a> — 薄 Harness、<code>create_agent</code>、Middleware</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">LangGraph（一）～（六）</a> — StateGraph、Checkpoint、Interrupt、Multi-Agent</li>
+<li><a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">Deep Agents（一）～（五）</a> — 厚 Harness、<code>create_deep_agent</code>、Subagent</li>
+<li><a href="/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/">CrewAI（一）～（五）</a> — Flow + Crew、Role&#x2F;Task&#x2F;Process</li>
+<li><a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">Agent 工程化（一）～（四）+ 自检</a> — Runtime &#x2F; 观测 &#x2F; 韧性 &#x2F; 部署</li>
+<li><a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">外部框架巡览（一）～（四）</a> — OpenAI Agents &#x2F; AutoGen &#x2F; LlamaIndex &#x2F; Google ADK</li>
+</ul>
+<p><strong>理论锚点：</strong></p>
+<ul>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">Agent（三）§6 Harness</a> — Harness 定义与分层</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#7-Harness-%E8%B0%B1%E7%B3%BB%E4%B8%8E%E5%90%8E%E7%BB%AD%E6%A1%86%E6%9E%B6">Agent（六）§7 谱系</a> — 概念层 Harness 形态</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6 发版 Checklist</a> — 评测与回归 canonical</li>
+<li><a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/#4-%E7%90%86%E8%AE%BA%E5%88%B0%E6%A1%86%E6%9E%B6%E6%98%A0%E5%B0%84%EF%BC%88canonical%EF%BC%89">Multi-Agent（五）§4</a> — 理论→主三框架映射（产品层全体选型以本篇为准）</li>
+</ul>
+<p><strong>垂直能力（不在框架主表展开）：</strong> <a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">RAG 系列</a> · <a href="/2026/08/23/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%80/">MCP 系列</a></p>
+<p><strong>本文不做：</strong> API 分步教程、RAG&#x2F;MCP 协议细节、外部框架第二套深讲（见巡览系列）。</p>
+<hr>
+<h2 id="0-1-主路径-vs-巡览路径"><a href="#0-1-主路径-vs-巡览路径" class="headerlink" title="0.1 主路径 vs 巡览路径"></a>0.1 主路径 vs 巡览路径</h2><table>
+<thead>
+<tr>
+<th>路径</th>
+<th>框架</th>
+<th>本课程角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>主路径（默认实现线）</strong></td>
+<td>LangChain &#x2F; LangGraph &#x2F; Deep Agents &#x2F; CrewAI</td>
+<td>深讲 + 工程化；默认交付选型</td>
+</tr>
+<tr>
+<td><strong>巡览路径</strong></td>
+<td>OpenAI Agents SDK &#x2F; AutoGen &#x2F; LlamaIndex &#x2F; Google ADK</td>
+<td>认名 + 映射；借鉴模式，不默认换栈</td>
+</tr>
+</tbody></table>
+<p><strong>universal（与框架无关）：</strong> LE Gate、Handoff 合同、幂等、租户隔离、Agent（四）§6、<a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">工程化</a> Runtime&#x2F;观测&#x2F;韧性&#x2F;部署口径。</p>
+<hr>
+<h2 id="1-一句话定位（官方口径）"><a href="#1-一句话定位（官方口径）" class="headerlink" title="1. 一句话定位（官方口径）"></a>1. 一句话定位（官方口径）</h2><h3 id="1-1-主路径四框架"><a href="#1-1-主路径四框架" class="headerlink" title="1.1 主路径四框架"></a>1.1 主路径四框架</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>官方定位</th>
+<th>文档</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td><strong>minimal, highly configurable agent harness</strong>：<code>create_agent</code> &#x3D; Model + Tools + Prompt + Middleware</td>
+<td><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langchain/overview">LangChain overview</a></td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td><strong>Low-level orchestration framework and runtime</strong>：durable execution、streaming、HITL、persistence</td>
+<td><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/overview">LangGraph overview</a></td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td><strong>Pre-assembled thick harness</strong> on LangGraph：planning、filesystem、subagents、memory 开箱</td>
+<td><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/overview">Deep Agents overview</a></td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td><strong>Flow（backbone）+ Crew（intelligence）</strong></td>
+<td><a target="_blank" rel="noopener" href="https://docs.crewai.com/v1.15.4/en/introduction">CrewAI Introduction</a></td>
+</tr>
+</tbody></table>
+<p><strong>生态关系（关键）：</strong></p>
+<ul>
+<li><strong>Deep Agents</strong> ⊂ LangChain + LangGraph 生态（编译为 LangGraph Runnable）</li>
+<li><strong>CrewAI</strong> 是 <strong>并行实现线</strong>，不建立在 LangGraph 之上</li>
+<li><strong>LangGraph</strong> 是 LangChain 生态内的 <strong>编排 Runtime 底座</strong></li>
+</ul>
+<h3 id="1-2-巡览四框架"><a href="#1-2-巡览四框架" class="headerlink" title="1.2 巡览四框架"></a>1.2 巡览四框架</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>巡览定位</th>
+<th>入口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OpenAI Agents SDK</strong></td>
+<td>OpenAI 生态轻量 Agent Runtime：Tool 环 &#x2F; Handoff &#x2F; Guardrails</td>
+<td><a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">巡览（一）</a></td>
+</tr>
+<tr>
+<td><strong>AutoGen</strong></td>
+<td>多 Agent 对话与 GroupChat &#x2F; UserProxy</td>
+<td><a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/">巡览（二）</a></td>
+</tr>
+<tr>
+<td><strong>LlamaIndex</strong></td>
+<td>索引与 Query 中心；RAG Agent &#x2F; Query Engine</td>
+<td><a href="/2026/09/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%89/">巡览（三）</a></td>
+</tr>
+<tr>
+<td><strong>Google ADK</strong></td>
+<td>开源 Agent 开发套件；可接 Google Cloud 托管 Runtime</td>
+<td><a href="/2026/09/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E5%9B%9B/">巡览（四）</a></td>
+</tr>
+</tbody></table>
+<h3 id="1-3-LangChain-官方三层产品-taxonomy"><a href="#1-3-LangChain-官方三层产品-taxonomy" class="headerlink" title="1.3 LangChain 官方三层产品 taxonomy"></a>1.3 LangChain 官方三层产品 taxonomy</h3><table>
+<thead>
+<tr>
+<th>官方称谓</th>
+<th>对应产品</th>
+<th>中文含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Agent framework</strong></td>
+<td>LangChain</td>
+<td>Agent 开发框架：Model &#x2F; Tool &#x2F; Prompt &#x2F; Middleware 组装</td>
+</tr>
+<tr>
+<td><strong>Agent runtime</strong></td>
+<td>LangGraph</td>
+<td>Agent 运行时：状态图、持久执行、HITL、Checkpoint</td>
+</tr>
+<tr>
+<td><strong>Agent harness</strong></td>
+<td>LangChain <code>create_agent</code>（薄）· Deep Agents（厚）</td>
+<td>完整 Agent 工作环境</td>
+</tr>
+</tbody></table>
+<p><strong>读法：</strong> Framework 提供零件；Runtime 提供编排引擎；Harness 打包可跑 Agent。CrewAI 与巡览四套 <strong>不在此三层内</strong>，属并行或生态绑定路线。</p>
+<h3 id="1-4-一句话记忆（选型速查）"><a href="#1-4-一句话记忆（选型速查）" class="headerlink" title="1.4 一句话记忆（选型速查）"></a>1.4 一句话记忆（选型速查）</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>记忆口诀</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td>Agent 开发工具箱（薄 Harness）</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>Agent 工作流运行时 &#x2F; 状态机引擎</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td>开箱长任务厚 Harness</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td>AI 团队 + 应用 Flow 框架</td>
+</tr>
+<tr>
+<td><strong>OpenAI Agents</strong></td>
+<td>OpenAI 官方工具环 + Handoff</td>
+</tr>
+<tr>
+<td><strong>AutoGen</strong></td>
+<td>对话式多 Agent &#x2F; GroupChat</td>
+</tr>
+<tr>
+<td><strong>LlamaIndex</strong></td>
+<td>检索与 Query 框架面</td>
+</tr>
+<tr>
+<td><strong>Google ADK</strong></td>
+<td>开源套件 + 可选云托管 Runtime</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="2-分层架构（自上而下）"><a href="#2-分层架构（自上而下）" class="headerlink" title="2. 分层架构（自上而下）"></a>2. 分层架构（自上而下）</h2><p><strong>先澄清常见误区：</strong> 框架 <strong>不是</strong>「哪个更好」的平级竞争，而是 <strong>不同抽象层的组合件</strong>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">业务应用</span><br><span class="line">     │</span><br><span class="line">     ├── CrewAI Flow/Crew          ← 并行应用框架（不建在 LangGraph 上）</span><br><span class="line">     │</span><br><span class="line">     └── LangChain 生态</span><br><span class="line">            ├── Deep Agents / create_agent（Harness）</span><br><span class="line">            └── LangGraph Runtime（编排 / 状态 / Checkpoint）</span><br><span class="line">                      ↑</span><br><span class="line">            LLM + Tools + Memory + MCP/RAG</span><br></pre></td></tr></table></figure>
+
+<p><strong>读图注意：</strong> CrewAI 与 LangChain 生态 <strong>并列</strong>，不是 LangGraph 之上的一层。巡览栈通常自带 Runtime+Harness 打包，与上图再并列，而非插入 LangGraph 层之下。</p>
+<p><strong>读图口诀：</strong></p>
+<ul>
+<li>要 <strong>精细图 + 确定性步骤</strong> → 下沉 LangGraph</li>
+<li>要 <strong>单 Agent 可控外壳</strong> → LangChain</li>
+<li>要 <strong>长任务开箱治理</strong> → Deep Agents</li>
+<li>要 <strong>多角色产品化应用</strong> → CrewAI Flow + Crew</li>
+<li>要 <strong>借鉴外部模式</strong> → 读巡览，默认不换主路径</li>
+</ul>
+<hr>
+<h2 id="3-核心抽象对照"><a href="#3-核心抽象对照" class="headerlink" title="3. 核心抽象对照"></a>3. 核心抽象对照</h2><h3 id="3-1-主路径"><a href="#3-1-主路径" class="headerlink" title="3.1 主路径"></a>3.1 主路径</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>LangChain</th>
+<th>LangGraph</th>
+<th>Deep Agents</th>
+<th>CrewAI</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>中心 API</strong></td>
+<td><code>create_agent</code></td>
+<td><code>StateGraph.compile()</code></td>
+<td><code>create_deep_agent</code></td>
+<td><code>Flow</code> + <code>Crew.kickoff()</code></td>
+</tr>
+<tr>
+<td><strong>思考单位</strong></td>
+<td>Agent loop + middleware</td>
+<td>State &#x2F; Node &#x2F; Edge</td>
+<td>预装 middleware 栈</td>
+<td>应用流程 + 角色团队</td>
+</tr>
+<tr>
+<td><strong>配置风格</strong></td>
+<td>Python 为主</td>
+<td>Python 手画图</td>
+<td>Python + Profiles</td>
+<td>JSONC + Python</td>
+</tr>
+<tr>
+<td><strong>抽象层级</strong></td>
+<td>中（Harness）</td>
+<td>低（Runtime）</td>
+<td>中高（厚 Harness）</td>
+<td>高（应用框架）</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-巡览四框架"><a href="#3-2-巡览四框架" class="headerlink" title="3.2 巡览四框架"></a>3.2 巡览四框架</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>OpenAI Agents</th>
+<th>AutoGen</th>
+<th>LlamaIndex</th>
+<th>Google ADK</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>中心抽象</strong></td>
+<td>Agent + Tools + Handoff</td>
+<td>Conversation &#x2F; GroupChat</td>
+<td>Query Engine &#x2F; Workflow</td>
+<td>Enterprise Runtime</td>
+</tr>
+<tr>
+<td><strong>强项</strong></td>
+<td>OpenAI 生态开箱</td>
+<td>多角色对话原型</td>
+<td>索引与查询管线</td>
+<td>云企业治理与部署</td>
+</tr>
+<tr>
+<td><strong>典型缺口</strong></td>
+<td>图级精细弱于 LG</td>
+<td>可审计门禁弱</td>
+<td>编排弱于 LG</td>
+<td>多云&#x2F;开源可控性</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-开发体验与复杂度（主路径）"><a href="#3-3-开发体验与复杂度（主路径）" class="headerlink" title="3.3 开发体验与复杂度（主路径）"></a>3.3 开发体验与复杂度（主路径）</h3><table>
+<thead>
+<tr>
+<th>目标</th>
+<th>上手最快</th>
+<th>复杂系统可控性最高</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>简单单 Agent + 少量 Tool</td>
+<td>CrewAI &#x2F; <strong>LangChain</strong></td>
+<td>LangChain</td>
+</tr>
+<tr>
+<td>复杂多步 + 分支 + 恢复</td>
+<td>—</td>
+<td><strong>LangGraph</strong></td>
+</tr>
+<tr>
+<td>长任务开箱（FS&#x2F;规划&#x2F;Subagent）</td>
+<td><strong>Deep Agents</strong></td>
+<td>Deep Agents</td>
+</tr>
+<tr>
+<td>多角色产品化应用</td>
+<td><strong>CrewAI</strong></td>
+<td>CrewAI Flow 层</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-控制流与执行模型"><a href="#4-控制流与执行模型" class="headerlink" title="4. 控制流与执行模型"></a>4. 控制流与执行模型</h2><h3 id="4-1-主路径默认执行形态"><a href="#4-1-主路径默认执行形态" class="headerlink" title="4.1 主路径默认执行形态"></a>4.1 主路径默认执行形态</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>默认循环</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td>Model → tool_calls → execute → ToolMessage → …</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>按边遍历 Node</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td>planning → tools → FS → 可选 subagent → 汇总</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td>Flow <code>@start</code>&#x2F;<code>@listen</code>；子步 <code>crew.kickoff()</code></td>
+</tr>
+</tbody></table>
+<h3 id="4-2-巡览对照"><a href="#4-2-巡览对照" class="headerlink" title="4.2 巡览对照"></a>4.2 巡览对照</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>控制流印象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OpenAI Agents</strong></td>
+<td>工具环 + Handoff 切换 Agent</td>
+</tr>
+<tr>
+<td><strong>AutoGen</strong></td>
+<td>消息轮次 + Speaker selection</td>
+</tr>
+<tr>
+<td><strong>LlamaIndex</strong></td>
+<td>Query&#x2F;Workflow 步</td>
+</tr>
+<tr>
+<td><strong>Google ADK</strong></td>
+<td>平台工作流 &#x2F; Agent 编排（云侧）</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-Middleware-Hooks（主路径）"><a href="#4-3-Middleware-Hooks（主路径）" class="headerlink" title="4.3 Middleware &#x2F; Hooks（主路径）"></a>4.3 Middleware &#x2F; Hooks（主路径）</h3><ul>
+<li><strong>LangChain</strong>：Middleware 插在 agent loop</li>
+<li><strong>LangGraph</strong>：Middleware 进 agent 节点；图逻辑用 Node&#x2F;Edge</li>
+<li><strong>Deep Agents</strong>：默认 Middleware 栈</li>
+<li><strong>CrewAI</strong>：Task Guardrail + Flow 装饰器</li>
+</ul>
+<hr>
+<h2 id="5-多-Agent-模式对比"><a href="#5-多-Agent-模式对比" class="headerlink" title="5. 多 Agent 模式对比"></a>5. 多 Agent 模式对比</h2><h3 id="5-1-主路径"><a href="#5-1-主路径" class="headerlink" title="5.1 主路径"></a>5.1 主路径</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>多 Agent 表达</th>
+<th>典型模式</th>
+<th>强项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td>非主战场</td>
+<td>多 agent + 外部 LangGraph</td>
+<td>单 Agent 闭环</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>Supervisor &#x2F; Subgraph &#x2F; Handoff</td>
+<td>图级显式路由</td>
+<td>控制最细、可审计</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td><code>task()</code> Subagent</td>
+<td>委派 + context quarantine</td>
+<td>长材料隔离</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td>Role + Task + Process</td>
+<td>sequential &#x2F; hierarchical</td>
+<td>角色化协作</td>
+</tr>
+</tbody></table>
+<p>理论映射表：<a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/#4-%E7%90%86%E8%AE%BA%E5%88%B0%E6%A1%86%E6%9E%B6%E6%98%A0%E5%B0%84%EF%BC%88canonical%EF%BC%89">Multi-Agent（五）§4</a>。</p>
+<p><strong>选型口诀：</strong> 图级门禁 → LangGraph；context 卫生长任务 → Deep Agents；角色流水线 → CrewAI。</p>
+<h3 id="5-2-巡览"><a href="#5-2-巡览" class="headerlink" title="5.2 巡览"></a>5.2 巡览</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>多 Agent 印象</th>
+<th>理论映射</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OpenAI Agents</strong></td>
+<td>Handoff 专员</td>
+<td>Handoff 合同</td>
+</tr>
+<tr>
+<td><strong>AutoGen</strong></td>
+<td>GroupChat &#x2F; Peer 对话</td>
+<td>Debate &#x2F; Peer</td>
+</tr>
+<tr>
+<td><strong>LlamaIndex</strong></td>
+<td>非多 Agent 主战场</td>
+<td>偏单查询&#x2F;RAG Agent</td>
+</tr>
+<tr>
+<td><strong>Google ADK</strong></td>
+<td>企业内多 Agent 产品抽象</td>
+<td>视文档；对照 Supervisor&#x2F;Crew</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="6-状态、持久化、恢复"><a href="#6-状态、持久化、恢复" class="headerlink" title="6. 状态、持久化、恢复"></a>6. 状态、持久化、恢复</h2><h3 id="6-1-主路径"><a href="#6-1-主路径" class="headerlink" title="6.1 主路径"></a>6.1 主路径</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>机制</th>
+<th>关键概念</th>
+<th>强度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangGraph</strong></td>
+<td>Checkpointer</td>
+<td><code>thread_id</code>、<code>interrupt()</code>、<code>Command(resume=…)</code></td>
+<td><strong>最强</strong></td>
+</tr>
+<tr>
+<td><strong>LangChain</strong></td>
+<td>透传 checkpointer</td>
+<td><code>create_agent(..., checkpointer=…)</code></td>
+<td>可用</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td>消费 LangGraph Runtime</td>
+<td>FS&#x2F;subagent</td>
+<td>借底层</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td>Flow <code>@persist</code></td>
+<td>restore &#x2F; state id</td>
+<td>应用层</td>
+</tr>
+</tbody></table>
+<p>生产存储与 <code>/resume</code>：<a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">工程化（一）（四）</a>。</p>
+<h3 id="6-2-巡览"><a href="#6-2-巡览" class="headerlink" title="6.2 巡览"></a>6.2 巡览</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>印象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OpenAI Agents</strong></td>
+<td>Sessions；对照 thread_id</td>
+</tr>
+<tr>
+<td><strong>AutoGen</strong></td>
+<td>对话历史；长跑恢复弱于 LG Checkpoint</td>
+</tr>
+<tr>
+<td><strong>LlamaIndex</strong></td>
+<td>索引持久 ≠ Agent run Checkpoint</td>
+</tr>
+<tr>
+<td><strong>Google ADK</strong></td>
+<td>企业会话持久（平台）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-Context-Memory-Knowledge"><a href="#7-Context-Memory-Knowledge" class="headerlink" title="7. Context &#x2F; Memory &#x2F; Knowledge"></a>7. Context &#x2F; Memory &#x2F; Knowledge</h2><h3 id="7-1-主路径"><a href="#7-1-主路径" class="headerlink" title="7.1 主路径"></a>7.1 主路径</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>Context 治理</th>
+<th>Memory</th>
+<th>Knowledge&#x2F;RAG</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td>Middleware 压缩等</td>
+<td>checkpointer&#x2F;store</td>
+<td>Retriever Tool</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>state&#x2F;store 自建策略</td>
+<td>Store + thread</td>
+<td>节点内 RAG</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td>Summarization + FS + subagent</td>
+<td>memory 参数</td>
+<td>Tool &#x2F; memory</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td>Flow state + Task 输出</td>
+<td>Memory API</td>
+<td>内置 Knowledge</td>
+</tr>
+</tbody></table>
+<h3 id="7-2-巡览"><a href="#7-2-巡览" class="headerlink" title="7.2 巡览"></a>7.2 巡览</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>印象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OpenAI Agents</strong></td>
+<td>会话上下文 + Handoff 摘要纪律</td>
+</tr>
+<tr>
+<td><strong>AutoGen</strong></td>
+<td>群聊全文易膨胀；须摘要与轮次上限</td>
+</tr>
+<tr>
+<td><strong>LlamaIndex</strong></td>
+<td><strong>检索&#x2F;索引主场</strong>；评测回链 <a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">RAG 系列</a></td>
+</tr>
+<tr>
+<td><strong>Google ADK</strong></td>
+<td>企业知识与会话（平台能力）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-Tools-MCP-Structured-Output"><a href="#8-Tools-MCP-Structured-Output" class="headerlink" title="8. Tools &#x2F; MCP &#x2F; Structured Output"></a>8. Tools &#x2F; MCP &#x2F; Structured Output</h2><h3 id="8-1-主路径"><a href="#8-1-主路径" class="headerlink" title="8.1 主路径"></a>8.1 主路径</h3><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>LangChain</th>
+<th>LangGraph</th>
+<th>Deep Agents</th>
+<th>CrewAI</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Tool</strong></td>
+<td><code>@tool</code> 最成熟</td>
+<td>节点内调用</td>
+<td>继承 + FS&#x2F;subagent tools</td>
+<td>Tools&#x2F;MCP&#x2F;Apps</td>
+</tr>
+<tr>
+<td><strong>MCP</strong></td>
+<td><a href="/2026/08/25/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%89/">MCP（三）</a></td>
+<td>经 agent 节点</td>
+<td>MultiServerMCPClient</td>
+<td><code>mcps=[...]</code></td>
+</tr>
+<tr>
+<td><strong>Structured</strong></td>
+<td>response_format 等</td>
+<td>节点内</td>
+<td>继承</td>
+<td>output_json&#x2F;pydantic</td>
+</tr>
+</tbody></table>
+<h3 id="8-2-巡览"><a href="#8-2-巡览" class="headerlink" title="8.2 巡览"></a>8.2 巡览</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>印象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OpenAI Agents</strong></td>
+<td>Tool Calling Runtime + Guardrails</td>
+</tr>
+<tr>
+<td><strong>AutoGen</strong></td>
+<td>UserProxy &#x2F; 工具函数；写路径仍要幂等</td>
+</tr>
+<tr>
+<td><strong>LlamaIndex</strong></td>
+<td>Query 工具化 &#x2F; RAG Agent 调检索</td>
+</tr>
+<tr>
+<td><strong>Google ADK</strong></td>
+<td>企业连接器与工具治理</td>
+</tr>
+</tbody></table>
+<p><strong>MCP 共性：</strong> 发现与 Schema <strong>不替代</strong> Runtime 校验、allowlist、HITL。</p>
+<hr>
+<h2 id="9-Human-in-the-Loop-对比"><a href="#9-Human-in-the-Loop-对比" class="headerlink" title="9. Human-in-the-Loop 对比"></a>9. Human-in-the-Loop 对比</h2><h3 id="9-1-主路径"><a href="#9-1-主路径" class="headerlink" title="9.1 主路径"></a>9.1 主路径</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>机制</th>
+<th>表达层级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangGraph</strong></td>
+<td><code>interrupt()</code> + checkpointer</td>
+<td>Runtime</td>
+</tr>
+<tr>
+<td><strong>LangChain</strong></td>
+<td>HumanInTheLoopMiddleware</td>
+<td>Middleware</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td><code>interrupt_on</code></td>
+<td>Harness</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td><code>@human_feedback</code> + emit</td>
+<td>Flow</td>
+</tr>
+</tbody></table>
+<h3 id="9-2-巡览"><a href="#9-2-巡览" class="headerlink" title="9.2 巡览"></a>9.2 巡览</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>印象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OpenAI Agents</strong></td>
+<td>Guardrails + 会话内审批模式（以文档为准）</td>
+</tr>
+<tr>
+<td><strong>AutoGen</strong></td>
+<td><strong>UserProxy</strong> 引入人类</td>
+</tr>
+<tr>
+<td><strong>LlamaIndex</strong></td>
+<td>非 HITL 主叙事</td>
+</tr>
+<tr>
+<td><strong>Google ADK</strong></td>
+<td>企业审批流（平台）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="10-观测与发版"><a href="#10-观测与发版" class="headerlink" title="10. 观测与发版"></a>10. 观测与发版</h2><h3 id="10-1-观测平台"><a href="#10-1-观测平台" class="headerlink" title="10.1 观测平台"></a>10.1 观测平台</h3><table>
+<thead>
+<tr>
+<th>生态</th>
+<th>框架</th>
+<th>能力</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangSmith</strong></td>
+<td>LangChain &#x2F; LangGraph &#x2F; Deep Agents</td>
+<td>trace、graph、dataset eval</td>
+</tr>
+<tr>
+<td><strong>CrewAI AMP</strong></td>
+<td>CrewAI</td>
+<td>task timeline、成本</td>
+</tr>
+<tr>
+<td><strong>各巡览自带 Tracing</strong></td>
+<td>OpenAI Agents 等</td>
+<td>开箱轨迹；须对齐工程化（二）口径</td>
+</tr>
+<tr>
+<td><strong>OTel</strong></td>
+<td>跨服务</td>
+<td><a href="/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/">工程化（二）</a></td>
+</tr>
+</tbody></table>
+<h3 id="10-2-发版-Checklist-映射"><a href="#10-2-发版-Checklist-映射" class="headerlink" title="10.2 发版 Checklist 映射"></a>10.2 发版 Checklist 映射</h3><p>canonical：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a>。换框架 <strong>不换</strong> 发版标准。</p>
+<h3 id="10-3-生产级能力对照（主路径）"><a href="#10-3-生产级能力对照（主路径）" class="headerlink" title="10.3 生产级能力对照（主路径）"></a>10.3 生产级能力对照（主路径）</h3><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>LangChain</th>
+<th>LangGraph</th>
+<th>Deep Agents</th>
+<th>CrewAI</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>状态恢复</strong></td>
+<td>透传 checkpointer</td>
+<td><strong>最强</strong></td>
+<td>借底层</td>
+<td>Flow <code>@persist</code></td>
+</tr>
+<tr>
+<td><strong>长任务</strong></td>
+<td>中</td>
+<td><strong>强</strong></td>
+<td><strong>强</strong></td>
+<td>中</td>
+</tr>
+<tr>
+<td><strong>人工审批</strong></td>
+<td>Middleware</td>
+<td><strong>interrupt()</strong></td>
+<td>interrupt_on</td>
+<td><code>@human_feedback</code></td>
+</tr>
+<tr>
+<td><strong>流程控制</strong></td>
+<td>弱</td>
+<td><strong>最强</strong></td>
+<td>中</td>
+<td>Flow 中强</td>
+</tr>
+<tr>
+<td><strong>企业可观测</strong></td>
+<td>LangSmith</td>
+<td>图级 state</td>
+<td>+ subagent span</td>
+<td>AMP</td>
+</tr>
+</tbody></table>
+<h3 id="10-4-排障粒度（主路径）"><a href="#10-4-排障粒度（主路径）" class="headerlink" title="10.4 排障粒度（主路径）"></a>10.4 排障粒度（主路径）</h3><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>排障粒度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangGraph</strong></td>
+<td>节点级 Input&#x2F;Output + state</td>
+</tr>
+<tr>
+<td><strong>Deep Agents &#x2F; LangChain</strong></td>
+<td>Middleware + tool + subagent</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td>Task 时间线；图级弱于 LG</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="11-选型决策树"><a href="#11-选型决策树" class="headerlink" title="11. 选型决策树"></a>11. 选型决策树</h2><h3 id="11-1-按场景首选（主路径）"><a href="#11-1-按场景首选（主路径）" class="headerlink" title="11.1 按场景首选（主路径）"></a>11.1 按场景首选（主路径）</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>首选</th>
+<th>备选</th>
+<th>通常不推荐</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>聊天 &#x2F; FAQ + 2～5 Tool</td>
+<td><strong>LangChain</strong></td>
+<td>LangGraph 单节点</td>
+<td>Deep Agents &#x2F; CrewAI</td>
+</tr>
+<tr>
+<td>复杂分支 + 精细 checkpoint</td>
+<td><strong>LangGraph</strong></td>
+<td>CrewAI Flow</td>
+<td>纯 LangChain</td>
+</tr>
+<tr>
+<td>企业流程自动化</td>
+<td><strong>LangGraph</strong></td>
+<td>CrewAI Flow + HITL</td>
+<td>纯 Crew sequential</td>
+</tr>
+<tr>
+<td>长任务 + FS&#x2F;Subagent</td>
+<td><strong>Deep Agents</strong></td>
+<td>LangGraph 自建</td>
+<td>纯 CrewAI</td>
+</tr>
+<tr>
+<td>多角色产品化流水线</td>
+<td><strong>CrewAI</strong></td>
+<td>LangGraph Supervisor</td>
+<td>Deep Agents alone</td>
+</tr>
+<tr>
+<td>固定 ETL + 偶发 LLM</td>
+<td><strong>LangGraph</strong></td>
+<td>CrewAI Flow</td>
+<td>Crew</td>
+</tr>
+</tbody></table>
+<h3 id="11-2-何时借鉴外部-何时不换栈"><a href="#11-2-何时借鉴外部-何时不换栈" class="headerlink" title="11.2 何时借鉴外部 &#x2F; 何时不换栈"></a>11.2 何时借鉴外部 &#x2F; 何时不换栈</h3><table>
+<thead>
+<tr>
+<th>信号</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>团队已锁定 <strong>OpenAI</strong> 官方 SDK 心智</td>
+<td>可借鉴 Agents SDK；治理仍按工程化</td>
+</tr>
+<tr>
+<td>需要 <strong>快速多角色对话原型</strong></td>
+<td>可借鉴 AutoGen GroupChat；生产门禁用 LG&#x2F;CrewAI</td>
+</tr>
+<tr>
+<td>团队以 <strong>LlamaIndex 索引栈</strong> 为中心</td>
+<td>框架面用 LI；<strong>评测仍走 RAG 系列</strong></td>
+</tr>
+<tr>
+<td>已绑定 <strong>Google Cloud</strong> 要托管一站式</td>
+<td>可评估 ADK</td>
+</tr>
+<tr>
+<td>要图级可审计、多云、开源可控</td>
+<td><strong>不换栈</strong>，主路径 LC&#x2F;LG&#x2F;DA&#x2F;CrewAI</td>
+</tr>
+<tr>
+<td>仅缺某一模式（Debate&#x2F;Handoff）</td>
+<td><strong>借鉴模式</strong>，用主路径实现，不必引入整栈</td>
+</tr>
+</tbody></table>
+<h3 id="11-3-组合方案（常见）"><a href="#11-3-组合方案（常见）" class="headerlink" title="11.3 组合方案（常见）"></a>11.3 组合方案（常见）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. LangGraph 外层 + Deep Agents CompiledSubAgent</span><br><span class="line">2. CrewAI Flow + MCP + Knowledge</span><br><span class="line">3. LangChain create_agent + RAG Tool + LE Gate</span><br><span class="line">4. 主路径实现 + 借鉴 AutoGen Debate 轮次/仲裁模式</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-4-退回条件（主路径内）"><a href="#11-4-退回条件（主路径内）" class="headerlink" title="11.4 退回条件（主路径内）"></a>11.4 退回条件（主路径内）</h3><table>
+<thead>
+<tr>
+<th>从</th>
+<th>退回</th>
+<th>信号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Deep Agents</td>
+<td>LangChain</td>
+<td>无 FS&#x2F;Subagent 需求</td>
+</tr>
+<tr>
+<td>Deep Agents</td>
+<td>LangGraph</td>
+<td>需确定性多节点</td>
+</tr>
+<tr>
+<td>CrewAI</td>
+<td>LangGraph</td>
+<td>控制流极复杂</td>
+</tr>
+<tr>
+<td>LangGraph</td>
+<td>LangChain</td>
+<td>单环足够、图成本过高</td>
+</tr>
+</tbody></table>
+<h3 id="11-5-推荐组合架构（双路径）"><a href="#11-5-推荐组合架构（双路径）" class="headerlink" title="11.5 推荐组合架构（双路径）"></a>11.5 推荐组合架构（双路径）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">路径 A（LangChain 生态）</span><br><span class="line">  Application → LangGraph 编排 → LangChain/Deep Agents 节点 → MCP/RAG/LE</span><br><span class="line">路径 B（CrewAI 生态）</span><br><span class="line">  Application → CrewAI Flow → Crew → MCP/Knowledge</span><br></pre></td></tr></table></figure>
+
+<p>垂直能力与 <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">工程化</a> 与四维框架 <strong>正交</strong>。</p>
+<hr>
+<h2 id="12-全路径收口与系列索引"><a href="#12-全路径收口与系列索引" class="headerlink" title="12. 全路径收口与系列索引"></a>12. 全路径收口与系列索引</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">LLM → Prompt → Agent → Loop Engineering</span><br><span class="line">    ↓</span><br><span class="line">LangChain → LangGraph → Deep Agents</span><br><span class="line">    ↓</span><br><span class="line">RAG → MCP → CrewAI</span><br><span class="line">    ↓</span><br><span class="line">Agent 工程化（一）～（四）+ 自检</span><br><span class="line">    ↓</span><br><span class="line">外部框架巡览（一）～（四）</span><br><span class="line">    ↓</span><br><span class="line">实现框架对比（本篇，八框架全体 canonical）</span><br></pre></td></tr></table></figure>
+
+<h3 id="12-1-系列快速索引"><a href="#12-1-系列快速索引" class="headerlink" title="12.1 系列快速索引"></a>12.1 系列快速索引</h3><table>
+<thead>
+<tr>
+<th>系列</th>
+<th>入口</th>
+<th>何时深入</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain</strong></td>
+<td><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">（一）</a></td>
+<td>单 Agent、Middleware</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">（一）</a></td>
+<td>状态图、Interrupt、Supervisor</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td><a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">（一）</a></td>
+<td>长任务、FS、Subagent</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td><a href="/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/">（一）</a></td>
+<td>Flow+Crew、角色团队</td>
+</tr>
+<tr>
+<td><strong>RAG</strong></td>
+<td><a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">（一）</a></td>
+<td>检索评测</td>
+</tr>
+<tr>
+<td><strong>MCP</strong></td>
+<td><a href="/2026/08/23/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%80/">（一）</a></td>
+<td>外部能力总线</td>
+</tr>
+<tr>
+<td><strong>Agent 工程化</strong></td>
+<td><a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">（一）</a></td>
+<td>生产 Runtime&#x2F;观测&#x2F;韧性&#x2F;部署</td>
+</tr>
+<tr>
+<td><strong>外部框架巡览</strong></td>
+<td><a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">（一）</a></td>
+<td>外四框架认名与映射</td>
+</tr>
+<tr>
+<td><strong>Multi-Agent</strong></td>
+<td><a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">（一）</a></td>
+<td>角色&#x2F;协作&#x2F;通信理论</td>
+</tr>
+</tbody></table>
+<h3 id="12-2-本文档角色"><a href="#12-2-本文档角色" class="headerlink" title="12.2 本文档角色"></a>12.2 本文档角色</h3><ul>
+<li><strong>Agent（六）§7</strong>：Harness <strong>概念层</strong>谱系</li>
+<li><strong>Multi-Agent（五）§4</strong>：理论→主三框架映射</li>
+<li><strong>本篇</strong>：八框架 <strong>产品&#x2F;工程层</strong>全体对比与选型（<strong>唯一</strong>全体对比文）</li>
+<li><strong>Agent（四）§6</strong>：发版 <strong>评测层</strong> Checklist</li>
+<li><strong>Agent 工程化</strong>：生产落地口径</li>
+</ul>
+<h3 id="12-3-学习顺序"><a href="#12-3-学习顺序" class="headerlink" title="12.3 学习顺序"></a>12.3 学习顺序</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LangChain → LangGraph → Deep Agents → CrewAI</span><br><span class="line">    → 工程化 → 外部巡览 → 本篇全体对比 → 自研/组合</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>主路径四框架</strong>按抽象层组合；<strong>巡览四框架</strong>用于借鉴，不默认换栈。</p>
+<p><strong>一句话记忆</strong>见 §1.4。</p>
+<p><strong>选型：</strong> 单 Agent→LangChain；精细图→LangGraph；长任务→Deep Agents；角色团队→CrewAI；外部仅在生态锁定或原型需要时评估。</p>
+<p><strong>治理：</strong> LE Gate + Agent（四）§6 + 工程化口径 universal。</p>
+<p><strong>本文：</strong> 八框架全体对比唯一入口；不另建对比（二）。</p>
+<p><strong>前置：</strong> <a href="/2026/09/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E5%9B%9B/">巡览（四）</a> · <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">工程化自检</a> · <a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/#4-%E7%90%86%E8%AE%BA%E5%88%B0%E6%A1%86%E6%9E%B6%E6%98%A0%E5%B0%84%EF%BC%88canonical%EF%BC%89">Multi-Agent（五）§4</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LangChain/" rel="tag"># LangChain</a>
+              <a href="/tags/LangGraph/" rel="tag"># LangGraph</a>
+              <a href="/tags/DeepAgents/" rel="tag"># DeepAgents</a>
+              <a href="/tags/CrewAI/" rel="tag"># CrewAI</a>
+              <a href="/tags/OpenAI-Agents/" rel="tag"># OpenAI Agents</a>
+              <a href="/tags/AutoGen/" rel="tag"># AutoGen</a>
+              <a href="/tags/LlamaIndex/" rel="tag"># LlamaIndex</a>
+              <a href="/tags/Google-ADK/" rel="tag"># Google ADK</a>
+              <a href="/tags/Agent%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag"># Agent工程化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="prev" title="AI-Agent工程学习-CrewAI(自检与面试)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-CrewAI(自检与面试)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/" rel="next" title="AI-Agent工程学习-Agent工程化(一)">
+                  AI-Agent工程学习-Agent工程化(一) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

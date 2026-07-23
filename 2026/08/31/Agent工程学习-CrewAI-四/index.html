@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="CrewAI Knowledge&#x2F;Memory、MCP 集成、Event Listeners、Tracing 与外部观测；与 RAG&#x2F;MCP&#x2F;LangSmith 对齐。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-CrewAI(四)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="CrewAI Knowledge&#x2F;Memory、MCP 集成、Event Listeners、Tracing 与外部观测；与 RAG&#x2F;MCP&#x2F;LangSmith 对齐。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-22T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.983Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="CrewAI">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/","path":"/2026/08/31/Agent工程学习-CrewAI-四/","title":"AI-Agent工程学习-CrewAI(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-CrewAI(四) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Knowledge%EF%BC%88RAG-%E5%B1%82%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">1. Knowledge（RAG 层）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Agent-%E7%BA%A7-vs-Crew-%E7%BA%A7"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 Agent 级 vs Crew 级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E6%95%B0%E6%8D%AE%E6%BA%90%E4%B8%8E%E5%AD%98%E5%82%A8"><span class="nav-number">2.2.</span> <span class="nav-text">1.2 数据源与存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%B8%8E-RAG-%E7%B3%BB%E5%88%97%E5%88%86%E5%B7%A5"><span class="nav-number">2.3.</span> <span class="nav-text">1.3 与 RAG 系列分工</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Memory-%E7%BB%9F%E4%B8%80%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.</span> <span class="nav-text">2. Memory 统一系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%9B%9B%E7%A7%8D%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 四种使用方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 核心机制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-MCP-%E9%9B%86%E6%88%90"><span class="nav-number">4.</span> <span class="nav-text">3. MCP 集成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Event-Listeners"><span class="nav-number">5.</span> <span class="nav-text">4. Event Listeners</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Tracing-%E5%86%85%E7%BD%AE%E8%A7%82%E6%B5%8B"><span class="nav-number">6.</span> <span class="nav-text">5. Tracing 内置观测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%90%AF%E7%94%A8%EF%BC%88%E4%B8%89%E9%80%89%E4%B8%80%EF%BC%89"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 启用（三选一）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%8F%AF%E8%A7%81%E5%86%85%E5%AE%B9"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 可见内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E4%B8%8E-LangSmith-Agent%EF%BC%88%E5%9B%9B%EF%BC%89%E5%AF%B9%E7%85%A7"><span class="nav-number">6.3.</span> <span class="nav-text">5.3 与 LangSmith &#x2F; Agent（四）对照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-%E5%A4%96%E9%83%A8%E8%A7%82%E6%B5%8B"><span class="nav-number">6.4.</span> <span class="nav-text">5.4 外部观测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%9B%86%E6%88%90%E6%9E%B6%E6%9E%84%E7%A4%BA%E6%84%8F"><span class="nav-number">7.</span> <span class="nav-text">6. 集成架构示意</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AE%9E%E8%B7%B5%E8%A6%81%E7%82%B9"><span class="nav-number">8.</span> <span class="nav-text">7. 实践要点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">9.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-CrewAI(四) | 我的记录小站">
+      <meta itemprop="description" content="CrewAI Knowledge&#x2F;Memory、MCP 集成、Event Listeners、Tracing 与外部观测；与 RAG&#x2F;MCP&#x2F;LangSmith 对齐。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-CrewAI(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-22 14:00:00" itemprop="dateCreated datePublished" datetime="2026-07-22T14:00:00+08:00">2026-07-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">CrewAI Knowledge/Memory、MCP 集成、Event Listeners、Tracing 与外部观测；与 RAG/MCP/LangSmith 对齐。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/">CrewAI（三）</a>：编排主线已会；本篇讲 <strong>知道什么（Knowledge&#x2F;Memory）、连什么（MCP）、怎么看（Tracing&#x2F;Events）</strong>——与 RAG、MCP、Agent（四）评测口径对齐。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><ul>
+<li><strong>（一）～（三）</strong>：架构、Agent&#x2F;Task、Crew&#x2F;Flow  </li>
+<li><strong>本篇</strong>：Knowledge &#x2F; Memory &#x2F; MCP &#x2F; 观测  </li>
+<li><strong>（五）</strong>：HITL &#x2F; Training &#x2F; 生产项目</li>
+</ul>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/knowledge">Knowledge</a> · <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/memory">Memory</a> · <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/observability/tracing">Tracing</a> · <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/event-listener">Event Listeners</a></p>
+<hr>
+<h2 id="1-Knowledge（RAG-层）"><a href="#1-Knowledge（RAG-层）" class="headerlink" title="1. Knowledge（RAG 层）"></a>1. Knowledge（RAG 层）</h2><p>Knowledge 让 Agent <strong>预加载外部事实</strong>，检索在框架内完成——Agent 不必再写「何时调用检索 Tool」的 persona。</p>
+<h3 id="1-1-Agent-级-vs-Crew-级"><a href="#1-1-Agent-级-vs-Crew-级" class="headerlink" title="1.1 Agent 级 vs Crew 级"></a>1.1 Agent 级 vs Crew 级</h3><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Agent 级</strong></td>
+<td>单 Agent 专属文档</td>
+</tr>
+<tr>
+<td><strong>Crew 级</strong></td>
+<td>全 Crew 共享</td>
+</tr>
+</tbody></table>
+<p>与 <a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">RAG（一）</a> 两种挂法对照：Knowledge ≈ <strong>Runtime 预注入</strong>；Retriever Tool ≈ <strong>工具化按需检索</strong>（CrewAI 侧以 Knowledge 为主路径）。</p>
+<h3 id="1-2-数据源与存储"><a href="#1-2-数据源与存储" class="headerlink" title="1.2 数据源与存储"></a>1.2 数据源与存储</h3><ul>
+<li>支持 PDF、CSV、URL 等  </li>
+<li>默认 <strong>ChromaDB</strong> 向量存储；可换 Qdrant 等  </li>
+<li>默认 embedding 常为 OpenAI <code>text-embedding-3-small</code>（即使 LLM 换厂商也需注意一致）  </li>
+<li><strong>Query Rewriting</strong>：检索前自动改写 query 提升召回</li>
+</ul>
+<h3 id="1-3-与-RAG-系列分工"><a href="#1-3-与-RAG-系列分工" class="headerlink" title="1.3 与 RAG 系列分工"></a>1.3 与 RAG 系列分工</h3><table>
+<thead>
+<tr>
+<th>主题</th>
+<th>RAG 系列</th>
+<th>CrewAI Knowledge</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chunk&#x2F;Index 策略</td>
+<td>深讲</td>
+<td>内置，可配置</td>
+</tr>
+<tr>
+<td>Recall@K 评测</td>
+<td>§8 指标</td>
+<td>须自建评测集验证</td>
+</tr>
+<tr>
+<td>Citation Gate</td>
+<td>LE + structured output</td>
+<td>Task Guardrail</td>
+</tr>
+<tr>
+<td>企业生产 Ingestion</td>
+<td>RAG（五）</td>
+<td>可外置 job + Knowledge 刷新</td>
+</tr>
+</tbody></table>
+<p><strong>发版：</strong> embedding&#x2F;index 版本须固定；指标对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a> RAG 域。</p>
+<hr>
+<h2 id="2-Memory-统一系统"><a href="#2-Memory-统一系统" class="headerlink" title="2. Memory 统一系统"></a>2. Memory 统一系统</h2><p>CrewAI v1.15+ 提供统一 <code>Memory</code> API，替代分散的 short&#x2F;long&#x2F;entity 类型。</p>
+<h3 id="2-1-四种使用方式"><a href="#2-1-四种使用方式" class="headerlink" title="2.1 四种使用方式"></a>2.1 四种使用方式</h3><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>独立 <code>Memory()</code></td>
+<td>脚本、笔记本</td>
+</tr>
+<tr>
+<td><code>Crew(memory=True)</code></td>
+<td>全员共享，继承 crew embedder</td>
+</tr>
+<tr>
+<td>Agent 独立 memory</td>
+<td>覆盖 Crew 默认</td>
+</tr>
+<tr>
+<td>Flow 内置</td>
+<td><code>self.remember()</code> &#x2F; <code>self.recall()</code> &#x2F; <code>self.extract_memories()</code></td>
+</tr>
+</tbody></table>
+<h3 id="2-2-核心机制"><a href="#2-2-核心机制" class="headerlink" title="2.2 核心机制"></a>2.2 核心机制</h3><ul>
+<li><strong>Scope 树</strong>：<code>/</code>, <code>/project/alpha</code>, <code>/researcher/findings</code>  </li>
+<li><strong>保存时 LLM 分析</strong>：推断 scope、categories、importance  </li>
+<li><strong>召回评分</strong>：语义相似 + 时效 + 重要性  </li>
+<li><strong><code>extract_memories</code></strong>：长输出拆成原子事实再 <code>remember()</code></li>
+</ul>
+<p><strong>与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#3-%E8%AE%B0%E5%BF%86%E6%95%85%E9%9A%9C%E6%89%8B%E5%86%8C">Agent（五）§3</a> 对齐：</strong> 防写污染（无 Observation 不持久化）、scope 隔离、污染 fixture 回归。</p>
+<hr>
+<h2 id="3-MCP-集成"><a href="#3-MCP-集成" class="headerlink" title="3. MCP 集成"></a>3. MCP 集成</h2><p>Agent 配置：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">agent = Agent(</span><br><span class="line">    role=<span class="string">&quot;SEO Auditor&quot;</span>,</span><br><span class="line">    goal=<span class="string">&quot;Audit live pages via MCP tools&quot;</span>,</span><br><span class="line">    mcps=[<span class="string">&quot;https://seo-mcp.example.com/sse&quot;</span>],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><strong>与 <a href="/2026/08/23/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E4%B8%80/">MCP 系列</a> 对齐：</strong></p>
+<ul>
+<li>MCP 提供发现与 Schema；执行闭环仍是 tool_call → Result  </li>
+<li>仍须 allowlist、HITL、恶意 Result sanitize  </li>
+<li>可与 <a href="/2026/08/26/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E5%9B%9B/">MCP（四）SEO 项目</a> 四 Tool 组合：RAG 查内部规范，MCP 查 live 页</li>
+</ul>
+<hr>
+<h2 id="4-Event-Listeners"><a href="#4-Event-Listeners" class="headerlink" title="4. Event Listeners"></a>4. Event Listeners</h2><p>基于 <code>CrewAIEventsBus</code> + <code>BaseEventListener</code>，监听执行生命周期事件。</p>
+<p><strong>典型事件类：</strong></p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Crew</td>
+<td>kickoff 开始&#x2F;结束</td>
+</tr>
+<tr>
+<td>Task</td>
+<td>完成、失败</td>
+</tr>
+<tr>
+<td>Tool</td>
+<td>调用</td>
+</tr>
+<tr>
+<td>Flow</td>
+<td>输入请求、HITL</td>
+</tr>
+<tr>
+<td>Training</td>
+<td>train 开始</td>
+</tr>
+</tbody></table>
+<p><strong>用途：</strong> 自定义审计日志、指标上报、webhook、与内部工单系统对接。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> crewai.events <span class="keyword">import</span> BaseEventListener, TaskCompletedEvent</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AuditListener</span>(<span class="title class_ inherited__">BaseEventListener</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">setup_listeners</span>(<span class="params">self, crewai_event_bus</span>):</span><br><span class="line">        <span class="comment"># 官方为「类型事件」注册；字符串事件名勿照抄。</span></span><br><span class="line">        <span class="comment"># 具体 Event 类名以当前 CrewAI 文档为准。</span></span><br><span class="line"><span class="meta">        @crewai_event_bus.on(<span class="params">TaskCompletedEvent</span>)</span></span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">on_task_completed</span>(<span class="params">source, event: TaskCompletedEvent</span>):</span><br><span class="line">            ...  <span class="comment"># 写审计表</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-Tracing-内置观测"><a href="#5-Tracing-内置观测" class="headerlink" title="5. Tracing 内置观测"></a>5. Tracing 内置观测</h2><h3 id="5-1-启用（三选一）"><a href="#5-1-启用（三选一）" class="headerlink" title="5.1 启用（三选一）"></a>5.1 启用（三选一）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crew = Crew(..., tracing=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># .env</span></span><br><span class="line">CREWAI_TRACING_ENABLED=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># CLI</span></span><br><span class="line">crewai traces <span class="built_in">enable</span></span><br><span class="line">crewai login</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-可见内容"><a href="#5-2-可见内容" class="headerlink" title="5.2 可见内容"></a>5.2 可见内容</h3><ul>
+<li>Agent 决策与 Task 时间线  </li>
+<li>Tool 调用与结果摘要  </li>
+<li>LLM 请求、Token、成本  </li>
+<li>错误栈</li>
+</ul>
+<p>Dashboard：<a target="_blank" rel="noopener" href="https://app.crewai.com/">CrewAI AMP</a>（<code>crewai deploy</code> 可部署到企业平台）。</p>
+<h3 id="5-3-与-LangSmith-Agent（四）对照"><a href="#5-3-与-LangSmith-Agent（四）对照" class="headerlink" title="5.3 与 LangSmith &#x2F; Agent（四）对照"></a>5.3 与 LangSmith &#x2F; Agent（四）对照</h3><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>CrewAI Tracing</th>
+<th>你路径中的对应</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单次排障</td>
+<td>Trace 时间线</td>
+<td>LangSmith trace</td>
+</tr>
+<tr>
+<td>批量回归</td>
+<td>需自建 Dataset + Scenario</td>
+<td>LangSmith Experiment + Agent（四）§6</td>
+</tr>
+<tr>
+<td>字段</td>
+<td>tool 名、Task 输出</td>
+<td><code>tool_calls</code>, Gate 记录</td>
+</tr>
+</tbody></table>
+<p>Eval 流水线 <strong>不在 CrewAI 系列展开分步教程</strong>——发版 canonical 清单仍为 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a>。</p>
+<h3 id="5-4-外部观测"><a href="#5-4-外部观测" class="headerlink" title="5.4 外部观测"></a>5.4 外部观测</h3><ul>
+<li><strong>OTLP 导出</strong> → Grafana &#x2F; 自建 Collector（AMP Enterprise）  </li>
+<li><strong>Datadog</strong> 直连 OTLP intake  </li>
+<li><strong>Langtrace</strong> 等第三方：成本、延迟、Prompt 版本 A&#x2F;B</li>
+</ul>
+<hr>
+<h2 id="6-集成架构示意"><a href="#6-集成架构示意" class="headerlink" title="6. 集成架构示意"></a>6. 集成架构示意</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Flow（入口 + state + persist）</span><br><span class="line">  ↓</span><br><span class="line">Crew（Researcher + Writer + Auditor）</span><br><span class="line">  ├─ Knowledge（内部政策 PDF）</span><br><span class="line">  ├─ MCP（SEO crawl/analyze Tool）</span><br><span class="line">  ├─ Memory（/project/&#123;id&#125;/findings）</span><br><span class="line">  └─ Guardrail（Citation 硬规则）</span><br><span class="line">  ↓</span><br><span class="line">Tracing（AMP / OTLP）+ EventListener（审计）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-实践要点"><a href="#7-实践要点" class="headerlink" title="7. 实践要点"></a>7. 实践要点</h2><ol>
+<li><strong>Knowledge 与 MCP 不要重复造 RAG 管线</strong>——复杂 Ingestion 仍用 RAG（五）job，CrewAI 消费刷新后的源  </li>
+<li><strong>Memory scope 设计先于上线</strong>——否则跨项目污染  </li>
+<li><strong>Tracing 与 Guardrail 失败率一起告警</strong>  </li>
+<li><strong>MCP Tool 名冲突</strong>——多 Server 加前缀（回链 MCP 自检 S11）</li>
+</ol>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完 CrewAI 系列五篇后，请到 <a href="/2026/09/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">CrewAI · 自检与面试</a>。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Knowledge</strong>：Agent&#x2F;Crew 级 RAG；Query rewrite；版本与 RAG 域 Checklist 对齐。</p>
+<p><strong>Memory</strong>：统一 API + scope；extract_memories 防 blob 污染。</p>
+<p><strong>MCP</strong>：<code>mcps=[...]</code>；不替代 Runtime 校验。</p>
+<p><strong>Events</strong>：Bus + Listener 做审计与集成。</p>
+<p><strong>Tracing</strong>：AMP 一等公民；批量回归回链 Agent（四）§6。</p>
+<p><strong>CrewAI 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/">（一）定位与架构</a></li>
+<li><a href="/2026/08/29/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%8C/">（二）Agent 与 Task</a></li>
+<li><a href="/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/">（三）Crew 与 Flow</a></li>
+<li><a href="/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/">（四）Knowledge 与观测</a>（本篇）</li>
+<li><a href="/2026/09/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%94/">（五）生产与项目</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/08/21/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%BA%94/">RAG（五）</a> · <a href="/2026/08/26/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E5%9B%9B/">MCP（四）</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/#4-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89">LangChain（六）§4</a></p>
+<p><strong>下一篇</strong>：<a href="/2026/09/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%94/">CrewAI（五）· 生产治理与内容运营项目</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/CrewAI/" rel="tag"># CrewAI</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-CrewAI(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-CrewAI(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%94/" rel="next" title="AI-Agent工程学习-CrewAI(五)">
+                  AI-Agent工程学习-CrewAI(五) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

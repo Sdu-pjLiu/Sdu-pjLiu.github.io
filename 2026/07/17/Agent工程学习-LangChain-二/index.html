@@ -27,7 +27,7 @@
 <meta property="og:description" content="LCEL 与 Runnable：Sequence&#x2F;Parallel&#x2F;Lambda&#x2F;Passthrough&#x2F;Branch；确定性流水线，不是手搓 Agent loop。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-17T00:30:00.000Z">
-<meta property="article:modified_time" content="2026-07-20T10:40:42.361Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.980Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="LangChain">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-count">87</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">27</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -222,7 +222,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-20 18:40:42" itemprop="dateModified" datetime="2026-07-20T18:40:42+08:00">2026-07-20</time>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -307,13 +307,13 @@
 <td>主链失败时切备用模型 &#x2F; 备用链</td>
 </tr>
 </tbody></table>
-<p>与 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#7-%E8%B0%83%E7%94%A8%E9%9F%A7%E6%80%A7%EF%BC%88Agent-%E7%9B%B8%E5%85%B3%EF%BC%89">LLM 四 · 限流重试</a>、<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">六 · Middleware 重试</a> 同一类韧性问题：链级用 Fallbacks；Agent 环内常用 Middleware。</p>
+<p>与 <a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#7-%E8%B0%83%E7%94%A8%E9%9F%A7%E6%80%A7%EF%BC%88Agent-%E7%9B%B8%E5%85%B3%EF%BC%89">LLM 四 · 限流重试</a>、<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">六 · Middleware 重试</a> 同一类韧性问题：链级用 Fallbacks；Agent 环内常用 Middleware。</p>
 <hr>
 <h2 id="4-最小可运行示意"><a href="#4-最小可运行示意" class="headerlink" title="4. 最小可运行示意"></a>4. 最小可运行示意</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">最小可运行示意：Prompt 模板经 | 接到 ChatModel。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-17</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> langchain.chat_models <span class="keyword">import</span> init_chat_model</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"></span><br><span class="line">logging.basicConfig(level=logging.INFO)</span><br><span class="line">logger = logging.getLogger(__name__)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模板变量 concept 由 invoke 的 dict 填入；输出为带角色的消息列表</span></span><br><span class="line">prompt = ChatPromptTemplate.from_messages(</span><br><span class="line">    [</span><br><span class="line">        (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;用三句话解释用户给出的概念。&quot;</span>),</span><br><span class="line">        (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;&#123;concept&#125;&quot;</span>),</span><br><span class="line">    ],</span><br><span class="line">)</span><br><span class="line"><span class="comment"># temperature=0 便于复现示意结果；换 provider 只改标识串</span></span><br><span class="line">model = init_chat_model(<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>, temperature=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Sequence：prompt 产出消息 → model 生成 AIMessage</span></span><br><span class="line">chain = prompt | model</span><br><span class="line">logger.info(<span class="string">&quot;%s&quot;</span>, chain.invoke(&#123;<span class="string">&quot;concept&quot;</span>: <span class="string">&quot;Context Window&quot;</span>&#125;).content)</span><br></pre></td></tr></table></figure>
 
 <p>下一步会把 Prompt 模板、Tools、以及「检索支路」写清楚（<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%89/">三</a>、<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%9B%9B/">四</a>）。</p>
 <hr>
-<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangChain · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangChain · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>LCEL</strong>：确定性流水线的组合语言；不是 Agent 主路径。</p>
 <p><strong>Runnable</strong>：invoke &#x2F; stream &#x2F; batch 统一接口。</p>
 <p><strong>原语</strong>：Sequence（<code>|</code>）、Parallel（含旧称 Map）、Lambda、Passthrough、Branch。</p>

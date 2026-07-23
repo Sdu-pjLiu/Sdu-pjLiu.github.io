@@ -27,7 +27,7 @@
 <meta property="og:description" content="Loop 反模式、与 Agent 组件拼装、轨迹指标回归、实践阶梯；学习路径收口。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-16T14:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-20T10:40:42.361Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.979Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta name="twitter:card" content="summary">
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-count">87</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -158,7 +158,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">27</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -221,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-20 18:40:42" itemprop="dateModified" datetime="2026-07-20T18:40:42+08:00">2026-07-20</time>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -344,7 +344,7 @@
 <tr>
 <td>Tools</td>
 <td>真正改世界 &#x2F; 取证</td>
-<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">LLM 四</a></td>
+<td><a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/#6-Tool-Calling%EF%BC%88%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%89">LLM 四</a></td>
 </tr>
 <tr>
 <td>Memory &#x2F; Checkpoint</td>
@@ -364,7 +364,7 @@
 <tr>
 <td>Injection 防御</td>
 <td>不可信 Observation 不当指令</td>
-<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">PE 四</a></td>
+<td><a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">PE 四</a></td>
 </tr>
 </tbody></table>
 <p>LE <strong>不替代</strong>上述组件，只规定：<strong>环如何对照合同停下</strong>。</p>
@@ -395,6 +395,8 @@
 </tr>
 </tbody></table>
 <p>发版时：改 Contract &#x2F; Gate &#x2F; 预算策略 &#x3D; 改 Loop 版本；用 Scenario 集回归，与 Prompt&#x2F;Schema 版本一并固定。完整五域发版指标见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6 发版回归 Checklist</a>。</p>
+<p><strong>环内可观测最小字段（建议打进 Trace）：</strong> <code>exit_reason</code>（success &#x2F; hard_cap &#x2F; no_progress &#x2F; unrecoverable）、本轮 Gate 结果、预算快照（steps&#x2F;tokens left）、关键 tool invocation 指纹。缺这些字段，线上只能「感觉在空转」。</p>
+<p><strong>与编排层的映射（一句）：</strong> Contract 谓词、Gate 通过&#x2F;失败、预算耗尽，在 LangGraph 里会变成节点返回值或条件边（如 <code>contract_ok</code>）；本模块定「如何客观停下」，图怎么画见 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">LangGraph</a>。</p>
 <hr>
 <h2 id="4-实践阶梯-L0-→-L2"><a href="#4-实践阶梯-L0-→-L2" class="headerlink" title="4. 实践阶梯 L0 → L2"></a>4. 实践阶梯 L0 → L2</h2><table>
 <thead>
@@ -422,7 +424,7 @@
 </tbody></table>
 <p>Research &#x2F; 编码 Agent 都适用同一阶梯：先有客观门，再谈复杂规划。</p>
 <hr>
-<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Loop Engineering · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/21/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Loop Engineering · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>反模式</strong>：无合同、仅靠自评结束循环、无硬顶、不收尾、压缩丢治理。</p>
 <p><strong>拼装</strong>：LE 规定停下方式；Skill&#x2F;Tools&#x2F;Memory&#x2F;Runtime 提供能力与闸门。</p>
 <p><strong>回归</strong>：轨迹指标进门禁与发版 checklist。</p>
@@ -435,13 +437,13 @@
 </ul>
 <p><strong>前置路径：</strong></p>
 <ul>
-<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
-<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
+<li>LLM：<a href="/2026/07/13/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%80/">（一）</a> · <a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">（二）</a> · <a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">（三）</a> · <a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">（四）</a></li>
+<li>Prompt：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%80/">（一）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%BA%8C/">（二）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E4%B8%89/">（三）</a> · <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">（四）</a></li>
 <li>Agent：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%80/">（一）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">（二）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/">（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">（四）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">（五）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/">（六）</a></li>
 </ul>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">LLM（一）～（四）[+ 部署/成本认名]</span><br><span class="line">    ↓</span><br><span class="line">Prompt（一）～（四）</span><br><span class="line">    ↓</span><br><span class="line">Agent（一）～（六）</span><br><span class="line">    ↓</span><br><span class="line">Loop Engineering（一）合同/门 →（二）嵌套环/预算 →（三）反模式与收口</span><br><span class="line">    ↓</span><br><span class="line">LangChain（一）～（六）：create_agent + Middleware 实现层</span><br><span class="line">    ↓</span><br><span class="line">LangGraph（编排）→ Deep Agents（厚 harness）→ RAG 系统 → MCP 工程</span><br></pre></td></tr></table></figure>
 
-<p>Loop Engineering（理论与选型）到此收口。<strong>下一篇</strong>：<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Loop Engineering · 自检与面试</a>。下一模块：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">LangChain（一）· 定位、Messages 与 Model</a>——用官方 <code>create_agent</code> harness 把合同、验证门与双层预算落到可运行的 Agent 实现。</p>
+<p>Loop Engineering（理论与选型）到此收口。<strong>下一篇</strong>：<a href="/2026/07/21/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Loop Engineering · 自检与面试</a>。下一模块：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E4%B8%80/">LangChain（一）· 定位、Messages 与 Model</a>——用官方 <code>create_agent</code> harness 把合同、验证门与双层预算落到可运行的 Agent 实现。</p>
 
     </div>
 
@@ -463,7 +465,7 @@
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-Loop Engineering(自检与面试)">
+                <a href="/2026/07/21/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-Loop Engineering(自检与面试)">
                   AI-Agent工程学习-Loop Engineering(自检与面试) <i class="fa fa-angle-right"></i>
                 </a>
             </div>

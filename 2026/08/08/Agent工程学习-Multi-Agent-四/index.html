@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Message Passing &#x2F; Shared Memory &#x2F; Event Bus &#x2F; Blackboard 四通信机制；并发、污染与框架映射。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Multi-Agent(四)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Message Passing &#x2F; Shared Memory &#x2F; Event Bus &#x2F; Blackboard 四通信机制；并发、污染与框架映射。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-18T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.981Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Multi-Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/","path":"/2026/08/08/Agent工程学习-Multi-Agent-四/","title":"AI-Agent工程学习-Multi-Agent(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Multi-Agent(四) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Message-Passing"><span class="nav-number">2.</span> <span class="nav-text">1. Message Passing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Shared-Memory"><span class="nav-number">3.</span> <span class="nav-text">2. Shared Memory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Event-Bus"><span class="nav-number">4.</span> <span class="nav-text">3. Event Bus</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%9B%BE%E5%86%85%E4%BA%8B%E4%BB%B6-vs-%E8%B7%A8%E6%9C%8D%E5%8A%A1-MQ"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 图内事件 vs 跨服务 MQ</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Blackboard-Architecture"><span class="nav-number">5.</span> <span class="nav-text">4. Blackboard Architecture</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E9%80%9A%E4%BF%A1%E6%9C%BA%E5%88%B6%E9%80%89%E5%9E%8B%E8%A1%A8"><span class="nav-number">6.</span> <span class="nav-text">5. 通信机制选型表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%80%9A%E4%BF%A1-%C3%97-%E5%8D%8F%E4%BD%9C-%E7%BB%84%E5%90%88%E7%A4%BA%E4%BE%8B"><span class="nav-number">7.</span> <span class="nav-text">6. 通信 × 协作 组合示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Multi-Agent(四) | 我的记录小站">
+      <meta itemprop="description" content="Message Passing &#x2F; Shared Memory &#x2F; Event Bus &#x2F; Blackboard 四通信机制；并发、污染与框架映射。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Multi-Agent(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-18 14:00:00" itemprop="dateCreated datePublished" datetime="2026-07-18T14:00:00+08:00">2026-07-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Message Passing / Shared Memory / Event Bus / Blackboard 四通信机制；并发、污染与框架映射。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">Multi-Agent（三）</a>：协作模式已定，本篇讲 Agent 间 <strong>如何交换信息</strong>——四种通信机制、并发风险与 LangGraph &#x2F; Deep Agents &#x2F; CrewAI 映射。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>角色（Who）+ 协作（How）+ 通信（Talk）&#x3D; 可实现的 Multi-Agent 拓扑。治理层（Budget、LE Gate、HITL）贯穿各机制，不单独立篇——回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a>。</p>
+<p><strong>原则：</strong> 通信 ≠ 把全文塞进 messages；大材料走外存、FS、证据指针（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">Agent（五）§2</a>）。</p>
+<hr>
+<h2 id="1-Message-Passing"><a href="#1-Message-Passing" class="headerlink" title="1. Message Passing"></a>1. Message Passing</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据形态</strong></td>
+<td>结构化 Handoff payload（Goal、<code>open[]</code>&#x2F;<code>done[]</code>、证据指针、错误态）</td>
+</tr>
+<tr>
+<td><strong>强项</strong></td>
+<td>Context 隔离好；边界清晰；易审计</td>
+</tr>
+<tr>
+<td><strong>弱项</strong></td>
+<td>序列化设计成本；字段演进需版本化</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>LangGraph state 字段更新；Deep Agents subagent <strong>摘要返回</strong>；CrewAI Task <code>context</code> &#x2F; <code>output</code></td>
+</tr>
+</tbody></table>
+<p><strong>场景片段：</strong> Research Worker 完成 → 只向 state 写入 <code>&#123;summary, evidence_refs[], status&#125;</code> → Writer Worker 从 state 读取，<strong>不</strong>读取 Research 完整 Trace。</p>
+<p><strong>与 Subagent 关系：</strong> Message Passing 是 Subagent Context Isolation 的 <strong>工程实现</strong>（回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#4-Subagent-%E4%B8%8E-Agent-as-Tool">Agent（六）§4</a>）。</p>
+<hr>
+<h2 id="2-Shared-Memory"><a href="#2-Shared-Memory" class="headerlink" title="2. Shared Memory"></a>2. Shared Memory</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据形态</strong></td>
+<td>全局 State、LangGraph Store、Flow Pydantic State、共享 KV</td>
+</tr>
+<tr>
+<td><strong>强项</strong></td>
+<td>多 Agent 低延迟读写同一事实</td>
+</tr>
+<tr>
+<td><strong>弱项</strong></td>
+<td>并发写冲突；租户串数据；脏读</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>LangGraph <strong>Store</strong> + Reducer；Deep Agents FS + memory；CrewAI Flow State + <code>Memory</code> API</td>
+</tr>
+</tbody></table>
+<p><strong>并发治理：</strong></p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>措施</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>并行写同键</td>
+<td>Reducer（append &#x2F; merge）或 Coordinator 串行化写</td>
+</tr>
+<tr>
+<td>租户隔离</td>
+<td>Store namespace &#x2F; <code>thread_id</code> &#x2F; 租户前缀</td>
+</tr>
+<tr>
+<td>脏读</td>
+<td>版本号、时间戳、来源字段；读取侧权限过滤</td>
+</tr>
+</tbody></table>
+<p>回链 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">LangGraph（二）Reducer</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">LangGraph（三）Store</a>。</p>
+<hr>
+<h2 id="3-Event-Bus"><a href="#3-Event-Bus" class="headerlink" title="3. Event Bus"></a>3. Event Bus</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据形态</strong></td>
+<td>发布&#x2F;订阅事件（<code>research_done</code>、<code>guardrail_failed</code>）</td>
+</tr>
+<tr>
+<td><strong>强项</strong></td>
+<td>发布者与订阅者解耦；易扩展新步骤</td>
+</tr>
+<tr>
+<td><strong>弱项</strong></td>
+<td>顺序保证难；重复投递需幂等</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>CrewAI Flow <code>@start</code> &#x2F; <code>@listen</code> &#x2F; <code>@router</code>；跨服务见 §3.1 与 <a href="/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/">Agent工程化（四）</a></td>
+</tr>
+</tbody></table>
+<p><strong>场景片段：</strong> Flow 发布 <code>outline_ready</code> → 监听方 kickoff Writer Crew → 失败发布 <code>retry_outline</code> → Router 决定回退或 HITL。</p>
+<p><strong>与 Coordinator 关系：</strong> Event Bus 常是 Coordinator 的 <strong>实现手段</strong>——Coordinator 监听事件驱动下一步，不替代 Supervisor 的内容验收。</p>
+<h3 id="3-1-图内事件-vs-跨服务-MQ"><a href="#3-1-图内事件-vs-跨服务-MQ" class="headerlink" title="3.1 图内事件 vs 跨服务 MQ"></a>3.1 图内事件 vs 跨服务 MQ</h3><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>图内 &#x2F; Flow 事件</strong></th>
+<th><strong>跨服务 MQ</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>示例</strong></td>
+<td><code>@listen</code>、LangGraph 边 &#x2F; Command</td>
+<td>Redis Pub&#x2F;Sub、Celery、Kafka</td>
+</tr>
+<tr>
+<td><strong>范围</strong></td>
+<td>单应用编排</td>
+<td>多服务解耦</td>
+</tr>
+<tr>
+<td><strong>须注意</strong></td>
+<td>不等于生产总线</td>
+<td>幂等消费、顺序、死信、分区键</td>
+</tr>
+</tbody></table>
+<p>生产落地见 <a href="/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/#7-%E5%9B%BE%E5%86%85-event-bus-vs-%E7%94%9F%E4%BA%A7-mq">Agent 工程化（四）§7</a>。</p>
+<hr>
+<h2 id="4-Blackboard-Architecture"><a href="#4-Blackboard-Architecture" class="headerlink" title="4. Blackboard Architecture"></a>4. Blackboard Architecture</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据形态</strong></td>
+<td>公共「黑板」：多 Worker 读写假设、证据、中间结论</td>
+</tr>
+<tr>
+<td><strong>强项</strong></td>
+<td>多源证据汇聚；适合 Research 黑板模式</td>
+</tr>
+<tr>
+<td><strong>弱项</strong></td>
+<td>写污染（猜测当事实）；脏读；黑板过大</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>LangGraph Store + 结构化 schema；RAG 外存作只读事实层；Deep Agents FS 作材料黑板</td>
+</tr>
+</tbody></table>
+<p><strong>与 Shared Memory 区别：</strong> Blackboard 强调 <strong>多专家贡献同一演化知识结构</strong>；Shared Memory 偏通用 KV。工程上可共用 Store，但 Blackboard 须 <strong>字段级权限与来源标注</strong>。</p>
+<p><strong>场景片段：</strong> 竞品 Research——搜索员写 <code>evidence[]</code>、分析员写 <code>claims[]</code>（须带 source）、写作员只读已验证 <code>claims[]</code> 成稿。</p>
+<hr>
+<h2 id="5-通信机制选型表"><a href="#5-通信机制选型表" class="headerlink" title="5. 通信机制选型表"></a>5. 通信机制选型表</h2><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>首选机制</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>子任务隔离、Handoff 清晰</td>
+<td>Message Passing</td>
+<td>默认首选</td>
+</tr>
+<tr>
+<td>多 Agent 共享任务 state</td>
+<td>Shared Memory</td>
+<td>Reducer + 租户 namespace</td>
+</tr>
+<tr>
+<td>应用流程解耦、事件驱动</td>
+<td>Event Bus</td>
+<td>幂等 + 顺序策略</td>
+</tr>
+<tr>
+<td>多源 Research 汇聚</td>
+<td>Blackboard</td>
+<td>来源标注 + 防写污染</td>
+</tr>
+<tr>
+<td>长材料传递</td>
+<td>** none 全文 **</td>
+<td>外存 &#x2F; FS + 指针</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="6-通信-×-协作-组合示例"><a href="#6-通信-×-协作-组合示例" class="headerlink" title="6. 通信 × 协作 组合示例"></a>6. 通信 × 协作 组合示例</h2><table>
+<thead>
+<tr>
+<th>拓扑</th>
+<th>协作模式</th>
+<th>通信组合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研究流水线</td>
+<td>Role-Based</td>
+<td>Message Passing 链式 Handoff</td>
+</tr>
+<tr>
+<td>并行多源检索</td>
+<td>Voting</td>
+<td>Shared Memory 写入 + 聚合节点读取</td>
+</tr>
+<tr>
+<td>内容运营 Flow</td>
+<td>Role-Based + HITL</td>
+<td>Event Bus 驱动 Crew</td>
+</tr>
+<tr>
+<td>竞品黑板</td>
+<td>Hierarchical + Research</td>
+<td>Blackboard Store + Message Passing 给 Writer</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Message Passing：</strong> 默认首选；Handoff 合同；Subagent 摘要。</p>
+<p><strong>Shared Memory：</strong> Store + Reducer；防并发与串租户。</p>
+<p><strong>Event Bus：</strong> Flow 事件；跨服务用 MQ；须幂等——见 §3.1。</p>
+<p><strong>Blackboard：</strong> 多源汇聚；防写污染与脏读。</p>
+<p><strong>原则：</strong> 大材料不进 messages；证据用指针。</p>
+<p><strong>下一步：</strong> <a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/">Multi-Agent（五）· 拓扑设计与映射收口</a></p>
+<p><strong>前置：</strong> <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">Multi-Agent（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">Agent（五）§2</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Multi-Agent/" rel="tag"># Multi-Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-Multi-Agent(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Multi-Agent(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/" rel="next" title="AI-Agent工程学习-Multi-Agent(五)">
+                  AI-Agent工程学习-Multi-Agent(五) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

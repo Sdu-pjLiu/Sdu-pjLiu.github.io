@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Supervisor &#x2F; Worker &#x2F; Coordinator &#x2F; Router &#x2F; Peer 五角色深讲；Handoff 合同与实现映射预告。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Multi-Agent(二)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Supervisor &#x2F; Worker &#x2F; Coordinator &#x2F; Router &#x2F; Peer 五角色深讲；Handoff 合同与实现映射预告。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-18T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.981Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Multi-Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/","path":"/2026/08/06/Agent工程学习-Multi-Agent-二/","title":"AI-Agent工程学习-Multi-Agent(二)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Multi-Agent(二) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Supervisor"><span class="nav-number">2.</span> <span class="nav-text">1. Supervisor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Worker"><span class="nav-number">3.</span> <span class="nav-text">2. Worker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Coordinator"><span class="nav-number">4.</span> <span class="nav-text">3. Coordinator</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Router"><span class="nav-number">5.</span> <span class="nav-text">4. Router</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Peer"><span class="nav-number">6.</span> <span class="nav-text">5. Peer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-%E5%86%B2%E7%AA%81%E6%B6%88%E8%A7%A3%EF%BC%88%E5%B9%B6%E8%A1%8C%E5%BF%85%E8%AF%BB%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">5.1 冲突消解（并行必读）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%A7%92%E8%89%B2%E7%BB%84%E5%90%88%E9%80%9F%E6%9F%A5"><span class="nav-number">8.</span> <span class="nav-text">6. 角色组合速查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Multi-Agent(二) | 我的记录小站">
+      <meta itemprop="description" content="Supervisor &#x2F; Worker &#x2F; Coordinator &#x2F; Router &#x2F; Peer 五角色深讲；Handoff 合同与实现映射预告。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Multi-Agent(二)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-18 10:00:00" itemprop="dateCreated datePublished" datetime="2026-07-18T10:00:00+08:00">2026-07-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Supervisor / Worker / Coordinator / Router / Peer 五角色深讲；Handoff 合同与实现映射预告。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">Multi-Agent（一）</a>：五角色速查之后，本篇逐角色讲清 <strong>职责、决策权、失败模式、Handoff 合同</strong> 与三框架一行映射（不展开 API）。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>（一）已给 taxonomy 与分水岭；（二）角色深讲；（三）协作模式；（四）通信；（五）拓扑与 canonical 映射表。</p>
+<p><strong>Handoff 合同（全系列 universal）：</strong> 任意角色交接须携带——</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Goal 摘要</strong></td>
+<td>用户目标与当前子目标</td>
+</tr>
+<tr>
+<td><strong><code>done[]</code> &#x2F; <code>open[]</code></strong></td>
+<td>已完成与未完成项</td>
+</tr>
+<tr>
+<td><strong>硬规则引用</strong></td>
+<td>安全、引用、格式、租户边界</td>
+</tr>
+<tr>
+<td><strong>证据指针</strong></td>
+<td>URL &#x2F; chunk_id &#x2F; 文件路径，非全文</td>
+</tr>
+<tr>
+<td><strong>剩余预算提示</strong>（可选）</td>
+<td>steps&#x2F;tokens 余量，避免子 Agent 不知何时收尾</td>
+</tr>
+<tr>
+<td><strong>错误态</strong>（Worker 返回时）</td>
+<td>无结果 &#x2F; 限流 &#x2F; 权限 &#x2F; 不可恢复</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>与官方 taxonomy：</strong> LangChain 多 Agent 文档常写 Subagents &#x2F; <strong>Handoffs</strong> &#x2F; Skills &#x2F; Router。本系列用「角色 × 协作 × 通信」展开；其中 <strong>Handoff</strong> 既是合同字段，也对应官方「控制权在 Agent 间转移」的 Handoffs 拓扑（可经 Supervisor 回流，也可专员直接对用户）。Skills 是「不拆多 Agent」的官方替代——单 Agent + Skill 优先于过早拆角色。</p>
+</blockquote>
+<p>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#4-Subagent-%E4%B8%8E-Agent-as-Tool">Agent（六）§4</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/#2-Router-%E4%B8%8E-Supervisor">LangGraph（六）§2</a></p>
+<hr>
+<h2 id="1-Supervisor"><a href="#1-Supervisor" class="headerlink" title="1. Supervisor"></a>1. Supervisor</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>职责</strong></td>
+<td>分解任务、选择 Worker、验收子结果、决定继续或结束</td>
+</tr>
+<tr>
+<td><strong>决策权</strong></td>
+<td>下一跳 Worker；是否触发 HITL；是否宣告完成</td>
+</tr>
+<tr>
+<td><strong>不做</strong></td>
+<td>替代 Worker 做全部工具调用（否则退化为单 Agent）</td>
+</tr>
+<tr>
+<td><strong>失败模式</strong></td>
+<td>无限委派；丢硬规则；无预算&#x2F;步数上限；验收流于形式</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>LangGraph Supervisor 节点；CrewAI hierarchical Manager；Deep Agents 主 Agent 委派</td>
+</tr>
+</tbody></table>
+<p><strong>场景片段：</strong> 输入「调研 A、B 两家竞品并写对比报告」→ Supervisor 分派 Research Worker（A）、Research Worker（B）→ 验收证据覆盖率 → 分派 Writer Worker → Final Gate。</p>
+<p><strong>治理要点：</strong></p>
+<ol>
+<li><strong>可选 Worker 集合</strong> 白名单化，禁止模型任意「发明」新角色</li>
+<li><strong>每轮分派</strong> 写入 Trace，含理由与预算消耗</li>
+<li><strong>结束条件</strong> 对齐 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%80/">LE Gate</a>，非「Supervisor 说完了」</li>
+</ol>
+<hr>
+<h2 id="2-Worker"><a href="#2-Worker" class="headerlink" title="2. Worker"></a>2. Worker</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>职责</strong></td>
+<td>在 bounded 子目标内完成推理与工具调用</td>
+</tr>
+<tr>
+<td><strong>决策权</strong></td>
+<td>局部 query 改写、工具参数、重试策略（在沙箱内）</td>
+</tr>
+<tr>
+<td><strong>失败模式</strong></td>
+<td>越权调用；假完成；把猜测当事实 Handoff；错误不结构化</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>LangGraph 子图 &#x2F; <code>create_agent</code> Node；Deep Agents <code>task()</code> Subagent；CrewAI Agent + Task</td>
+</tr>
+</tbody></table>
+<p><strong>Context Isolation（必守）：</strong> Worker 的完整 Trace <strong>不得</strong>无限灌回主窗；只 Handoff <strong>摘要 + 证据指针</strong>（回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">Agent（五）§2</a>）。</p>
+<p><strong>结构化错误返回（生产必做）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">status: ok | empty | rate_limited | permission_denied | fatal</span><br><span class="line">summary: ...</span><br><span class="line">evidence_refs: [...]</span><br></pre></td></tr></table></figure>
+
+<p>Supervisor 据此决定改 query、换 Worker、降级或 Interrupt——见 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph 自检 I13</a>。</p>
+<hr>
+<h2 id="3-Coordinator"><a href="#3-Coordinator" class="headerlink" title="3. Coordinator"></a>3. Coordinator</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>职责</strong></td>
+<td>管理步骤依赖、并行门禁、超时与重试路由；<strong>不负责</strong>内容推理</td>
+</tr>
+<tr>
+<td><strong>决策权</strong></td>
+<td>何时启动下一步；是否并行 <code>Send</code>；失败子路径降级</td>
+</tr>
+<tr>
+<td><strong>与 Supervisor 区别</strong></td>
+<td>Coordinator 管 <strong>流程时钟</strong>；Supervisor 管 <strong>任务分解与质量验收</strong></td>
+</tr>
+<tr>
+<td><strong>失败模式</strong></td>
+<td>与 Supervisor 合并导致「一个节点又协调又写报告」；并行无 Reducer 冲突</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>CrewAI Flow <code>@start</code> &#x2F; <code>@listen</code>；LangGraph 纯 Python 节点 + 边</td>
+</tr>
+</tbody></table>
+<p><strong>场景片段：</strong> Flow 监听 <code>research_done</code> 事件 → 并行 kickoff 两个 Crew → 全部完成后触发 <code>merge</code> 节点——Coordinator 不写研报，只保证顺序与并发安全。</p>
+<hr>
+<h2 id="4-Router"><a href="#4-Router" class="headerlink" title="4. Router"></a>4. Router</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>职责</strong></td>
+<td>按意图&#x2F;租户&#x2F;模型能力将请求送入 <strong>固定分支</strong></td>
+</tr>
+<tr>
+<td><strong>决策权</strong></td>
+<td>选分支（通常一次或少数几次分类）</td>
+</tr>
+<tr>
+<td><strong>失败模式</strong></td>
+<td>误分类无降级；分支过多导致维护地狱</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>LangGraph conditional edge + 分类节点；CrewAI Flow <code>@router</code></td>
+</tr>
+</tbody></table>
+<p><strong>与 Supervisor 分水岭：</strong> 分支彼此 <strong>独立、无多轮协调</strong> → Router；任务需 <strong>多轮分派与验收</strong> → Supervisor（回链 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph 自检 S21</a>）。</p>
+<p><strong>场景片段：</strong> 用户输入含「退款」关键词 → Router 进客服子图；含「写代码」→ 进编码子图——两路径不再回到中心协调者。</p>
+<hr>
+<h2 id="5-Peer"><a href="#5-Peer" class="headerlink" title="5. Peer"></a>5. Peer</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>职责</strong></td>
+<td>对等协商、互补专长；无默认中心</td>
+</tr>
+<tr>
+<td><strong>决策权</strong></td>
+<td>各自自治；冲突靠辩论&#x2F;投票&#x2F;协议</td>
+</tr>
+<tr>
+<td><strong>失败模式</strong></td>
+<td>重复劳动；争论不收敛；责任不清</td>
+</tr>
+<tr>
+<td><strong>框架映射</strong></td>
+<td>LangGraph 多节点 + Store（无中心拓扑）；<a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/">外部框架巡览 · AutoGen</a> GroupChat</td>
+</tr>
+</tbody></table>
+<p><strong>何时考虑：</strong> 中心 Supervisor 已成瓶颈，且各 Agent 能自治、冲突有 <strong>收敛协议</strong>（Debate 轮次上限、Voting 聚合）——多数业务从 Router 或单 Supervisor 起步更可控。</p>
+<hr>
+<h2 id="5-1-冲突消解（并行必读）"><a href="#5-1-冲突消解（并行必读）" class="headerlink" title="5.1 冲突消解（并行必读）"></a>5.1 冲突消解（并行必读）</h2><p>多 Worker &#x2F; Peer 同时写共享事实或争夺下一跳时，须预先选定策略，禁止「谁先写谁赢」的隐式行为：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>适用</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>仲裁节点</strong></td>
+<td>Debate &#x2F; 分歧汇总</td>
+<td>Supervisor 或独立 Judge 聚合；须 max_rounds</td>
+</tr>
+<tr>
+<td><strong>优先级</strong></td>
+<td>角色权重不同</td>
+<td>如合规 Worker &gt; 文案 Worker；写 Store 带 <code>priority</code></td>
+</tr>
+<tr>
+<td><strong>锁 &#x2F; 串行化</strong></td>
+<td>同键关键写</td>
+<td>Coordinator 串行写或分区键互斥</td>
+</tr>
+<tr>
+<td><strong>Last-write + 版本</strong></td>
+<td>可覆盖的草稿</td>
+<td>必须带 <code>version</code>&#x2F;<code>updated_at</code>&#x2F;<code>source</code>；读者校验版本</td>
+</tr>
+<tr>
+<td><strong>Voting 聚合</strong></td>
+<td>冗余校验</td>
+<td>N 路独立产出后规则或 LLM judge——见（三）</td>
+</tr>
+</tbody></table>
+<p><strong>失败模式：</strong> 无策略并行写同键 → 非确定性合并；无仲裁 Debate → Token 爆炸且不收敛。</p>
+<hr>
+<h2 id="6-角色组合速查"><a href="#6-角色组合速查" class="headerlink" title="6. 角色组合速查"></a>6. 角色组合速查</h2><table>
+<thead>
+<tr>
+<th>拓扑</th>
+<th>角色组合</th>
+<th>协作模式预告</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>意图分流</td>
+<td>Router + Worker</td>
+<td>见（三）Role-Based 变体</td>
+</tr>
+<tr>
+<td>研究流水线</td>
+<td>Supervisor + Worker×N</td>
+<td>Role-Based &#x2F; Hierarchical</td>
+</tr>
+<tr>
+<td>企业 Flow</td>
+<td>Coordinator + Crew</td>
+<td>CrewAI Flow + Crew</td>
+</tr>
+<tr>
+<td>方案评审</td>
+<td>Peer×N + Voting 聚合</td>
+<td>Debate &#x2F; Voting</td>
+</tr>
+<tr>
+<td>探索发散</td>
+<td>Peer + Shared Memory</td>
+<td>Swarm</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Supervisor：</strong> 分派与验收；须白名单、预算、LE 结束条件。</p>
+<p><strong>Worker：</strong> 原子子任务；Context 隔离 + 结构化错误返回。</p>
+<p><strong>Coordinator：</strong> 流程时钟；≠ Supervisor。</p>
+<p><strong>Router：</strong> 一次分流；简单意图首选。</p>
+<p><strong>Peer：</strong> 对等自治；需收敛协议；非默认首选。</p>
+<p><strong>Handoff：</strong> Goal、<code>open[]</code>&#x2F;<code>done[]</code>、硬规则、证据指针 universal。</p>
+<p><strong>下一步：</strong> <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">Multi-Agent（三）· 协作模式</a></p>
+<p><strong>前置：</strong> <a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">Multi-Agent（一）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#4-Subagent-%E4%B8%8E-Agent-as-Tool">Agent（六）§4</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Multi-Agent/" rel="tag"># Multi-Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/" rel="prev" title="AI-Agent工程学习-Multi-Agent(一)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Multi-Agent(一)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/" rel="next" title="AI-Agent工程学习-Multi-Agent(三)">
+                  AI-Agent工程学习-Multi-Agent(三) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

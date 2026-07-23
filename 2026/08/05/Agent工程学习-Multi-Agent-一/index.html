@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Multi-Agent 开篇：理论 canonical 定位、五角色 taxonomy、与 LangGraph 实现分工、模块地图。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Multi-Agent(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Multi-Agent 开篇：理论 canonical 定位、五角色 taxonomy、与 LangGraph 实现分工、模块地图。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-18T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.981Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Multi-Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/","path":"/2026/08/05/Agent工程学习-Multi-Agent-一/","title":"AI-Agent工程学习-Multi-Agent(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Multi-Agent(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0-1-Multi-Agent-%E6%A8%A1%E5%9D%97%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">0.1 Multi-Agent 模块地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%BD%95%E6%97%B6%E9%9C%80%E8%A6%81-Multi-Agent"><span class="nav-number">3.</span> <span class="nav-text">1. 何时需要 Multi-Agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%BA%94%E8%A7%92%E8%89%B2-taxonomy-%E9%80%9F%E6%9F%A5"><span class="nav-number">4.</span> <span class="nav-text">2. 五角色 taxonomy 速查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Harness-Orchestration-Runtime-%E5%88%86%E5%B1%82"><span class="nav-number">5.</span> <span class="nav-text">3. Harness &#x2F; Orchestration Runtime 分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%8E%E5%90%8E%E7%BB%AD%E5%AE%9E%E7%8E%B0%E7%B3%BB%E5%88%97%E6%98%A0%E5%B0%84%E9%A2%84%E5%91%8A"><span class="nav-number">6.</span> <span class="nav-text">4. 与后续实现系列映射预告</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Multi-Agent(一) | 我的记录小站">
+      <meta itemprop="description" content="Multi-Agent 开篇：理论 canonical 定位、五角色 taxonomy、与 LangGraph 实现分工、模块地图。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Multi-Agent(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-18 08:00:00" itemprop="dateCreated datePublished" datetime="2026-07-18T08:00:00+08:00">2026-07-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Multi-Agent 开篇：理论 canonical 定位、五角色 taxonomy、与 LangGraph 实现分工、模块地图。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph · 自检与面试</a>：你已在 LangGraph（六）用 <strong>Router &#x2F; Supervisor &#x2F; Subgraph</strong> 拼过多 Agent 拓扑；本篇起把分散在实现层的模式 <strong>系统化为理论 canonical</strong>——角色、协作、通信、治理与实现映射，作为 Deep Agents &#x2F; CrewAI 的共同底座。</p>
+<span id="more"></span>
+<h2 id="0-本系列在学习路径中的位置"><a href="#0-本系列在学习路径中的位置" class="headerlink" title="0. 本系列在学习路径中的位置"></a>0. 本系列在学习路径中的位置</h2><p><strong>前置已学：</strong></p>
+<ul>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#7-%E5%A4%9A-Agent%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%8C%E5%8D%8A%E8%8A%82%EF%BC%89">Agent（三）§7 多 Agent 认名</a> — Supervisor &#x2F; Handoff 半节</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#4-Subagent-%E4%B8%8E-Agent-as-Tool">Agent（六）§4 Subagent &#x2F; Handoff</a> — 委派与 Context 隔离</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）Router &#x2F; Supervisor &#x2F; Subgraph</a> — <strong>实现层</strong>初触 Multi-Agent</li>
+</ul>
+<p><strong>本系列分工：</strong></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangGraph（六）</strong></td>
+<td>图级 Multi-Agent <strong>代码与拓扑</strong></td>
+</tr>
+<tr>
+<td><strong>本篇系列</strong></td>
+<td>Multi-Agent <strong>理论 canonical</strong>（角色 &#x2F; 协作 &#x2F; 通信 &#x2F; 映射）</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td>Worker &#x2F; Subagent + Context 隔离的厚 Harness 实现</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td>Role-Based &#x2F; Hierarchical 的产品化实现</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LangGraph（六）实现体验</span><br><span class="line">        ↓</span><br><span class="line">Multi-Agent 系列（理论系统化）    ← 本篇起</span><br><span class="line">        ↓</span><br><span class="line">Deep Agents → RAG → MCP → CrewAI</span><br></pre></td></tr></table></figure>
+
+<p><strong>本篇不做：</strong> 框架 API 分步教程、RAG&#x2F;MCP 协议、部署与观测（见 <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">Agent 工程化系列</a>）。</p>
+<hr>
+<h2 id="0-1-Multi-Agent-模块地图"><a href="#0-1-Multi-Agent-模块地图" class="headerlink" title="0.1 Multi-Agent 模块地图"></a>0.1 Multi-Agent 模块地图</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">角色层（Who）</span><br><span class="line">  Supervisor / Worker / Coordinator / Router / Peer</span><br><span class="line">    ↓</span><br><span class="line">协作层（How）</span><br><span class="line">  Role-Based / Debate / Voting / Swarm / Hierarchical</span><br><span class="line">    ↓</span><br><span class="line">通信层（Talk）</span><br><span class="line">  Message Passing / Shared Memory / Event Bus / Blackboard</span><br><span class="line">    ↓</span><br><span class="line">治理层（Govern）</span><br><span class="line">  Handoff 合同 · Context Isolation · Budget · LE Gate · HITL</span><br><span class="line">    ↓</span><br><span class="line">映射层（Where）</span><br><span class="line">  LangGraph · Deep Agents · CrewAI（canonical 表见（五）§4）</span><br></pre></td></tr></table></figure>
+
+<p>本系列五篇分工：</p>
+<table>
+<thead>
+<tr>
+<th>篇</th>
+<th>覆盖</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>（一）</td>
+<td>定位、分水岭、五角色速查、模块地图</td>
+</tr>
+<tr>
+<td>（二）</td>
+<td>五角色深讲</td>
+</tr>
+<tr>
+<td>（三）</td>
+<td>五协作模式</td>
+</tr>
+<tr>
+<td>（四）</td>
+<td>四通信机制</td>
+</tr>
+<tr>
+<td>（五）</td>
+<td>拓扑设计、实现映射 canonical 表、实践阶梯、收口</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="1-何时需要-Multi-Agent"><a href="#1-何时需要-Multi-Agent" class="headerlink" title="1. 何时需要 Multi-Agent"></a>1. 何时需要 Multi-Agent</h2><table>
+<thead>
+<tr>
+<th>信号</th>
+<th>说明</th>
+<th>反例（不必拆）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>角色异质</strong></td>
+<td>搜索员与写手工具集、Prompt、验收标准不同</td>
+<td>同一 Tool 环 + Skill 切换即可</td>
+</tr>
+<tr>
+<td><strong>Context 隔离</strong></td>
+<td>子任务 Trace 会挤爆主窗（长 research）</td>
+<td>单次检索 + 摘要 Middleware 够用</td>
+</tr>
+<tr>
+<td><strong>并行独立子任务</strong></td>
+<td>多源检索、多竞品可并行再聚合</td>
+<td>串行 3 步固定 ETL</td>
+</tr>
+<tr>
+<td><strong>冲突消解</strong></td>
+<td>需辩论、投票、多路校验</td>
+<td>单模型 + Reflection 一次</td>
+</tr>
+<tr>
+<td><strong>组织边界</strong></td>
+<td>不同团队维护不同 Agent 能力</td>
+<td>单服务内 Middleware 即可</td>
+</tr>
+</tbody></table>
+<p><strong>过早拆角色的代价：</strong></p>
+<ol>
+<li><strong>Context 丢失</strong> — Handoff 不带 Goal &#x2F; <code>open[]</code> &#x2F; 硬规则 → 重复劳动或越权</li>
+<li><strong>Token 膨胀</strong> — 多环各自带完整 System Prompt</li>
+<li><strong>责任模糊</strong> — 只有角色名、无独立工具&#x2F;状态&#x2F;验收 → 假完成</li>
+<li><strong>图维护成本</strong> — 拓扑复杂度超过业务收益</li>
+</ol>
+<p><strong>默认策略（与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#4-Subagent-%E4%B8%8E-Agent-as-Tool">Agent（六）§4</a> 一致）：</strong> 先把 <strong>单 Agent + 分层规划 + Skill</strong> 做稳，再按上表信号拆多 Agent。</p>
+<hr>
+<h2 id="2-五角色-taxonomy-速查"><a href="#2-五角色-taxonomy-速查" class="headerlink" title="2. 五角色 taxonomy 速查"></a>2. 五角色 taxonomy 速查</h2><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>一句话</th>
+<th>决策权</th>
+<th>典型失败</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Supervisor</strong></td>
+<td>分派子任务、验收、汇总</td>
+<td>选下一个 Worker、是否结束</td>
+<td>无限委派、丢硬规则</td>
+</tr>
+<tr>
+<td><strong>Worker</strong></td>
+<td>执行原子子任务</td>
+<td>局部工具与推理</td>
+<td>越权、假完成、错误不结构化</td>
+</tr>
+<tr>
+<td><strong>Coordinator</strong></td>
+<td>调度依赖与进度，非推理中心</td>
+<td>并行门禁、重试路由</td>
+<td>与 Supervisor 职责重叠</td>
+</tr>
+<tr>
+<td><strong>Router</strong></td>
+<td>分类分流到固定分支</td>
+<td>选分支（通常一次或少数几次）</td>
+<td>误路由、无降级</td>
+</tr>
+<tr>
+<td><strong>Peer</strong></td>
+<td>对等协商、互补</td>
+<td>自治决策</td>
+<td>冲突无解、重复劳动</td>
+</tr>
+</tbody></table>
+<p><strong>与 LangGraph（六）对照：</strong></p>
+<table>
+<thead>
+<tr>
+<th>LangGraph 概念</th>
+<th>Multi-Agent 角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>conditional edge + 分类节点</td>
+<td><strong>Router</strong></td>
+</tr>
+<tr>
+<td>Supervisor 节点</td>
+<td><strong>Supervisor</strong></td>
+</tr>
+<tr>
+<td>子图 &#x2F; <code>create_agent</code> Node</td>
+<td><strong>Worker</strong></td>
+</tr>
+<tr>
+<td>Flow <code>@listen</code> 编排（CrewAI 预告）</td>
+<td><strong>Coordinator</strong></td>
+</tr>
+<tr>
+<td>多节点 + Store 无中心（Swarm 预告）</td>
+<td><strong>Peer</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-Harness-Orchestration-Runtime-分层"><a href="#3-Harness-Orchestration-Runtime-分层" class="headerlink" title="3. Harness &#x2F; Orchestration Runtime 分层"></a>3. Harness &#x2F; Orchestration Runtime 分层</h2><p>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#6-harnessruntime-%E7%9A%84%E4%BA%A7%E5%93%81%E5%BD%A2%E6%80%81">Agent（三）§6</a>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">业务应用（Flow / API）</span><br><span class="line">    ↓</span><br><span class="line">Multi-Agent 拓扑（角色 + 协作 + 通信）    ← 本系列</span><br><span class="line">    ↓</span><br><span class="line">Harness（create_agent / create_deep_agent / Crew Agent）</span><br><span class="line">    ↓</span><br><span class="line">Orchestration Runtime（LangGraph StateGraph / Checkpoint / Interrupt）</span><br><span class="line">    ↓</span><br><span class="line">LLM + Tools + Memory + MCP/RAG</span><br></pre></td></tr></table></figure>
+
+<p><strong>读法：</strong></p>
+<ul>
+<li><strong>角色与协作</strong> 是设计层，可用纸面或图表达，与具体框架无关</li>
+<li><strong>Harness</strong> 跑单 Agent 工具环；多 Worker 常 &#x3D; 多个 Harness 实例或子图</li>
+<li><strong>Runtime</strong> 负责 durable、interrupt、Store——Multi-Agent 的 Handoff 与恢复依赖此层</li>
+</ul>
+<hr>
+<h2 id="4-与后续实现系列映射预告"><a href="#4-与后续实现系列映射预告" class="headerlink" title="4. 与后续实现系列映射预告"></a>4. 与后续实现系列映射预告</h2><p>完整映射表为 <strong>canonical</strong>，见 <a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/#4-%E7%90%86%E8%AE%BA%E5%88%B0%E6%A1%86%E6%9E%B6%E6%98%A0%E5%B0%84%EF%BC%88canonical%EF%BC%89">Multi-Agent（五）§4</a>。此处只预告方向：</p>
+<table>
+<thead>
+<tr>
+<th>理论概念</th>
+<th>主要落点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Supervisor + Hierarchical</td>
+<td>LangGraph Supervisor 节点；CrewAI hierarchical Process</td>
+</tr>
+<tr>
+<td>Worker + Context 隔离</td>
+<td>Deep Agents <code>task()</code> Subagent；LangGraph 子图</td>
+</tr>
+<tr>
+<td>Role-Based 流水线</td>
+<td>CrewAI sequential Process；LangGraph 线性子图链</td>
+</tr>
+<tr>
+<td>Router</td>
+<td>LangGraph conditional edge；CrewAI Flow <code>@router</code></td>
+</tr>
+<tr>
+<td>Message Passing</td>
+<td>state 字段 Handoff；Subagent 摘要返回</td>
+</tr>
+</tbody></table>
+<p><strong>下一模块 <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">Deep Agents（一）</a></strong> 在厚 Harness 内实现 Worker&#x2F;Subagent；<strong><a href="/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/">CrewAI（一）</a></strong> 在 Flow+Crew 层产品化 Role-Based &#x2F; Hierarchical——二者均假定本篇理论已学。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>定位：</strong> LangGraph（六）之后的 <strong>Multi-Agent 理论 canonical</strong>；不重复 API 教程。</p>
+<p><strong>五角色：</strong> Supervisor &#x2F; Worker &#x2F; Coordinator &#x2F; Router &#x2F; Peer。</p>
+<p><strong>分水岭：</strong> 有明确信号再拆；默认单 Agent + 分层规划优先。</p>
+<p><strong>分层：</strong> 拓扑设计 → Harness → Orchestration Runtime。</p>
+<p><strong>映射：</strong> 完整表见（五）§4；Deep Agents &#x2F; CrewAI 为实现线。</p>
+<p><strong>下一步：</strong> <a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/">Multi-Agent（二）· 五角色深讲</a></p>
+<p><strong>前置：</strong> <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph 自检</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#7-%E5%A4%9A-Agent%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%8C%E5%8D%8A%E8%8A%82%EF%BC%89">Agent（三）§7</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Multi-Agent/" rel="tag"># Multi-Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="prev" title="AI-Agent工程学习-LangGraph(自检与面试)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-LangGraph(自检与面试)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-Multi-Agent(二)">
+                  AI-Agent工程学习-Multi-Agent(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

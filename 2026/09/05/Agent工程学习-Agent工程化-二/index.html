@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Agent 工程化观测层：Logging &#x2F; Tracing &#x2F; Metrics &#x2F; Cost &#x2F; Token；LangSmith 与 OpenTelemetry 生产口径。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Agent工程化(二)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Agent 工程化观测层：Logging &#x2F; Tracing &#x2F; Metrics &#x2F; Cost &#x2F; Token；LangSmith 与 OpenTelemetry 生产口径。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-22T13:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.983Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Agent工程化">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/","path":"/2026/09/05/Agent工程学习-Agent工程化-二/","title":"AI-Agent工程学习-Agent工程化(二)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Agent工程化(二) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Logging"><span class="nav-number">2.</span> <span class="nav-text">1. Logging</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Tracing"><span class="nav-number">3.</span> <span class="nav-text">2. Tracing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Metrics"><span class="nav-number">4.</span> <span class="nav-text">3. Metrics</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Cost-Tracking-Token-Tracking"><span class="nav-number">5.</span> <span class="nav-text">4. Cost Tracking &#x2F; Token Tracking</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-LangSmith%EF%BC%88%E7%94%9F%E4%BA%A7%E5%8F%A3%E5%BE%84%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. LangSmith（生产口径）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-OpenTelemetry"><span class="nav-number">7.</span> <span class="nav-text">6. OpenTelemetry</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Agent工程化(二) | 我的记录小站">
+      <meta itemprop="description" content="Agent 工程化观测层：Logging &#x2F; Tracing &#x2F; Metrics &#x2F; Cost &#x2F; Token；LangSmith 与 OpenTelemetry 生产口径。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Agent工程化(二)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-22 21:00:00" itemprop="dateCreated datePublished" datetime="2026-07-22T21:00:00+08:00">2026-07-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Agent 工程化观测层：Logging / Tracing / Metrics / Cost / Token；LangSmith 与 OpenTelemetry 生产口径。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">Agent 工程化（一）</a>：Runtime 身份与生命周期已定；本篇讲 <strong>如何看见系统在做什么</strong>——Log、Trace、Metrics、Cost&#x2F;Token，以及 LangSmith &#x2F; OpenTelemetry。</p>
+<p><strong>系列导航：</strong> <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">（一）</a> · <a href="/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/">（二）本篇</a> · <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">（三）</a> · <a href="/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/">（四）</a> · <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">自检</a></p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>观测回答三个问题：这一次为何错（Trace）、整体是否退化（Eval&#x2F;Metrics）、钱与延迟花在哪（Cost&#x2F;Token）。</p>
+<p>回链：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/#4-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89">LangChain（六）§4 LangSmith（轻量）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6 发版 Checklist</a>。本篇升为 <strong>生产口径</strong>，不重复平台点选教程。</p>
+<hr>
+<h2 id="1-Logging"><a href="#1-Logging" class="headerlink" title="1. Logging"></a>1. Logging</h2><table>
+<thead>
+<tr>
+<th>要求</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>结构化</strong></td>
+<td>JSON 字段：<code>run_id</code>、<code>thread_id</code>、<code>tenant_id</code>、<code>level</code>、<code>event</code></td>
+</tr>
+<tr>
+<td><strong>脱敏</strong></td>
+<td>禁止落密钥、完整 Prompt、用户 PII 原文；必要时哈希或截断</td>
+</tr>
+<tr>
+<td><strong>关联</strong></td>
+<td>每条日志可跳到对应 Trace span</td>
+</tr>
+<tr>
+<td><strong>级别</strong></td>
+<td>业务异常与 Gate 拦截用 warning&#x2F;error；调试细节可采样</td>
+</tr>
+</tbody></table>
+<p><strong>反模式：</strong> <code>print</code> 调试残留、把 Tool 全量返回值写入 INFO、无 <code>run_id</code> 的散落日志。</p>
+<hr>
+<h2 id="2-Tracing"><a href="#2-Tracing" class="headerlink" title="2. Tracing"></a>2. Tracing</h2><table>
+<thead>
+<tr>
+<th>Span 层级</th>
+<th>典型内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>run</strong></td>
+<td>用户目标、起止、最终状态（success &#x2F; partial &#x2F; failed）</td>
+</tr>
+<tr>
+<td><strong>node &#x2F; step</strong></td>
+<td>图节点或 Flow 步骤 Input&#x2F;Output 摘要</td>
+</tr>
+<tr>
+<td><strong>model</strong></td>
+<td>模型名、token、延迟、finish_reason</td>
+</tr>
+<tr>
+<td><strong>tool</strong></td>
+<td>工具名、参数摘要、错误码、invocation_id</td>
+</tr>
+<tr>
+<td><strong>subagent</strong></td>
+<td>子 Agent 边界；主窗不灌全文 Trace</td>
+</tr>
+</tbody></table>
+<p><strong>多 Agent 过滤：</strong> LangChain &#x2F; Deep Agents 可用 <code>lc_agent_name</code> 等 metadata 只看子 Agent span——回链 <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">Deep Agents（四）</a>、<a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%BA%94/">Deep Agents（五）§4</a>。</p>
+<p><strong>原则：</strong> 排障看轨迹；发版看 Dataset——二者互补，不做第二套互相矛盾的标准。</p>
+<hr>
+<h2 id="3-Metrics"><a href="#3-Metrics" class="headerlink" title="3. Metrics"></a>3. Metrics</h2><p>生产最小集：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Task Success</strong></td>
+<td>对齐 Contract &#x2F; LE Gate，非「模型说完成」</td>
+</tr>
+<tr>
+<td><strong>假完成率</strong></td>
+<td>标成功但 Gate&#x2F;人工判缺口</td>
+</tr>
+<tr>
+<td><strong>P95 延迟</strong></td>
+<td>端到端与关键节点</td>
+</tr>
+<tr>
+<td><strong>重试率</strong></td>
+<td>模型&#x2F;工具可恢复重试占比</td>
+</tr>
+<tr>
+<td><strong>HITL 等待</strong></td>
+<td>排队时长、超时放弃率</td>
+</tr>
+<tr>
+<td><strong>Gate 拦截率</strong></td>
+<td>输入&#x2F;输出&#x2F;工具护栏触发</td>
+</tr>
+</tbody></table>
+<p>告警建议挂在：预算耗尽突增、错误率、Gate 拦截异常、下游 5xx——与（三）熔断联动。</p>
+<hr>
+<h2 id="4-Cost-Tracking-Token-Tracking"><a href="#4-Cost-Tracking-Token-Tracking" class="headerlink" title="4. Cost Tracking &#x2F; Token Tracking"></a>4. Cost Tracking &#x2F; Token Tracking</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>拆什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Token</strong></td>
+<td>prompt &#x2F; completion &#x2F; cache hit；按 run、角色、工具汇总</td>
+</tr>
+<tr>
+<td><strong>Cost</strong></td>
+<td>按模型单价折算；含重试与 Voting×N 放大</td>
+</tr>
+<tr>
+<td><strong>预算</strong></td>
+<td>软顶告警 + 硬顶停写；对齐 Runtime 预算字段</td>
+</tr>
+</tbody></table>
+<p>Multi-Agent 成本 ≈ 角色数 × 轮次 ×（可选 Voting N）——回链见 <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">Multi-Agent（三）</a> 成本模型。</p>
+<hr>
+<h2 id="5-LangSmith（生产口径）"><a href="#5-LangSmith（生产口径）" class="headerlink" title="5. LangSmith（生产口径）"></a>5. LangSmith（生产口径）</h2><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Trace</strong></td>
+<td>单次 run 排障：tool_calls、Middleware、token、节点 state</td>
+</tr>
+<tr>
+<td><strong>Graph 可视化</strong></td>
+<td>LangGraph 走错边、卡点定位</td>
+</tr>
+<tr>
+<td><strong>Dataset + Experiment</strong></td>
+<td>固定 Scenario 集回归；对齐 Agent（四）§6</td>
+</tr>
+<tr>
+<td><strong>Engine（认名）</strong></td>
+<td>监控与异常检测；细节属平台篇</td>
+</tr>
+</tbody></table>
+<p><strong>分工：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Trace          →  「这一次为什么错」</span><br><span class="line">Experiment     →  「这一版是否整体退化」</span><br><span class="line">Checklist §6   →  「发版标准是什么」（canonical，平台只承载）</span><br></pre></td></tr></table></figure>
+
+<p>CrewAI 侧用 AMP &#x2F; <code>tracing=True</code> 看 Task timeline；与 LangSmith 生态对照见 <a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/#10-%E8%A7%82%E6%B5%8B%E4%B8%8E%E5%8F%91%E7%89%88">实现框架对比 §10</a>。</p>
+<hr>
+<h2 id="6-OpenTelemetry"><a href="#6-OpenTelemetry" class="headerlink" title="6. OpenTelemetry"></a>6. OpenTelemetry</h2><table>
+<thead>
+<tr>
+<th>项</th>
+<th>口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>定位</strong></td>
+<td>跨服务 Trace&#x2F;Metrics 导出标准；Agent 平台可对接</td>
+</tr>
+<tr>
+<td><strong>做法</strong></td>
+<td>Run&#x2F;span 属性带 <code>run_id</code>、<code>thread_id</code>；导出到现有 APM</td>
+</tr>
+<tr>
+<td><strong>边界</strong></td>
+<td>本路径以 LangSmith 为主战场；OTel 解决「多微服务一条链路」</td>
+</tr>
+</tbody></table>
+<p>不要求本系列实现完整 Collector 配置；要求清楚：<strong>Agent Trace 与业务 HTTP Trace 可关联</strong>。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Log：</strong> 结构化、脱敏、可关联 Trace。</p>
+<p><strong>Trace：</strong> run→node→model&#x2F;tool&#x2F;subagent；多 Agent 用 metadata 过滤。</p>
+<p><strong>Metrics &#x2F; Cost &#x2F; Token：</strong> 成功率与假完成、P95、预算；按角色放大成本可见。</p>
+<p><strong>LangSmith：</strong> Trace 排障 + Experiment 回归；Checklist 不换标准。</p>
+<p><strong>OTel：</strong> 跨栈导出认名到可对接。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">Agent 工程化（三）· Reliability</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">Agent 工程化（一）</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/#4-LangSmith%EF%BC%88%E8%BD%BB%E9%87%8F%EF%BC%89">LangChain（六）§4</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Agent%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag"># Agent工程化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/" rel="prev" title="AI-Agent工程学习-Agent工程化(一)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Agent工程化(一)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/" rel="next" title="AI-Agent工程学习-Agent工程化(三)">
+                  AI-Agent工程学习-Agent工程化(三) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

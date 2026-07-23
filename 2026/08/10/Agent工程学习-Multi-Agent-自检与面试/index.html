@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Multi-Agent（一）～（五）学习自检与面试导向问答；覆盖角色、协作、通信、拓扑映射与退回条件。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Multi-Agent(自检与面试)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Multi-Agent（一）～（五）学习自检与面试导向问答；覆盖角色、协作、通信、拓扑映射与退回条件。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-18T10:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.981Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Multi-Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/","path":"/2026/08/10/Agent工程学习-Multi-Agent-自检与面试/","title":"AI-Agent工程学习-Multi-Agent(自检与面试)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Multi-Agent(自检与面试) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">0. 使用说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%88%86%E7%AF%87%E8%87%AA%E6%A3%80"><span class="nav-number">2.</span> <span class="nav-text">1. 分篇自检</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1%EF%BC%88%E4%B8%80%EF%BC%89%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%88%86%E6%B0%B4%E5%B2%AD"><span class="nav-number">2.1.</span> <span class="nav-text">1.1（一）定位与分水岭</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-Multi-Agent-%E7%B3%BB%E5%88%97%E4%B8%8E-LangGraph%EF%BC%88%E5%85%AD%EF%BC%89%E7%9A%84%E5%88%86%E5%B7%A5%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">S1. Multi-Agent 系列与 LangGraph（六）的分工是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E5%88%97%E5%87%BA%E4%B8%89%E4%B8%AA%E3%80%8C%E9%9C%80%E8%A6%81-Multi-Agent%E3%80%8D%E7%9A%84%E6%9C%89%E6%95%88%E4%BF%A1%E5%8F%B7%E3%80%82"><span class="nav-number">2.3.</span> <span class="nav-text">S2. 列出三个「需要 Multi-Agent」的有效信号。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S3-%E8%BF%87%E6%97%A9%E6%8B%86%E8%A7%92%E8%89%B2%E7%9A%84%E5%9B%9B%E4%B8%AA%E5%85%B8%E5%9E%8B%E4%BB%A3%E4%BB%B7%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">S3. 过早拆角色的四个典型代价是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S4-%E4%BA%94%E8%A7%92%E8%89%B2%E5%90%84%E7%94%A8%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%A6%82%E6%8B%AC%E3%80%82"><span class="nav-number">2.5.</span> <span class="nav-text">S4. 五角色各用一句话概括。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2%EF%BC%88%E4%BA%8C%EF%BC%89%E4%BA%94%E8%A7%92%E8%89%B2%E6%B7%B1%E8%AE%B2"><span class="nav-number">2.6.</span> <span class="nav-text">1.2（二）五角色深讲</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S5-Supervisor-%E4%B8%8E-Coordinator-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">2.7.</span> <span class="nav-text">S5. Supervisor 与 Coordinator 的核心区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S6-Worker-%E5%BF%85%E9%A1%BB%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%84%E5%8C%96%E9%94%99%E8%AF%AF%E6%80%81%E7%9A%84%E5%8E%9F%E5%9B%A0%EF%BC%9F"><span class="nav-number">2.8.</span> <span class="nav-text">S6. Worker 必须返回结构化错误态的原因？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S7-Router-%E4%B8%8E-Supervisor-%E7%9A%84%E9%80%89%E5%9E%8B%E5%88%86%E6%B0%B4%E5%B2%AD%EF%BC%9F"><span class="nav-number">2.9.</span> <span class="nav-text">S7. Router 与 Supervisor 的选型分水岭？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S8-%E5%8F%AF%E9%9D%A0-Handoff-%E8%87%B3%E5%B0%91%E5%8C%85%E5%90%AB%E5%93%AA%E4%BA%9B%E5%AD%97%E6%AE%B5%EF%BC%9F"><span class="nav-number">2.10.</span> <span class="nav-text">S8. 可靠 Handoff 至少包含哪些字段？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S9-Peer-Swarm-%E4%BD%95%E6%97%B6%E6%89%8D%E5%80%BC%E5%BE%97%E8%80%83%E8%99%91%EF%BC%9F"><span class="nav-number">2.11.</span> <span class="nav-text">S9. Peer &#x2F; Swarm 何时才值得考虑？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3%EF%BC%88%E4%B8%89%EF%BC%89%E4%BA%94%E5%8D%8F%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.12.</span> <span class="nav-text">1.3（三）五协作模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S10-Role-Based-%E4%B8%8E-Hierarchical-%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">2.13.</span> <span class="nav-text">S10. Role-Based 与 Hierarchical 的区别？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S11-Debate-%E6%A8%A1%E5%BC%8F%E5%BF%85%E9%A1%BB%E6%9C%89%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%B2%BB%E7%90%86%E9%A1%B9%EF%BC%9F"><span class="nav-number">2.14.</span> <span class="nav-text">S11. Debate 模式必须有的两个治理项？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S12-Voting-%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%88%90%E6%9C%AC%E4%B8%8E%E9%80%82%E7%94%A8%EF%BC%9F"><span class="nav-number">2.15.</span> <span class="nav-text">S12. Voting 模式的成本与适用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S13-%E4%BD%95%E6%97%B6%E7%94%A8-Role-Based-%E8%80%8C%E9%9D%9E-Debate%EF%BC%9F"><span class="nav-number">2.16.</span> <span class="nav-text">S13. 何时用 Role-Based 而非 Debate？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S14-CrewAI-sequential-%E4%B8%BB%E8%A6%81%E5%AF%B9%E5%BA%94%E5%93%AA%E7%A7%8D%E5%8D%8F%E4%BD%9C%E6%A8%A1%E5%BC%8F%EF%BC%9F"><span class="nav-number">2.17.</span> <span class="nav-text">S14. CrewAI sequential 主要对应哪种协作模式？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4%EF%BC%88%E5%9B%9B%EF%BC%89%E5%9B%9B%E9%80%9A%E4%BF%A1%E6%9C%BA%E5%88%B6"><span class="nav-number">2.18.</span> <span class="nav-text">1.4（四）四通信机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S15-Message-Passing-%E4%B8%8E-Shared-Memory-%E5%A6%82%E4%BD%95%E9%80%89%E5%9E%8B%EF%BC%9F"><span class="nav-number">2.19.</span> <span class="nav-text">S15. Message Passing 与 Shared Memory 如何选型？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S16-Event-Bus-%E4%B8%8E-Coordinator-%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">2.20.</span> <span class="nav-text">S16. Event Bus 与 Coordinator 的关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S17-Blackboard-%E7%9A%84%E4%B8%BB%E8%A6%81%E9%A3%8E%E9%99%A9%E4%B8%8E%E9%98%B2%E6%8A%A4%EF%BC%9F"><span class="nav-number">2.21.</span> <span class="nav-text">S17. Blackboard 的主要风险与防护？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S18-Deep-Agents-Subagent-%E8%BF%94%E5%9B%9E%E6%91%98%E8%A6%81%E6%98%AF%E5%93%AA%E7%A7%8D%E9%80%9A%E4%BF%A1%E6%9C%BA%E5%88%B6%EF%BC%9F"><span class="nav-number">2.22.</span> <span class="nav-text">S18. Deep Agents Subagent 返回摘要是哪种通信机制？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S19-%E5%B9%B6%E8%A1%8C-Worker-%E5%86%99%E5%90%8C%E4%B8%80-State-%E9%94%AE%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.23.</span> <span class="nav-text">S19. 并行 Worker 写同一 State 键要注意什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5%EF%BC%88%E4%BA%94%EF%BC%89%E6%8B%93%E6%89%91%E4%B8%8E%E6%98%A0%E5%B0%84"><span class="nav-number">2.24.</span> <span class="nav-text">1.5（五）拓扑与映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S20-%E6%8B%93%E6%89%91%E8%AE%BE%E8%AE%A1%E5%9B%9B%E6%AD%A5%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.25.</span> <span class="nav-text">S20. 拓扑设计四步是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S21-%E7%90%86%E8%AE%BA%E2%86%92%E4%B8%89%E6%A1%86%E6%9E%B6%E6%98%A0%E5%B0%84%E8%A1%A8%E4%B8%AD%EF%BC%8CSupervisor-%E5%9C%A8%E4%B8%89%E6%A1%86%E6%9E%B6%E7%9A%84%E8%90%BD%E7%82%B9%EF%BC%9F"><span class="nav-number">2.26.</span> <span class="nav-text">S21. 理论→三框架映射表中，Supervisor 在三框架的落点？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S22-%E3%80%8C%E5%BF%AB%E9%80%9F%E5%A7%94%E6%89%98%E9%87%8D-research%E3%80%81%E4%B8%BB-context-%E8%A6%81%E5%B9%B2%E5%87%80%E3%80%8D%E9%80%89%E5%93%AA%E6%9D%A1%E5%AE%9E%E7%8E%B0%E7%BA%BF%EF%BC%9F"><span class="nav-number">2.27.</span> <span class="nav-text">S22. 「快速委托重 research、主 context 要干净」选哪条实现线？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S23-L0-L1-L2-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF%E5%90%84%E9%AA%8C%E6%94%B6%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.28.</span> <span class="nav-text">S23. L0&#x2F;L1&#x2F;L2 实践阶梯各验收什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S24-%E4%BD%95%E6%97%B6%E5%BA%94%E9%80%80%E5%9B%9E%E5%8D%95-Agent%EF%BC%9F"><span class="nav-number">2.29.</span> <span class="nav-text">S24. 何时应退回单 Agent？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S25%EF%BD%9ES40-%E9%80%9F%E6%9F%A5%EF%BC%88%E5%8F%A3%E8%BF%B0%E8%A6%81%E7%82%B9%EF%BC%89"><span class="nav-number">2.30.</span> <span class="nav-text">S25～S40. 速查（口述要点）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">2. 面试题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E8%AE%BE%E8%AE%A1%E3%80%8C%E7%AB%9E%E5%93%81%E8%B0%83%E7%A0%94-%E6%8A%A5%E5%91%8A%E3%80%8DMulti-Agent-%E6%8B%93%E6%89%91%EF%BC%8C%E8%AF%B4%E6%98%8E%E8%A7%92%E8%89%B2%E3%80%81%E5%8D%8F%E4%BD%9C%E3%80%81%E9%80%9A%E4%BF%A1%E4%B8%8E%E6%A1%86%E6%9E%B6%E9%80%89%E5%9E%8B%E3%80%82"><span class="nav-number">3.1.</span> <span class="nav-text">I1. 设计「竞品调研 + 报告」Multi-Agent 拓扑，说明角色、协作、通信与框架选型。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I2-Supervisor%E3%80%81Coordinator%E3%80%81Router-%E5%9C%A8%E4%B8%80%E4%B8%AA-Flow-Crew-%E7%B3%BB%E7%BB%9F%E9%87%8C%E5%A6%82%E4%BD%95%E5%88%92%E5%88%86%EF%BC%9F"><span class="nav-number">3.2.</span> <span class="nav-text">I2. Supervisor、Coordinator、Router 在一个 Flow+Crew 系统里如何划分？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I3-%E5%A4%9A-Agent-%E4%B8%8A%E7%BA%BF%E5%89%8D%E6%9C%80%E5%AE%B9%E6%98%93%E9%81%97%E6%BC%8F%E7%9A%84%E5%B7%A5%E7%A8%8B%E8%BE%B9%E7%95%8C%EF%BC%9F"><span class="nav-number">3.3.</span> <span class="nav-text">I3. 多 Agent 上线前最容易遗漏的工程边界？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I4-Message-Passing-%E4%B8%8E-Shared-Memory-%E8%83%BD%E5%90%A6%E6%B7%B7%E7%94%A8%EF%BC%9F"><span class="nav-number">3.4.</span> <span class="nav-text">I4. Message Passing 与 Shared Memory 能否混用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I5-Debate-%E4%B8%8E-Voting-%E9%83%BD%E3%80%8C%E5%A4%9A%E8%B7%AF%E4%BA%A7%E5%87%BA%E3%80%8D%EF%BC%8C%E5%A6%82%E4%BD%95%E5%8C%BA%E5%88%86%E9%80%89%E5%9E%8B%EF%BC%9F"><span class="nav-number">3.5.</span> <span class="nav-text">I5. Debate 与 Voting 都「多路产出」，如何区分选型？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I6-%E4%B8%BA%E4%BD%95-Multi-Agent-%E7%90%86%E8%AE%BA%E6%94%BE%E5%9C%A8-Deep-Agents-%E4%B8%8E-CrewAI-%E4%B9%8B%E5%89%8D%EF%BC%9F"><span class="nav-number">3.6.</span> <span class="nav-text">I6. 为何 Multi-Agent 理论放在 Deep Agents 与 CrewAI 之前？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I7-Swarm-%E4%B8%8E-Peer-%E5%9C%A8-LangGraph-%E9%87%8C%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%EF%BC%9F"><span class="nav-number">3.7.</span> <span class="nav-text">I7. Swarm 与 Peer 在 LangGraph 里如何实现？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I8-Multi-Agent-%E6%88%90%E6%9C%AC%E5%A6%82%E4%BD%95%E6%B2%BB%E7%90%86%EF%BC%9F"><span class="nav-number">3.8.</span> <span class="nav-text">I8. Multi-Agent 成本如何治理？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I9-%E5%AD%90-Worker-%E9%99%90%E6%B5%81%E6%97%B6-Supervisor-%E5%BA%94%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">3.9.</span> <span class="nav-text">I9. 子 Worker 限流时 Supervisor 应如何处理？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I10-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94-%C2%A75-%E4%B8%8E-Multi-Agent%EF%BC%88%E4%BA%94%EF%BC%89%C2%A74-%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">3.10.</span> <span class="nav-text">I10. 实现框架对比 §5 与 Multi-Agent（五）§4 关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I11-Event-Bus-%E5%9C%A8%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E8%90%BD%E5%9C%B0%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.11.</span> <span class="nav-text">I11. Event Bus 在生产环境落地注意什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I12-%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B-CrewAI-%E4%B8%8D%E5%A6%82-LangGraph-%E5%81%9A-Multi-Agent%EF%BC%9F"><span class="nav-number">3.12.</span> <span class="nav-text">I12. 什么情况下 CrewAI 不如 LangGraph 做 Multi-Agent？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%85%A8%E8%B7%AF%E5%BE%84%E6%94%B6%E5%8F%A3"><span class="nav-number">4.</span> <span class="nav-text">3. 全路径收口</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Multi-Agent(自检与面试) | 我的记录小站">
+      <meta itemprop="description" content="Multi-Agent（一）～（五）学习自检与面试导向问答；覆盖角色、协作、通信、拓扑映射与退回条件。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Multi-Agent(自检与面试)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-18 18:00:00" itemprop="dateCreated datePublished" datetime="2026-07-18T18:00:00+08:00">2026-07-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Multi-Agent（一）～（五）学习自检与面试导向问答；覆盖角色、协作、通信、拓扑映射与退回条件。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文是 Multi-Agent（一）～（五）的阶段验收。目标不是背名词，而是能根据业务约束 <strong>设计角色与协作拓扑</strong>、选择通信机制、映射到 LangGraph &#x2F; Deep Agents &#x2F; CrewAI，并判断何时应退回单 Agent。</p>
+<span id="more"></span>
+
+<h2 id="0-使用说明"><a href="#0-使用说明" class="headerlink" title="0. 使用说明"></a>0. 使用说明</h2><p>建议先遮住「推荐回答」，在 60～120 秒内口述。自检题按篇覆盖；（五）映射表与拓扑设计为重点。面试题侧重架构取舍与生产边界。</p>
+<p>回答时重点检查四件事：</p>
+<ol>
+<li>是否区分 <strong>角色职责</strong> 与 <strong>协作模式</strong>、<strong>通信机制</strong>。</li>
+<li>是否说明 Handoff 合同与 Context 隔离。</li>
+<li>是否能把概念映射到至少一个已学框架。</li>
+<li>是否给出 <strong>退回单 Agent</strong> 或简化拓扑的条件。</li>
+</ol>
+<hr>
+<h2 id="1-分篇自检"><a href="#1-分篇自检" class="headerlink" title="1. 分篇自检"></a>1. 分篇自检</h2><h3 id="1-1（一）定位与分水岭"><a href="#1-1（一）定位与分水岭" class="headerlink" title="1.1（一）定位与分水岭"></a>1.1（一）定位与分水岭</h3><h3 id="S1-Multi-Agent-系列与-LangGraph（六）的分工是什么？"><a href="#S1-Multi-Agent-系列与-LangGraph（六）的分工是什么？" class="headerlink" title="S1. Multi-Agent 系列与 LangGraph（六）的分工是什么？"></a>S1. Multi-Agent 系列与 LangGraph（六）的分工是什么？</h3><p><strong>推荐回答：</strong> LangGraph（六）讲图级实现——Subgraph、Router、Supervisor、代码拓扑；Multi-Agent 系列讲与框架无关的理论 canonical——五角色、五协作、四通信、治理与映射表。先有过（六）的实现体验，再用本系列命名和系统化；Deep Agents 与 CrewAI 是不同实现线，回链（五）映射表。</p>
+<h3 id="S2-列出三个「需要-Multi-Agent」的有效信号。"><a href="#S2-列出三个「需要-Multi-Agent」的有效信号。" class="headerlink" title="S2. 列出三个「需要 Multi-Agent」的有效信号。"></a>S2. 列出三个「需要 Multi-Agent」的有效信号。</h3><p><strong>推荐回答：</strong> 角色异质（工具集与验收不同）、Context 隔离（子任务 Trace 会挤爆主窗）、并行独立子任务或需辩论&#x2F;投票消解冲突。反例：同一 Tool 环加 Skill 切换、固定三步 ETL、单模型 Reflection 可解决的，不必拆。</p>
+<h3 id="S3-过早拆角色的四个典型代价是什么？"><a href="#S3-过早拆角色的四个典型代价是什么？" class="headerlink" title="S3. 过早拆角色的四个典型代价是什么？"></a>S3. 过早拆角色的四个典型代价是什么？</h3><p><strong>推荐回答：</strong> Context 丢失（Handoff 不完整）、Token 膨胀（多环各带完整 System）、责任模糊（只有角色名无独立工具&#x2F;验收）、图维护成本超过收益。默认应先单 Agent + 分层规划 + Skill。</p>
+<h3 id="S4-五角色各用一句话概括。"><a href="#S4-五角色各用一句话概括。" class="headerlink" title="S4. 五角色各用一句话概括。"></a>S4. 五角色各用一句话概括。</h3><p><strong>推荐回答：</strong> Supervisor 分派验收；Worker 执行原子子任务；Coordinator 管流程时钟与依赖；Router 分类分流；Peer 对等自治。Coordinator 不做内容推理，Router 通常不做多轮协调。</p>
+<h3 id="1-2（二）五角色深讲"><a href="#1-2（二）五角色深讲" class="headerlink" title="1.2（二）五角色深讲"></a>1.2（二）五角色深讲</h3><h3 id="S5-Supervisor-与-Coordinator-的核心区别？"><a href="#S5-Supervisor-与-Coordinator-的核心区别？" class="headerlink" title="S5. Supervisor 与 Coordinator 的核心区别？"></a>S5. Supervisor 与 Coordinator 的核心区别？</h3><p><strong>推荐回答：</strong> Supervisor 负责任务分解、选 Worker、验收子结果与是否结束；Coordinator 负责步骤依赖、并行门禁、超时重试路由，不负责内容质量推理。CrewAI Flow 的 <code>@listen</code> 偏 Coordinator；hierarchical Manager 偏 Supervisor。</p>
+<h3 id="S6-Worker-必须返回结构化错误态的原因？"><a href="#S6-Worker-必须返回结构化错误态的原因？" class="headerlink" title="S6. Worker 必须返回结构化错误态的原因？"></a>S6. Worker 必须返回结构化错误态的原因？</h3><p><strong>推荐回答：</strong> Supervisor 需区分无结果、限流、权限、致命错误以决定改 query、换 Worker、降级或 Interrupt。非结构化「失败了」会导致盲目重试或假完成。生产应返回 status、summary、evidence_refs。</p>
+<h3 id="S7-Router-与-Supervisor-的选型分水岭？"><a href="#S7-Router-与-Supervisor-的选型分水岭？" class="headerlink" title="S7. Router 与 Supervisor 的选型分水岭？"></a>S7. Router 与 Supervisor 的选型分水岭？</h3><p><strong>推荐回答：</strong> 一次或少数几次分类、分支彼此独立无多轮协调用 Router；需根据进展反复分派、验收、handoff 用 Supervisor。误把长期协作塞进 Router 会缺验收；简单 FAQ 分流不必上 Supervisor。</p>
+<h3 id="S8-可靠-Handoff-至少包含哪些字段？"><a href="#S8-可靠-Handoff-至少包含哪些字段？" class="headerlink" title="S8. 可靠 Handoff 至少包含哪些字段？"></a>S8. 可靠 Handoff 至少包含哪些字段？</h3><p><strong>推荐回答：</strong> Goal 摘要、done[]&#x2F;open[]、硬规则引用、证据指针（非全文）、Worker 错误态（如适用）、剩余预算提示。不要把完整 Trace 灌给下一角色。</p>
+<h3 id="S9-Peer-Swarm-何时才值得考虑？"><a href="#S9-Peer-Swarm-何时才值得考虑？" class="headerlink" title="S9. Peer &#x2F; Swarm 何时才值得考虑？"></a>S9. Peer &#x2F; Swarm 何时才值得考虑？</h3><p><strong>推荐回答：</strong> 中心 Supervisor 已成瓶颈、各 Agent 能自治、冲突有收敛协议（max_rounds、Voting 聚合）时。多数业务从 Router 或单 Supervisor 起步；无收敛协议的 Peer 易重复劳动与争论不止。</p>
+<h3 id="1-3（三）五协作模式"><a href="#1-3（三）五协作模式" class="headerlink" title="1.3（三）五协作模式"></a>1.3（三）五协作模式</h3><h3 id="S10-Role-Based-与-Hierarchical-的区别？"><a href="#S10-Role-Based-与-Hierarchical-的区别？" class="headerlink" title="S10. Role-Based 与 Hierarchical 的区别？"></a>S10. Role-Based 与 Hierarchical 的区别？</h3><p><strong>推荐回答：</strong> Role-Based 是固定角色流水线（Researcher→Writer），顺序通常预定义；Hierarchical 是多层 Supervisor 再分派，顶层目标逐级分解到叶子 Worker。可组合：Hierarchical 顶层 + 每层内 Role-Based。</p>
+<h3 id="S11-Debate-模式必须有的两个治理项？"><a href="#S11-Debate-模式必须有的两个治理项？" class="headerlink" title="S11. Debate 模式必须有的两个治理项？"></a>S11. Debate 模式必须有的两个治理项？</h3><p><strong>推荐回答：</strong> max_rounds 硬上限与仲裁节点（Supervisor 或规则聚合）。否则 Token 爆炸且争论不收敛。辩论摘要后再进下游，不全文灌窗。</p>
+<h3 id="S12-Voting-模式的成本与适用？"><a href="#S12-Voting-模式的成本与适用？" class="headerlink" title="S12. Voting 模式的成本与适用？"></a>S12. Voting 模式的成本与适用？</h3><p><strong>推荐回答：</strong> 成本约 × N 路 Worker；适用分类、评分、冗余校验降幻觉。LangGraph 用 Send 并行 + 聚合 Node；须定义聚合规则（多数、加权、judge）与无一致时的 HITL 或降级。</p>
+<h3 id="S13-何时用-Role-Based-而非-Debate？"><a href="#S13-何时用-Role-Based-而非-Debate？" class="headerlink" title="S13. 何时用 Role-Based 而非 Debate？"></a>S13. 何时用 Role-Based 而非 Debate？</h3><p><strong>推荐回答：</strong> 流水线步骤与验收标准清晰、不需多视角争论时用 Role-Based（CrewAI sequential）。策略取舍、方案评审、风险辩驳才用 Debate。把 Debate 塞进简单写作流水线通常浪费 Token。</p>
+<h3 id="S14-CrewAI-sequential-主要对应哪种协作模式？"><a href="#S14-CrewAI-sequential-主要对应哪种协作模式？" class="headerlink" title="S14. CrewAI sequential 主要对应哪种协作模式？"></a>S14. CrewAI sequential 主要对应哪种协作模式？</h3><p><strong>推荐回答：</strong> Role-Based Collaboration。Researcher + Writer + Editor 流水线是典型场景；hierarchical Process 对应 Hierarchical Agent System。</p>
+<h3 id="1-4（四）四通信机制"><a href="#1-4（四）四通信机制" class="headerlink" title="1.4（四）四通信机制"></a>1.4（四）四通信机制</h3><h3 id="S15-Message-Passing-与-Shared-Memory-如何选型？"><a href="#S15-Message-Passing-与-Shared-Memory-如何选型？" class="headerlink" title="S15. Message Passing 与 Shared Memory 如何选型？"></a>S15. Message Passing 与 Shared Memory 如何选型？</h3><p><strong>推荐回答：</strong> 子任务隔离、Handoff 清晰、易审计用 Message Passing（默认首选）。多 Agent 需低延迟读写同一任务事实、并行写不同键或 Reducer 合并用 Shared Memory。长材料永不全文传递，用指针与外存。</p>
+<h3 id="S16-Event-Bus-与-Coordinator-的关系？"><a href="#S16-Event-Bus-与-Coordinator-的关系？" class="headerlink" title="S16. Event Bus 与 Coordinator 的关系？"></a>S16. Event Bus 与 Coordinator 的关系？</h3><p><strong>推荐回答：</strong> Event Bus 常是 Coordinator 的实现手段——Flow 用 <code>@listen</code> 订阅 <code>research_done</code> 等事件驱动下一步。Event Bus 解耦发布订阅，但须幂等与顺序策略；Coordinator 不替代 Supervisor 的内容验收。</p>
+<h3 id="S17-Blackboard-的主要风险与防护？"><a href="#S17-Blackboard-的主要风险与防护？" class="headerlink" title="S17. Blackboard 的主要风险与防护？"></a>S17. Blackboard 的主要风险与防护？</h3><p><strong>推荐回答：</strong> 写污染（猜测当事实）、脏读、黑板过大。防护：字段级来源标注、权限（谁可写 claims）、只读事实层用 RAG、读取侧版本与时效过滤。与通用 Shared Memory 比更强调多专家贡献演化知识结构。</p>
+<h3 id="S18-Deep-Agents-Subagent-返回摘要是哪种通信机制？"><a href="#S18-Deep-Agents-Subagent-返回摘要是哪种通信机制？" class="headerlink" title="S18. Deep Agents Subagent 返回摘要是哪种通信机制？"></a>S18. Deep Agents Subagent 返回摘要是哪种通信机制？</h3><p><strong>推荐回答：</strong> Message Passing。子 Agent 独立 Context，只 Handoff 摘要与证据指针到主 Agent，避免完整 Trace 挤占主窗——与（二）Worker 隔离一致。</p>
+<h3 id="S19-并行-Worker-写同一-State-键要注意什么？"><a href="#S19-并行-Worker-写同一-State-键要注意什么？" class="headerlink" title="S19. 并行 Worker 写同一 State 键要注意什么？"></a>S19. 并行 Worker 写同一 State 键要注意什么？</h3><p><strong>推荐回答：</strong> 声明 Reducer（append&#x2F;merge）或由 Coordinator 串行化写；否则非确定性合并。租户数据须 namespace 隔离。Reducer 不保护图外副作用，写库仍需幂等。</p>
+<h3 id="1-5（五）拓扑与映射"><a href="#1-5（五）拓扑与映射" class="headerlink" title="1.5（五）拓扑与映射"></a>1.5（五）拓扑与映射</h3><h3 id="S20-拓扑设计四步是什么？"><a href="#S20-拓扑设计四步是什么？" class="headerlink" title="S20. 拓扑设计四步是什么？"></a>S20. 拓扑设计四步是什么？</h3><p><strong>推荐回答：</strong> 定角色 → 定协作 → 定通信 → 定治理（Handoff、Budget、LE Gate、HITL）。每步有产出物与验收问题，并对齐 Agent（四）§6。</p>
+<h3 id="S21-理论→三框架映射表中，Supervisor-在三框架的落点？"><a href="#S21-理论→三框架映射表中，Supervisor-在三框架的落点？" class="headerlink" title="S21. 理论→三框架映射表中，Supervisor 在三框架的落点？"></a>S21. 理论→三框架映射表中，Supervisor 在三框架的落点？</h3><p><strong>推荐回答：</strong> LangGraph Supervisor 节点；Deep Agents 主 Agent 委派；CrewAI hierarchical Manager。完整表见（五）§4 canonical，他处只回链。</p>
+<h3 id="S22-「快速委托重-research、主-context-要干净」选哪条实现线？"><a href="#S22-「快速委托重-research、主-context-要干净」选哪条实现线？" class="headerlink" title="S22. 「快速委托重 research、主 context 要干净」选哪条实现线？"></a>S22. 「快速委托重 research、主 context 要干净」选哪条实现线？</h3><p><strong>推荐回答：</strong> Deep Agents <code>task()</code> Subagent——厚 Harness 内 context quarantine。若还需每步图级门禁与复杂 handoff 合同，用 LangGraph 外层 + Subagent 节点组合。</p>
+<h3 id="S23-L0-L1-L2-实践阶梯各验收什么？"><a href="#S23-L0-L1-L2-实践阶梯各验收什么？" class="headerlink" title="S23. L0&#x2F;L1&#x2F;L2 实践阶梯各验收什么？"></a>S23. L0&#x2F;L1&#x2F;L2 实践阶梯各验收什么？</h3><p><strong>推荐回答：</strong> L0：Router→2 Worker→聚合，Handoff 含证据指针；L1：Supervisor+Checkpointer+Store，子任务失败可局部重试、interrupt 可恢复；L2：混合拓扑+LE Gate+成本记录，Agent（四）§6 相关项全绿。</p>
+<h3 id="S24-何时应退回单-Agent？"><a href="#S24-何时应退回单-Agent？" class="headerlink" title="S24. 何时应退回单 Agent？"></a>S24. 何时应退回单 Agent？</h3><p><strong>推荐回答：</strong> 仅增加角色名无独立工具&#x2F;状态&#x2F;验收；Token 升而成功率不变；Supervisor 与 Worker 职责重叠；拓扑复杂度超过业务收益。应用单 Agent + 分层规划 + Skill 或 LangGraph 单节点 Agent。</p>
+<h3 id="S25～S40-速查（口述要点）"><a href="#S25～S40-速查（口述要点）" class="headerlink" title="S25～S40. 速查（口述要点）"></a>S25～S40. 速查（口述要点）</h3><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>S25</td>
+<td>LangGraph Router 实现？</td>
+<td>conditional edge + 分类节点</td>
+</tr>
+<tr>
+<td>S26</td>
+<td>CrewAI Router 实现？</td>
+<td>Flow <code>@router</code></td>
+</tr>
+<tr>
+<td>S27</td>
+<td>Voting 在 LangGraph？</td>
+<td><code>Send</code> + 聚合 Node</td>
+</tr>
+<tr>
+<td>S28</td>
+<td>Hierarchical 在 CrewAI？</td>
+<td>hierarchical Process</td>
+</tr>
+<tr>
+<td>S29</td>
+<td>Store 用途？</td>
+<td>跨 thread KV；Blackboard 可结构化 schema</td>
+</tr>
+<tr>
+<td>S30</td>
+<td>研究流水线模板？</td>
+<td>Supervisor→Research×N→聚合→Writer→Gate</td>
+</tr>
+<tr>
+<td>S31</td>
+<td>企业审批模板？</td>
+<td>Coordinator→分析→interrupt→执行</td>
+</tr>
+<tr>
+<td>S32</td>
+<td>Peer 框架落点？</td>
+<td>LangGraph 多节点+Store；AutoGen 巡览</td>
+</tr>
+<tr>
+<td>S33</td>
+<td>Message Passing 默认首选原因？</td>
+<td>隔离、可审计、边界清晰</td>
+</tr>
+<tr>
+<td>S34</td>
+<td>Coordinator 与 Flow 关系？</td>
+<td><code>@start</code>&#x2F;<code>@listen</code> 驱动，不写研报</td>
+</tr>
+<tr>
+<td>S35</td>
+<td>Worker 越权表现？</td>
+<td>调用未授权工具、擅自扩大 scope</td>
+</tr>
+<tr>
+<td>S36</td>
+<td>Supervisor 无限委派如何防？</td>
+<td>Worker 白名单、预算、步数、LE 结束条件</td>
+</tr>
+<tr>
+<td>S37</td>
+<td>多 Agent 观测要点？</td>
+<td>角色&#x2F;节点级 Trace，非仅最终回答</td>
+</tr>
+<tr>
+<td>S38</td>
+<td>Voting 无一致怎么办？</td>
+<td>HITL 或降级为证据不足</td>
+</tr>
+<tr>
+<td>S39</td>
+<td>Blackboard 与 RAG？</td>
+<td>RAG 只读事实；claims 须带来源</td>
+</tr>
+<tr>
+<td>S40</td>
+<td>canonical 映射表在哪？</td>
+<td>Multi-Agent（五）§4</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="2-面试题"><a href="#2-面试题" class="headerlink" title="2. 面试题"></a>2. 面试题</h2><h3 id="I1-设计「竞品调研-报告」Multi-Agent-拓扑，说明角色、协作、通信与框架选型。"><a href="#I1-设计「竞品调研-报告」Multi-Agent-拓扑，说明角色、协作、通信与框架选型。" class="headerlink" title="I1. 设计「竞品调研 + 报告」Multi-Agent 拓扑，说明角色、协作、通信与框架选型。"></a>I1. 设计「竞品调研 + 报告」Multi-Agent 拓扑，说明角色、协作、通信与框架选型。</h3><p><strong>推荐回答：</strong> Router 可选分流行业；Supervisor 分派 Research Worker 并行（Send）；Message Passing 摘要与 evidence_refs 进 Store；聚合验收覆盖率后 Writer Worker；Final LE Gate。长材料隔离用 Deep Agents Subagent 或 LangGraph 子图。角色团队产品化可选 CrewAI sequential。须 Handoff 合同、Budget、节点级 Trace。</p>
+<h3 id="I2-Supervisor、Coordinator、Router-在一个-Flow-Crew-系统里如何划分？"><a href="#I2-Supervisor、Coordinator、Router-在一个-Flow-Crew-系统里如何划分？" class="headerlink" title="I2. Supervisor、Coordinator、Router 在一个 Flow+Crew 系统里如何划分？"></a>I2. Supervisor、Coordinator、Router 在一个 Flow+Crew 系统里如何划分？</h3><p><strong>推荐回答：</strong> Flow 层 Coordinator：<code>@listen</code> 管步骤时钟与事件；Crew 内 hierarchical Manager 作 Supervisor 分派 Researcher&#x2F;Writer；入口 <code>@router</code> 作 Router 分流意图。避免一个节点既协调又写正文。持久化用 Flow <code>@persist</code> 与图级 Checkpointer 按层选型。</p>
+<h3 id="I3-多-Agent-上线前最容易遗漏的工程边界？"><a href="#I3-多-Agent-上线前最容易遗漏的工程边界？" class="headerlink" title="I3. 多 Agent 上线前最容易遗漏的工程边界？"></a>I3. 多 Agent 上线前最容易遗漏的工程边界？</h3><p><strong>推荐回答：</strong> 子 Context 未隔离、Store 串租户、handoff 丢硬规则、并行写同键无 Reducer、失败子任务无结构化错误、Supervisor 无预算、只记最终回答无节点 Trace、Voting 无聚合规则。价值须由 Task Success 证明，非角色数量。</p>
+<h3 id="I4-Message-Passing-与-Shared-Memory-能否混用？"><a href="#I4-Message-Passing-与-Shared-Memory-能否混用？" class="headerlink" title="I4. Message Passing 与 Shared Memory 能否混用？"></a>I4. Message Passing 与 Shared Memory 能否混用？</h3><p><strong>推荐回答：</strong> 常见混用：Worker 间 Handoff 用 Message Passing；跨步骤共享事实用 Store（Shared Memory）。例如 Research 写 evidence[] 到 Store，Writer 读指针；同时 Supervisor 用 state 传 Goal 与 open[]。须分清哪些字段谁可写、Reducer 规则。</p>
+<h3 id="I5-Debate-与-Voting-都「多路产出」，如何区分选型？"><a href="#I5-Debate-与-Voting-都「多路产出」，如何区分选型？" class="headerlink" title="I5. Debate 与 Voting 都「多路产出」，如何区分选型？"></a>I5. Debate 与 Voting 都「多路产出」，如何区分选型？</h3><p><strong>推荐回答：</strong> Debate 是序列或多轮交互求综合观点，有过程；Voting 是独立并行产出后聚合决策，强调冗余与一致性检验。策略评审用 Debate；分类&#x2F;评分&#x2F;降幻觉用 Voting。二者都可设上限与仲裁。</p>
+<h3 id="I6-为何-Multi-Agent-理论放在-Deep-Agents-与-CrewAI-之前？"><a href="#I6-为何-Multi-Agent-理论放在-Deep-Agents-与-CrewAI-之前？" class="headerlink" title="I6. 为何 Multi-Agent 理论放在 Deep Agents 与 CrewAI 之前？"></a>I6. 为何 Multi-Agent 理论放在 Deep Agents 与 CrewAI 之前？</h3><p><strong>推荐回答：</strong> LangGraph（六）已给实现体验；理论系列命名五角色五协作四通信，避免 CrewAI 承担理论课。Deep Agents Subagent 是 Worker+Message Passing；CrewAI 是 Role-Based&#x2F;Hierarchical 产品化。先理论后实现，选型有词汇表。</p>
+<h3 id="I7-Swarm-与-Peer-在-LangGraph-里如何实现？"><a href="#I7-Swarm-与-Peer-在-LangGraph-里如何实现？" class="headerlink" title="I7. Swarm 与 Peer 在 LangGraph 里如何实现？"></a>I7. Swarm 与 Peer 在 LangGraph 里如何实现？</h3><p><strong>推荐回答：</strong> LangGraph 核心无内建 Swarm 一等 API；可用 companion 包（如 <code>langgraph-swarm</code>）或自建多 Peer 节点 + Store 共享黑板 + 路由&#x2F;轮次上限。须收敛协议，否则难审计。多数场景 Router 或 Supervisor 更可控。</p>
+<h3 id="I8-Multi-Agent-成本如何治理？"><a href="#I8-Multi-Agent-成本如何治理？" class="headerlink" title="I8. Multi-Agent 成本如何治理？"></a>I8. Multi-Agent 成本如何治理？</h3><p><strong>推荐回答：</strong> 限制角色数与轮次、Supervisor 预算、Voting 的 N、Debate max_rounds；Trace 记录每角色 Token；超预算降级（换小模型、减 Worker 数、缩 scope）。对齐 Agent（四）§6 成本项。</p>
+<h3 id="I9-子-Worker-限流时-Supervisor-应如何处理？"><a href="#I9-子-Worker-限流时-Supervisor-应如何处理？" class="headerlink" title="I9. 子 Worker 限流时 Supervisor 应如何处理？"></a>I9. 子 Worker 限流时 Supervisor 应如何处理？</h3><p><strong>推荐回答：</strong> 读结构化 status&#x3D;rate_limited；有限退避重试；仍失败则换备用检索源、降 scope 为证据不足、或 Interrupt 用户。禁止 Writer 用模型常识填补空白。</p>
+<h3 id="I10-实现框架对比-§5-与-Multi-Agent（五）§4-关系？"><a href="#I10-实现框架对比-§5-与-Multi-Agent（五）§4-关系？" class="headerlink" title="I10. 实现框架对比 §5 与 Multi-Agent（五）§4 关系？"></a>I10. 实现框架对比 §5 与 Multi-Agent（五）§4 关系？</h3><p><strong>推荐回答：</strong> （五）§4 是理论→主三框架完整 canonical 映射（含巡览占位列）；实现框架对比是八框架产品&#x2F;工程层全体选型（主四+外四），§5 多 Agent 摘要回链（五）§4 不重写理论全表。发版标准仍以 Agent（四）§6 universal。</p>
+<h3 id="I11-Event-Bus-在生产环境落地注意什么？"><a href="#I11-Event-Bus-在生产环境落地注意什么？" class="headerlink" title="I11. Event Bus 在生产环境落地注意什么？"></a>I11. Event Bus 在生产环境落地注意什么？</h3><p><strong>推荐回答：</strong> 幂等消费、重复投递、顺序（分区键）、死信队列；与 Celery&#x2F;Redis 集成见 <a href="/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/">Agent工程化（四）</a>。Flow 层事件不等于跨服务总线，跨服务须显式 MQ。</p>
+<h3 id="I12-什么情况下-CrewAI-不如-LangGraph-做-Multi-Agent？"><a href="#I12-什么情况下-CrewAI-不如-LangGraph-做-Multi-Agent？" class="headerlink" title="I12. 什么情况下 CrewAI 不如 LangGraph 做 Multi-Agent？"></a>I12. 什么情况下 CrewAI 不如 LangGraph 做 Multi-Agent？</h3><p><strong>推荐回答：</strong> 控制流极复杂、需精细 CompiledSubAgent 级拓扑、每步图级 interrupt&#x2F;checkpoint、Send 并行聚合复杂时 LangGraph 更强。CrewAI 强项是角色团队产品化与 Flow 事件，图级可视化与节点门禁弱于 LangGraph。</p>
+<hr>
+<h2 id="3-全路径收口"><a href="#3-全路径收口" class="headerlink" title="3. 全路径收口"></a>3. 全路径收口</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">LangGraph（六）实现体验</span><br><span class="line">    ↓</span><br><span class="line">Multi-Agent（一）～（五）+ 本篇自检</span><br><span class="line">    ↓</span><br><span class="line">Deep Agents → RAG → MCP → CrewAI</span><br><span class="line">    ↓</span><br><span class="line">Agent 工程化 → 外部框架巡览 → 实现框架对比（全体）</span><br></pre></td></tr></table></figure>
+
+<p><strong>下一步：</strong> <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">Deep Agents（一）</a></p>
+<p><strong>系列入口：</strong> <a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">Multi-Agent（一）</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Multi-Agent/" rel="tag"># Multi-Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/" rel="prev" title="AI-Agent工程学习-Multi-Agent(五)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Multi-Agent(五)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/" rel="next" title="AI-Agent工程学习-DeepAgents(一)">
+                  AI-Agent工程学习-DeepAgents(一) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

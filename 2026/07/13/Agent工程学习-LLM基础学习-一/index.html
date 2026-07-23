@@ -26,7 +26,7 @@
 <meta property="og:site_name" content="我的记录小站">
 <meta property="og:description" content="LLM 底座名词（一）：Transformer、Attention、Tokenization、Embedding、Context Window，以及与 Agent &#x2F; RAG 的关系。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-07-13T09:29:53.000Z">
+<meta property="article:published_time" content="2026-07-13T09:00:00.000Z">
 <meta property="article:modified_time" content="2026-07-15T04:20:00.000Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-count">87</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">27</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -215,7 +215,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2026-07-13 17:29:53" itemprop="dateCreated datePublished" datetime="2026-07-13T17:29:53+08:00">2026-07-13</time>
+      <time title="创建时间：2026-07-13 17:00:00" itemprop="dateCreated datePublished" datetime="2026-07-13T17:00:00+08:00">2026-07-13</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -247,7 +247,7 @@
     <div class="post-body" itemprop="articleBody"><p>从LLM基础知识到Agent工程的学习记录</p>
 <span id="more"></span>
 <h2 id="1-Transformer"><a href="#1-Transformer" class="headerlink" title="1. Transformer"></a>1. Transformer</h2><p><strong>什么是Transformer？</strong></p>
-<p>通俗来讲，Transformer是一种让AI理解一整段文本中所有词之间关系的神经网络架构。他最核心的能力是通过 Self-Attention（自注意力机制），让模型能够理解输入序列中不同 Token 之间的关系。</p>
+<p>通俗来讲，Transformer是一种让AI理解一整段文本中所有词之间关系的神经网络架构。它最核心的能力是通过 Self-Attention（自注意力机制），让模型能够理解输入序列中不同 Token 之间的关系。</p>
 <p><strong>负责</strong>：理解输入 -&gt; 建立上下文关系 -&gt; 生成输出</p>
 <p><strong>主要解决的问题为：</strong></p>
 <ol>
@@ -303,7 +303,7 @@
 <li>$\mathrm{softmax}(\cdots)$：把分数转成和为 1 的 Attention 权重。</li>
 <li>再与 $V$ 加权求和，得到新的 Token 表示。</li>
 </ol>
-<p><strong>Softmax（补充）</strong>：一种把一组实数变成 <strong>概率分布</strong> 的函数——输出每项在 $(0,1)$，且总和为 1。Attention 里用它把「匹配分数」变成「关注权重」；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#2-1-Softmax%EF%BC%9A%E4%BB%8E%E5%88%86%E6%95%B0%E5%88%B0%E6%A6%82%E7%8E%87">第二篇</a>选下一个 Token 时，也会对 Logits 做 Softmax 得到词表概率。同一数学工具，两处用途不同。</p>
+<p><strong>Softmax（补充）</strong>：一种把一组实数变成 <strong>概率分布</strong> 的函数——输出每项在 $(0,1)$，且总和为 1。Attention 里用它把「匹配分数」变成「关注权重」；<a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/#2-1-Softmax%EF%BC%9A%E4%BB%8E%E5%88%86%E6%95%B0%E5%88%B0%E6%A6%82%E7%8E%87">第二篇</a>选下一个 Token 时，也会对 Logits 做 Softmax 得到词表概率。同一数学工具，两处用途不同。</p>
 <h3 id="2-5-Multi-Head-Attention"><a href="#2-5-Multi-Head-Attention" class="headerlink" title="2.5 Multi-Head Attention"></a>2.5 Multi-Head Attention</h3><p>不是只算一组 QKV，而是并行多组（多个 head），每组关注不同类型的关系，再拼起来。工程资料里说的 Attention，多数指 <strong>Multi-Head Self-Attention</strong>。</p>
 <h3 id="2-6-Attention-的计算复杂度"><a href="#2-6-Attention-的计算复杂度" class="headerlink" title="2.6 Attention 的计算复杂度"></a>2.6 Attention 的计算复杂度</h3><p>Self-Attention 复杂度为 <strong>O(n²)</strong>，n &#x3D; Token 数量。每个 Token 都要和其他 Token 算关系。</p>
 <p>例如：1000 Token → 1000×1000 次；100000 Token → 100000×100000 次。这是 Context Window 不能无限增大的主因（见<a href="#5-Context-Window%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%EF%BC%89">第 5 节</a>）。</p>
@@ -398,8 +398,9 @@
 <li><strong>对话「记忆」</strong>：所谓记住前文，本质是应用把历史再放进本次 Context。</li>
 <li><strong>Agent 复杂度</strong>：目标、步骤、Tool 结果、中间状态、检索内容都靠它装；越大越能撑复杂任务。</li>
 </ol>
-<h3 id="5-2-工作机制"><a href="#5-2-工作机制" class="headerlink" title="5.2 工作机制"></a>5.2 工作机制</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">System Prompt + Developer Prompt + History + Retrieved Knowledge + User Input</span><br><span class="line">    ↓</span><br><span class="line">Context Window</span><br><span class="line">    ↓</span><br><span class="line">Transformer</span><br><span class="line">    ↓</span><br><span class="line">生成输出（输出 Token 也计入同一窗口）</span><br></pre></td></tr></table></figure>
+<h3 id="5-2-工作机制"><a href="#5-2-工作机制" class="headerlink" title="5.2 工作机制"></a>5.2 工作机制</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">System Prompt +（可选 Developer 角色约束）+ History + Retrieved Knowledge + User Input</span><br><span class="line">    ↓</span><br><span class="line">Context Window</span><br><span class="line">    ↓</span><br><span class="line">Transformer</span><br><span class="line">    ↓</span><br><span class="line">生成输出（输出 Token 也计入同一窗口）</span><br></pre></td></tr></table></figure>
 
+<p>部分厂商把开发者侧硬约束单独做成 <code>developer</code> role（可并入广义 system）；本系列后文统一用 system &#x2F; user &#x2F; assistant &#x2F; tool 四角色即可。</p>
 <h3 id="5-3-本质与限制原因"><a href="#5-3-本质与限制原因" class="headerlink" title="5.3 本质与限制原因"></a>5.3 本质与限制原因</h3><p>本质：Transformer 能参与 Attention 的最大 Token 序列长度（处理的是 Token，不是「一段文字」这几个字本身）。</p>
 <p>限制主因是 Self-Attention 的 <strong>O(n²)</strong>（详见 <a href="#2-6-Attention-%E7%9A%84%E8%AE%A1%E7%AE%97%E5%A4%8D%E6%9D%82%E5%BA%A6">2.6</a>）：Context 越长，计算与显存越贵。</p>
 <h3 id="5-4-Context-增大的问题"><a href="#5-4-Context-增大的问题" class="headerlink" title="5.4 Context 增大的问题"></a>5.4 Context 增大的问题</h3><ol>
@@ -443,7 +444,7 @@
 </ul>
 <p><strong>Agent</strong>：搜索 → 读网页 → 分析 → 调工具 → 写报告，会堆出大量 Tool 结果、中间状态、思考过程，是 Context 高消耗场景。管理上除上述手段外，常加 <strong>Context Selection</strong>（只留重要内容）与 <strong>Context Isolation</strong>（不同 Agent 用不同 Context）。</p>
 <hr>
-<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LLM 基础学习 · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LLM 基础学习 · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Transformer</strong>：Decoder-only 为主；Token Embedding → Position Encoding（含 RoPE 等）→（Attention + FFN，各带残差与 LayerNorm）→ 预测 Token。</p>
 <p><strong>Attention</strong>：QKV + Causal mask；Softmax 把分数变成权重；O(n²)；Flash &#x2F; Sparse &#x2F; Linear &#x2F; KV Cache 用于加速或降本。</p>
 <p><strong>Tokenization</strong>：文本 → Token ID；定长度单位与费用；Agent 场景下消耗大。</p>
@@ -451,7 +452,7 @@
 <p><strong>Context Window</strong>：输入 + 输出共享上限，输出需预留；与 Memory、RAG、压缩策略一起管长任务。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">文本 → Tokenization → Embedding → Transformer（Attention）</span><br><span class="line">                ↑</span><br><span class="line">         全程受 Context Window（输入+输出）限制</span><br></pre></td></tr></table></figure>
 
-<p>系列后续：<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">第二篇</a>讲 Inference &#x2F; 采样 &#x2F; KV Cache；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">第三篇</a>讲消息角色、训练阶段认名、幻觉与结构化总览；<a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>讲 Chat Completion、Streaming、结构化输出细节与 Tool Calling 闭环。</p>
+<p>系列后续：<a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/">第二篇</a>讲 Inference &#x2F; 采样 &#x2F; KV Cache；<a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%B8%89/">第三篇</a>讲消息角色、训练阶段认名、幻觉与结构化总览；<a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">第四篇</a>讲 Chat Completion、Streaming、结构化输出细节与 Tool Calling 闭环。</p>
 
     </div>
 
@@ -474,7 +475,7 @@
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-LLM基础学习(二)">
+                <a href="/2026/07/14/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LLM%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-LLM基础学习(二)">
                   AI-Agent工程学习-LLM基础学习(二) <i class="fa fa-angle-right"></i>
                 </a>
             </div>

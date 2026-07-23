@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Agent 工程化（一）～（四）学习自检与面试导向问答；覆盖 Runtime、观测、韧性与部署。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Agent工程化(自检与面试)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Agent 工程化（一）～（四）学习自检与面试导向问答；覆盖 Runtime、观测、韧性与部署。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.984Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Agent工程化">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/","path":"/2026/09/08/Agent工程学习-Agent工程化-自检与面试/","title":"AI-Agent工程学习-Agent工程化(自检与面试)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Agent工程化(自检与面试) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">0. 使用说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%88%86%E7%AF%87%E8%87%AA%E6%A3%80"><span class="nav-number">2.</span> <span class="nav-text">1. 分篇自检</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1%EF%BC%88%E4%B8%80%EF%BC%89Runtime"><span class="nav-number">2.1.</span> <span class="nav-text">1.1（一）Runtime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-%E8%BF%90%E8%A1%8C%E6%80%81%E4%B8%8E%E6%8C%81%E4%B9%85%E6%80%81%E5%A6%82%E4%BD%95%E5%88%86%E5%B7%A5%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">S1. 运行态与持久态如何分工？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E4%B8%BA%E4%BD%95%E4%B8%8D%E5%AE%9C%E6%8A%8A-Session-%E5%BD%93%E6%A1%86%E6%9E%B6%E4%B8%80%E7%AD%89%E6%A6%82%E5%BF%B5%E7%A1%AC%E5%A5%97%EF%BC%9F"><span class="nav-number">2.3.</span> <span class="nav-text">S2. 为何不宜把 Session 当框架一等概念硬套？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S3-Lifecycle-%E4%B8%AD-interrupted-%E4%B8%8E-budget-exceeded-%E5%90%84%E7%A6%81%E6%AD%A2%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">S3. Lifecycle 中 interrupted 与 budget_exceeded 各禁止什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S4-Run-ID-%E4%B8%8E-Invocation-ID-%E5%88%86%E5%88%AB%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.5.</span> <span class="nav-text">S4. Run ID 与 Invocation ID 分别解决什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S5-%E4%BC%98%E9%9B%85%E6%94%B6%E5%B0%BE%E6%9C%80%E4%BD%8E%E4%BA%A4%E4%BB%98%E7%89%A9%EF%BC%9F"><span class="nav-number">2.6.</span> <span class="nav-text">S5. 优雅收尾最低交付物？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2%EF%BC%88%E4%BA%8C%EF%BC%89Observability"><span class="nav-number">2.7.</span> <span class="nav-text">1.2（二）Observability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S6-Logging-%E4%B8%89%E6%9D%A1%E7%A1%AC%E8%A6%81%E6%B1%82%EF%BC%9F"><span class="nav-number">2.8.</span> <span class="nav-text">S6. Logging 三条硬要求？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S7-Trace-%E4%B8%8E-Experiment-%E5%88%86%E5%B7%A5%EF%BC%9F"><span class="nav-number">2.9.</span> <span class="nav-text">S7. Trace 与 Experiment 分工？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S8-%E5%A4%9A-Agent-Trace-%E5%A6%82%E4%BD%95%E8%BF%87%E6%BB%A4%E5%AD%90-Agent%EF%BC%9F"><span class="nav-number">2.10.</span> <span class="nav-text">S8. 多 Agent Trace 如何过滤子 Agent？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S9-%E7%94%9F%E4%BA%A7-Metrics-%E6%9C%80%E5%B0%8F%E9%9B%86%EF%BC%9F"><span class="nav-number">2.11.</span> <span class="nav-text">S9. 生产 Metrics 最小集？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S10-LangSmith-%E4%B8%8E-OpenTelemetry-%E5%A6%82%E4%BD%95%E5%B9%B6%E5%AD%98%EF%BC%9F"><span class="nav-number">2.12.</span> <span class="nav-text">S10. LangSmith 与 OpenTelemetry 如何并存？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3%EF%BC%88%E4%B8%89%EF%BC%89Reliability"><span class="nav-number">2.13.</span> <span class="nav-text">1.3（三）Reliability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S11-429-%E4%B8%8E-403-%E9%87%8D%E8%AF%95%E7%AD%96%E7%95%A5%E5%B7%AE%E5%BC%82%EF%BC%9F"><span class="nav-number">2.14.</span> <span class="nav-text">S11. 429 与 403 重试策略差异？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S12-Fallback-%E5%B1%82%E7%BA%A7%E4%BB%8E%E9%AB%98%E5%88%B0%E4%BD%8E%EF%BC%9F"><span class="nav-number">2.15.</span> <span class="nav-text">S12. Fallback 层级从高到低？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S13-Timeout-%E4%B8%BA%E4%BD%95%E8%A6%81%E5%88%86%E5%B1%82%EF%BC%9F"><span class="nav-number">2.16.</span> <span class="nav-text">S13. Timeout 为何要分层？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S14-%E7%86%94%E6%96%AD-open-%E7%8A%B6%E6%80%81%E5%81%9A%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.17.</span> <span class="nav-text">S14. 熔断 open 状态做什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S15-%E5%86%99%E5%B7%A5%E5%85%B7%E9%87%8D%E8%AF%95%E5%89%8D%E4%B8%89%E4%BB%B6%E5%A5%97%EF%BC%9F"><span class="nav-number">2.18.</span> <span class="nav-text">S15. 写工具重试前三件套？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S16-%E6%B5%81%E5%BC%8F%E4%B8%AD%E6%96%AD%E4%B8%BA%E4%BD%95%E4%B8%8D%E8%83%BD%E7%9B%B2%E7%9B%AE%E5%AE%8C%E6%95%B4%E9%87%8D%E8%AF%95%EF%BC%9F"><span class="nav-number">2.19.</span> <span class="nav-text">S16. 流式中断为何不能盲目完整重试？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4%EF%BC%88%E5%9B%9B%EF%BC%89Deployment"><span class="nav-number">2.20.</span> <span class="nav-text">1.4（四）Deployment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S17-invoke-stream-resume-%E5%90%84%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.21.</span> <span class="nav-text">S17. &#x2F;invoke &#x2F;stream &#x2F;resume 各解决什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S18-%E4%BD%95%E6%97%B6%E5%BF%85%E9%A1%BB%E4%B8%8A-Worker-Queue%EF%BC%9F"><span class="nav-number">2.22.</span> <span class="nav-text">S18. 何时必须上 Worker Queue？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S19-Checkpoint-%E7%94%9F%E4%BA%A7%E5%AD%98%E5%82%A8%E5%A6%82%E4%BD%95%E9%80%89%E5%9E%8B%EF%BC%9F"><span class="nav-number">2.23.</span> <span class="nav-text">S19. Checkpoint 生产存储如何选型？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S20-%E5%9B%BE%E5%86%85-Event-Bus-%E4%B8%8E%E8%B7%A8%E6%9C%8D%E5%8A%A1-MQ-%E8%BE%B9%E7%95%8C%EF%BC%9F"><span class="nav-number">2.24.</span> <span class="nav-text">S20. 图内 Event Bus 与跨服务 MQ 边界？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S21%EF%BD%9ES28-%E9%80%9F%E6%9F%A5"><span class="nav-number">2.25.</span> <span class="nav-text">S21～S28. 速查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">2. 面试题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E5%8F%AF-HITL-%E7%9A%84-Agent-API%EF%BC%8C%E8%AF%B4%E6%98%8E-ID-%E4%B8%8E%E7%8A%B6%E6%80%81%E6%9C%BA%E3%80%82"><span class="nav-number">3.1.</span> <span class="nav-text">I1. 设计一个可 HITL 的 Agent API，说明 ID 与状态机。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I2-%E7%BA%BF%E4%B8%8A%E5%81%87%E5%AE%8C%E6%88%90%E7%8E%87%E4%B8%8A%E5%8D%87%EF%BC%8C%E4%BD%A0%E5%A6%82%E4%BD%95%E7%94%A8%E8%A7%82%E6%B5%8B%E5%AE%9A%E4%BD%8D%EF%BC%9F"><span class="nav-number">3.2.</span> <span class="nav-text">I2. 线上假完成率上升，你如何用观测定位？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I3-%E6%A8%A1%E5%9E%8B%E5%95%86%E8%BF%9E%E7%BB%AD-5xx%EF%BC%8C%E5%A6%82%E4%BD%95%E4%BF%9D%E6%8A%A4%E7%B3%BB%E7%BB%9F%EF%BC%9F"><span class="nav-number">3.3.</span> <span class="nav-text">I3. 模型商连续 5xx，如何保护系统？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I4-Multi-Agent-Voting-N-5-%E6%88%90%E6%9C%AC%E6%9A%B4%E6%B6%A8%EF%BC%8C%E5%B7%A5%E7%A8%8B%E4%BE%A7%E6%8E%A7%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.4.</span> <span class="nav-text">I4. Multi-Agent Voting N&#x3D;5 成本暴涨，工程侧控什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I5-%E4%B8%BA%E4%BD%95-interrupt-%E6%81%A2%E5%A4%8D%E8%A6%81%E6%B1%82%E8%8A%82%E7%82%B9%E5%89%8D%E5%8D%8A%E6%AE%B5%E5%B9%82%E7%AD%89%EF%BC%9F"><span class="nav-number">3.5.</span> <span class="nav-text">I5. 为何 interrupt 恢复要求节点前半段幂等？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I6-%E8%87%AA%E6%89%98%E7%AE%A1%E4%B8%8E-LangSmith-Deployment-%E5%A6%82%E4%BD%95%E5%88%86%E5%B7%A5%E5%8F%A3%E8%BF%B0%EF%BC%9F"><span class="nav-number">3.6.</span> <span class="nav-text">I6. 自托管与 LangSmith Deployment 如何分工口述？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I7-%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8-Flow-%E4%B8%8A%E7%BA%BF%E5%89%8D%E6%A3%80%E6%9F%A5%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.7.</span> <span class="nav-text">I7. 事件驱动 Flow 上线前检查什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I8-%E5%A6%82%E4%BD%95%E5%90%91%E8%AF%84%E5%AE%A1%E8%AF%B4%E6%98%8E%E3%80%8C%E5%8F%AF%E8%A7%82%E6%B5%8B%E5%B7%B2%E8%BE%BE%E6%A0%87%E3%80%8D%EF%BC%9F"><span class="nav-number">3.8.</span> <span class="nav-text">I8. 如何向评审说明「可观测已达标」？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%85%A8%E8%B7%AF%E5%BE%84%E6%94%B6%E5%8F%A3"><span class="nav-number">4.</span> <span class="nav-text">3. 全路径收口</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Agent工程化(自检与面试) | 我的记录小站">
+      <meta itemprop="description" content="Agent 工程化（一）～（四）学习自检与面试导向问答；覆盖 Runtime、观测、韧性与部署。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Agent工程化(自检与面试)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-23 00:00:00 / 修改时间：19:02:46" itemprop="dateCreated datePublished" datetime="2026-07-23T00:00:00+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Agent 工程化（一）～（四）学习自检与面试导向问答；覆盖 Runtime、观测、韧性与部署。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文是 Agent 工程化（一）～（四）的阶段验收。目标不是背组件名，而是能把 <strong>State&#x2F;会话&#x2F;生命周期、观测、韧性、部署</strong> 串成可上线口径，并与已学框架回链对齐。</p>
+<span id="more"></span>
+
+<h2 id="0-使用说明"><a href="#0-使用说明" class="headerlink" title="0. 使用说明"></a>0. 使用说明</h2><p>建议先遮住「推荐回答」，在 60～120 秒内口述。面试题侧重故障分类与架构边界。</p>
+<p>回答时重点检查四件事：</p>
+<ol>
+<li>是否区分运行态与持久态、thread 与 Run。</li>
+<li>是否区分 Trace 排障与 Dataset 回归。</li>
+<li>是否先做错误分类再谈重试，写路径是否幂等。</li>
+<li>是否分清图内事件与跨服务 MQ。</li>
+</ol>
+<hr>
+<h2 id="1-分篇自检"><a href="#1-分篇自检" class="headerlink" title="1. 分篇自检"></a>1. 分篇自检</h2><h3 id="1-1（一）Runtime"><a href="#1-1（一）Runtime" class="headerlink" title="1.1（一）Runtime"></a>1.1（一）Runtime</h3><h3 id="S1-运行态与持久态如何分工？"><a href="#S1-运行态与持久态如何分工？" class="headerlink" title="S1. 运行态与持久态如何分工？"></a>S1. 运行态与持久态如何分工？</h3><p><strong>推荐回答：</strong> 运行态是当前步可见的 messages&#x2F;中间结果，可被摘要策略触及；持久态是 Checkpointer&#x2F;<code>@persist</code>&#x2F;外存快照，跨请求可恢复。治理字段（Contract、预算、<code>open[]</code>、副作用）必须进结构化持久 State，不能当普通消息交给摘要改写。</p>
+<h3 id="S2-为何不宜把-Session-当框架一等概念硬套？"><a href="#S2-为何不宜把-Session-当框架一等概念硬套？" class="headerlink" title="S2. 为何不宜把 Session 当框架一等概念硬套？"></a>S2. 为何不宜把 Session 当框架一等概念硬套？</h3><p><strong>推荐回答：</strong> LangGraph 等以 <code>thread_id</code> 标识 checkpointer 线程；口语 Session 易与产品会话混淆。生产用 thread_id + 租户前缀表达会话边界与隔离，resume 须校验所有权。</p>
+<h3 id="S3-Lifecycle-中-interrupted-与-budget-exceeded-各禁止什么？"><a href="#S3-Lifecycle-中-interrupted-与-budget-exceeded-各禁止什么？" class="headerlink" title="S3. Lifecycle 中 interrupted 与 budget_exceeded 各禁止什么？"></a>S3. Lifecycle 中 interrupted 与 budget_exceeded 各禁止什么？</h3><p><strong>推荐回答：</strong> interrupted 禁止把暂停当成功；budget_exceeded&#x2F;partial 禁止标 Success，应 Checkpoint + handoff note + 部分结果边界说明。</p>
+<h3 id="S4-Run-ID-与-Invocation-ID-分别解决什么？"><a href="#S4-Run-ID-与-Invocation-ID-分别解决什么？" class="headerlink" title="S4. Run ID 与 Invocation ID 分别解决什么？"></a>S4. Run ID 与 Invocation ID 分别解决什么？</h3><p><strong>推荐回答：</strong> Run ID 关联一次用户目标的日志、Trace、成本；Invocation ID 标识单次模型&#x2F;工具调用，作幂等键与副作用对账。API 应回传 run_id。</p>
+<h3 id="S5-优雅收尾最低交付物？"><a href="#S5-优雅收尾最低交付物？" class="headerlink" title="S5. 优雅收尾最低交付物？"></a>S5. 优雅收尾最低交付物？</h3><p><strong>推荐回答：</strong> Checkpoint（合同、计划、open&#x2F;done、关键 Observation、预算、副作用）、handoff note（原因、策略、缺口、建议下一步）、面向用户的带边界部分结果。续跑只处理 open[] 并分配新显式预算。</p>
+<h3 id="1-2（二）Observability"><a href="#1-2（二）Observability" class="headerlink" title="1.2（二）Observability"></a>1.2（二）Observability</h3><h3 id="S6-Logging-三条硬要求？"><a href="#S6-Logging-三条硬要求？" class="headerlink" title="S6. Logging 三条硬要求？"></a>S6. Logging 三条硬要求？</h3><p><strong>推荐回答：</strong> 结构化字段含 run_id&#x2F;thread_id&#x2F;tenant_id；脱敏禁密钥与完整 Prompt&#x2F;PII；每条可关联 Trace。</p>
+<h3 id="S7-Trace-与-Experiment-分工？"><a href="#S7-Trace-与-Experiment-分工？" class="headerlink" title="S7. Trace 与 Experiment 分工？"></a>S7. Trace 与 Experiment 分工？</h3><p><strong>推荐回答：</strong> Trace 看「这一次为什么错」；Dataset+Experiment 看「这一版是否整体退化」。发版标准仍以 Agent（四）§6 Checklist 为 canonical，平台只承载。</p>
+<h3 id="S8-多-Agent-Trace-如何过滤子-Agent？"><a href="#S8-多-Agent-Trace-如何过滤子-Agent？" class="headerlink" title="S8. 多 Agent Trace 如何过滤子 Agent？"></a>S8. 多 Agent Trace 如何过滤子 Agent？</h3><p><strong>推荐回答：</strong> 用 metadata（如 <code>lc_agent_name</code>）过滤 subagent span，避免只看最终回答或把子 Trace 全文灌回主窗。</p>
+<h3 id="S9-生产-Metrics-最小集？"><a href="#S9-生产-Metrics-最小集？" class="headerlink" title="S9. 生产 Metrics 最小集？"></a>S9. 生产 Metrics 最小集？</h3><p><strong>推荐回答：</strong> Task Success、假完成率、P95、重试率、HITL 等待、Gate 拦截率；告警挂预算、错误率、下游故障。</p>
+<h3 id="S10-LangSmith-与-OpenTelemetry-如何并存？"><a href="#S10-LangSmith-与-OpenTelemetry-如何并存？" class="headerlink" title="S10. LangSmith 与 OpenTelemetry 如何并存？"></a>S10. LangSmith 与 OpenTelemetry 如何并存？</h3><p><strong>推荐回答：</strong> 本路径以 LangSmith 为主做 Agent Trace&#x2F;Eval；OTel 用于跨微服务导出与关联。要求 run_id 等属性可打通，不强制自建完整 Collector 教程。</p>
+<h3 id="1-3（三）Reliability"><a href="#1-3（三）Reliability" class="headerlink" title="1.3（三）Reliability"></a>1.3（三）Reliability</h3><h3 id="S11-429-与-403-重试策略差异？"><a href="#S11-429-与-403-重试策略差异？" class="headerlink" title="S11. 429 与 403 重试策略差异？"></a>S11. 429 与 403 重试策略差异？</h3><p><strong>推荐回答：</strong> 429 可重试，尊 Retry-After，指数退避+抖动+总时限；403 通常权限&#x2F;策略拒绝，原样重试无意义，应停止或改权限路径。</p>
+<h3 id="S12-Fallback-层级从高到低？"><a href="#S12-Fallback-层级从高到低？" class="headerlink" title="S12. Fallback 层级从高到低？"></a>S12. Fallback 层级从高到低？</h3><p><strong>推荐回答：</strong> 换模型 → 缩 scope → 只读降级 → HITL → 明确失败（partial+handoff）。路径须进 Trace 并计成本。</p>
+<h3 id="S13-Timeout-为何要分层？"><a href="#S13-Timeout-为何要分层？" class="headerlink" title="S13. Timeout 为何要分层？"></a>S13. Timeout 为何要分层？</h3><p><strong>推荐回答：</strong> 单工具&#x2F;单模型&#x2F;墙钟总超时&#x2F;步数 Token 硬顶各管一类挂死；仅总超时无法提前挡住单步风暴。超时后收尾而非假完成。</p>
+<h3 id="S14-熔断-open-状态做什么？"><a href="#S14-熔断-open-状态做什么？" class="headerlink" title="S14. 熔断 open 状态做什么？"></a>S14. 熔断 open 状态做什么？</h3><p><strong>推荐回答：</strong> 短时拒绝下游调用，直接走 Fallback，避免打爆故障依赖；half-open 探测后决定关闭或再开。</p>
+<h3 id="S15-写工具重试前三件套？"><a href="#S15-写工具重试前三件套？" class="headerlink" title="S15. 写工具重试前三件套？"></a>S15. 写工具重试前三件套？</h3><p><strong>推荐回答：</strong> 幂等键、状态查询是否已成功、必要时补偿。Reducer 不保护图外副作用。</p>
+<h3 id="S16-流式中断为何不能盲目完整重试？"><a href="#S16-流式中断为何不能盲目完整重试？" class="headerlink" title="S16. 流式中断为何不能盲目完整重试？"></a>S16. 流式中断为何不能盲目完整重试？</h3><p><strong>推荐回答：</strong> 用户可能已看到部分输出；完整重试会导致重复拼接。应记录已发送边界，续传或声明截断。</p>
+<h3 id="1-4（四）Deployment"><a href="#1-4（四）Deployment" class="headerlink" title="1.4（四）Deployment"></a>1.4（四）Deployment</h3><h3 id="S17-invoke-stream-resume-各解决什么？"><a href="#S17-invoke-stream-resume-各解决什么？" class="headerlink" title="S17. /invoke /stream /resume 各解决什么？"></a>S17. <code>/invoke</code> <code>/stream</code> <code>/resume</code> 各解决什么？</h3><p><strong>推荐回答：</strong> invoke 同步或短任务；stream 流式体验；resume 从 interrupt&#x2F;HITL 带 thread_id 与决策继续。均需鉴权与租户上下文，回传 run_id。</p>
+<h3 id="S18-何时必须上-Worker-Queue？"><a href="#S18-何时必须上-Worker-Queue？" class="headerlink" title="S18. 何时必须上 Worker Queue？"></a>S18. 何时必须上 Worker Queue？</h3><p><strong>推荐回答：</strong> 长任务、批处理、等人审后续跑不宜堵死 HTTP 进程；API 入队返回 job_id，Worker 执行并写 Checkpoint&#x2F;回调。</p>
+<h3 id="S19-Checkpoint-生产存储如何选型？"><a href="#S19-Checkpoint-生产存储如何选型？" class="headerlink" title="S19. Checkpoint 生产存储如何选型？"></a>S19. Checkpoint 生产存储如何选型？</h3><p><strong>推荐回答：</strong> 开发可用 SQLite&#x2F;内存；生产优先 PostgreSQL 等权威持久后端。Redis 适合作 broker&#x2F;缓存，不宜作为唯一长期会话库（除非明确短 TTL）。</p>
+<h3 id="S20-图内-Event-Bus-与跨服务-MQ-边界？"><a href="#S20-图内-Event-Bus-与跨服务-MQ-边界？" class="headerlink" title="S20. 图内 Event Bus 与跨服务 MQ 边界？"></a>S20. 图内 Event Bus 与跨服务 MQ 边界？</h3><p><strong>推荐回答：</strong> Flow <code>@listen</code>&#x2F;图边是单应用内编排；跨服务须显式 Redis&#x2F;Celery&#x2F;Kafka 等，并做幂等、顺序与 DLQ。Flow 事件不等于生产总线。</p>
+<h3 id="S21～S28-速查"><a href="#S21～S28-速查" class="headerlink" title="S21～S28. 速查"></a>S21～S28. 速查</h3><table>
+<thead>
+<tr>
+<th>题</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>S21 Serverless 长跑</td>
+<td>时限与冷启动；状态外置；重活改常驻 Worker</td>
+</tr>
+<tr>
+<td>S22 Batch</td>
+<td>限速、逐条 run_id、DLQ、断点续跑</td>
+</tr>
+<tr>
+<td>S23 readiness</td>
+<td>DB&#x2F;Redis&#x2F;凭据就绪再接流量</td>
+</tr>
+<tr>
+<td>S24 Celery 角色</td>
+<td>异步执行与重试钩子</td>
+</tr>
+<tr>
+<td>S25 Docker</td>
+<td>可复现运行时；密钥环境注入</td>
+</tr>
+<tr>
+<td>S26 取消</td>
+<td>协作式取消 + 冻结新写副作用</td>
+</tr>
+<tr>
+<td>S27 背压</td>
+<td>队列深度告警；拒绝或降级</td>
+</tr>
+<tr>
+<td>S28 密钥</td>
+<td>仅环境&#x2F;密钥管理；正文不写真实值</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="2-面试题"><a href="#2-面试题" class="headerlink" title="2. 面试题"></a>2. 面试题</h2><h3 id="I1-设计一个可-HITL-的-Agent-API，说明-ID-与状态机。"><a href="#I1-设计一个可-HITL-的-Agent-API，说明-ID-与状态机。" class="headerlink" title="I1. 设计一个可 HITL 的 Agent API，说明 ID 与状态机。"></a>I1. 设计一个可 HITL 的 Agent API，说明 ID 与状态机。</h3><p><strong>推荐回答：</strong> 鉴权后创建 run_id 与 thread_id；invoke&#x2F;stream 进入 running；高风险工具 interrupt 并 persist；客户端 resume 带决策；取消走 cancel 冻结写。状态含 interrupted&#x2F;partial&#x2F;failed；日志 Trace 全链路带 run_id。持久态用 PG Checkpointer。</p>
+<h3 id="I2-线上假完成率上升，你如何用观测定位？"><a href="#I2-线上假完成率上升，你如何用观测定位？" class="headerlink" title="I2. 线上假完成率上升，你如何用观测定位？"></a>I2. 线上假完成率上升，你如何用观测定位？</h3><p><strong>推荐回答：</strong> Experiment 对比发版前后 Task Success&#x2F;假完成；抽样 Trace 看 Gate 是否被绕过、预算撞顶是否标 Success、子 Agent 是否假摘要。对照 Agent（四）§6，修 Gate 与收尾，而非只加 Prompt。</p>
+<h3 id="I3-模型商连续-5xx，如何保护系统？"><a href="#I3-模型商连续-5xx，如何保护系统？" class="headerlink" title="I3. 模型商连续 5xx，如何保护系统？"></a>I3. 模型商连续 5xx，如何保护系统？</h3><p><strong>推荐回答：</strong> 熔断 open → Fallback（备用模型&#x2F;缩 scope&#x2F;只读）；Metrics 告警；半开探测。队列任务进有限重试后 DLQ。避免无限重试打爆对方与自身线程池。</p>
+<h3 id="I4-Multi-Agent-Voting-N-5-成本暴涨，工程侧控什么？"><a href="#I4-Multi-Agent-Voting-N-5-成本暴涨，工程侧控什么？" class="headerlink" title="I4. Multi-Agent Voting N&#x3D;5 成本暴涨，工程侧控什么？"></a>I4. Multi-Agent Voting N&#x3D;5 成本暴涨，工程侧控什么？</h3><p><strong>推荐回答：</strong> 预算硬顶、按角色 Token 账单、动态降 N、超预算 Fallback；Trace 按角色汇总。协作层减 N 或改 Role-Based——回链 Multi-Agent 成本模型。</p>
+<h3 id="I5-为何-interrupt-恢复要求节点前半段幂等？"><a href="#I5-为何-interrupt-恢复要求节点前半段幂等？" class="headerlink" title="I5. 为何 interrupt 恢复要求节点前半段幂等？"></a>I5. 为何 interrupt 恢复要求节点前半段幂等？</h3><p><strong>推荐回答：</strong> 恢复可能使节点从函数开头重跑；若前半段已写库&#x2F;发消息，无幂等会双写。副作用用 invocation_id 或移到确认后执行。</p>
+<h3 id="I6-自托管与-LangSmith-Deployment-如何分工口述？"><a href="#I6-自托管与-LangSmith-Deployment-如何分工口述？" class="headerlink" title="I6. 自托管与 LangSmith Deployment 如何分工口述？"></a>I6. 自托管与 LangSmith Deployment 如何分工口述？</h3><p><strong>推荐回答：</strong> 自托管掌控 VPC、队列、自定义 MQ；托管减少运维换平台约束。无论哪种，Checklist、Gate、幂等与租户隔离不因托管而省略。</p>
+<h3 id="I7-事件驱动-Flow-上线前检查什么？"><a href="#I7-事件驱动-Flow-上线前检查什么？" class="headerlink" title="I7. 事件驱动 Flow 上线前检查什么？"></a>I7. 事件驱动 Flow 上线前检查什么？</h3><p><strong>推荐回答：</strong> 消费者幂等、重复投递、顺序键、DLQ、与图内事件边界文档化；跨服务不误用 <code>@listen</code> 当总线。</p>
+<h3 id="I8-如何向评审说明「可观测已达标」？"><a href="#I8-如何向评审说明「可观测已达标」？" class="headerlink" title="I8. 如何向评审说明「可观测已达标」？"></a>I8. 如何向评审说明「可观测已达标」？</h3><p><strong>推荐回答：</strong> 任意失败 run 可在 5 分钟内用 run_id 打开 Trace；发版有 Dataset 对比；成本&#x2F;Token 按 run 可查；告警覆盖错误率与预算；日志无密钥泄漏。</p>
+<hr>
+<h2 id="3-全路径收口"><a href="#3-全路径收口" class="headerlink" title="3. 全路径收口"></a>3. 全路径收口</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CrewAI 自检</span><br><span class="line">    ↓</span><br><span class="line">Agent 工程化（一）～（四）+ 本篇自检</span><br><span class="line">    ↓</span><br><span class="line">外部框架巡览（一）～（四）</span><br><span class="line">    ↓</span><br><span class="line">实现框架对比（全体 canonical）</span><br></pre></td></tr></table></figure>
+
+<p><strong>下一步：</strong> <a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">外部框架巡览（一）· OpenAI Agents SDK</a></p>
+<p><strong>系列入口：</strong> <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">Agent 工程化（一）</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Agent%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag"># Agent工程化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/" rel="prev" title="AI-Agent工程学习-Agent工程化(四)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Agent工程化(四)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/" rel="next" title="AI-Agent工程学习-外部框架巡览(一)">
+                  AI-Agent工程学习-外部框架巡览(一) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

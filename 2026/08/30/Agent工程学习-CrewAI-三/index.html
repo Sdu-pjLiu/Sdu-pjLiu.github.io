@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="CrewAI Crew Process（sequential&#x2F;hierarchical）、Flow 装饰器、State、@persist；Guide Creator 模式拆解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-CrewAI(三)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="CrewAI Crew Process（sequential&#x2F;hierarchical）、Flow 装饰器、State、@persist；Guide Creator 模式拆解。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-22T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.983Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="CrewAI">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/","path":"/2026/08/30/Agent工程学习-CrewAI-三/","title":"AI-Agent工程学习-CrewAI(三)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-CrewAI(三) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Crew%EF%BC%9AAgents-Tasks-Process"><span class="nav-number">2.</span> <span class="nav-text">1. Crew：Agents + Tasks + Process</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Process%EF%BC%9Asequential-vs-hierarchical"><span class="nav-number">3.</span> <span class="nav-text">2. Process：sequential vs hierarchical</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Sequential%EF%BC%88%E6%B5%81%E6%B0%B4%E7%BA%BF%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 Sequential（流水线）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Hierarchical%EF%BC%88Manager-%E5%A7%94%E6%B4%BE%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 Hierarchical（Manager 委派）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Flow%EF%BC%9A%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E7%BC%96%E6%8E%92"><span class="nav-number">4.</span> <span class="nav-text">3. Flow：事件驱动编排</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E8%A3%85%E9%A5%B0%E5%99%A8"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 装饰器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-State%EF%BC%88Pydantic%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 State（Pydantic）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E4%B8%89%E7%A7%8D%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%BC%8F%E6%B7%B7%E7%94%A8"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 三种交互模式混用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Guide-Creator-%E6%A8%A1%E5%BC%8F%E6%8B%86%E8%A7%A3"><span class="nav-number">5.</span> <span class="nav-text">4. Guide Creator 模式拆解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%8C%81%E4%B9%85%E5%8C%96%E4%B8%8E%E6%81%A2%E5%A4%8D"><span class="nav-number">6.</span> <span class="nav-text">5. 持久化与恢复</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%B7%AF%E7%94%B1%E4%B8%8E%E5%B9%B6%E8%A1%8C%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. 路由与并行（认名）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Crew-%E7%BA%A7%E5%9B%9E%E8%B0%83"><span class="nav-number">8.</span> <span class="nav-text">7. Crew 级回调</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L1-%E2%86%92-L2%EF%BC%88%E7%BC%96%E6%8E%92%E7%AF%87%EF%BC%89"><span class="nav-number">9.</span> <span class="nav-text">8. 实践阶梯 L1 → L2（编排篇）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E4%B8%8E-Loop-Engineering-%E5%AF%B9%E9%BD%90"><span class="nav-number">10.</span> <span class="nav-text">9. 与 Loop Engineering 对齐</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">11.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-CrewAI(三) | 我的记录小站">
+      <meta itemprop="description" content="CrewAI Crew Process（sequential&#x2F;hierarchical）、Flow 装饰器、State、@persist；Guide Creator 模式拆解。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-CrewAI(三)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-22 12:00:00" itemprop="dateCreated datePublished" datetime="2026-07-22T12:00:00+08:00">2026-07-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">CrewAI Crew Process（sequential/hierarchical）、Flow 装饰器、State、@persist；Guide Creator 模式拆解。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/29/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%8C/">CrewAI（二）</a>：Agent&#x2F;Task 建模已会；本篇讲 <strong>Crew 如何协作</strong>（Process）、<strong>Flow 如何编排</strong>（事件、状态、持久化），并以官方 Guide Creator 模式串起来。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><ul>
+<li><strong>（一）（二）</strong>：架构 + Agent&#x2F;Task  </li>
+<li><strong>本篇</strong>：Crew Process + Flow 编排  </li>
+<li><strong>（四）</strong>：Knowledge &#x2F; Memory &#x2F; Tracing  </li>
+<li><strong>（五）</strong>：HITL &#x2F; 生产项目</li>
+</ul>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/crews">Crews</a> · <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/flows">Flows</a> · <a target="_blank" rel="noopener" href="https://docs.crewai.com/v1.15.4/en/guides/flows/first-flow">First Flow</a></p>
+<hr>
+<h2 id="1-Crew：Agents-Tasks-Process"><a href="#1-Crew：Agents-Tasks-Process" class="headerlink" title="1. Crew：Agents + Tasks + Process"></a>1. Crew：Agents + Tasks + Process</h2><p>Crew 定义 <strong>谁做什么、按什么顺序协作</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>agents</code></td>
+<td>参与 Agent 列表</td>
+</tr>
+<tr>
+<td><code>tasks</code></td>
+<td>Task 列表（可 JSONC 内嵌）</td>
+</tr>
+<tr>
+<td><code>process</code></td>
+<td><code>sequential</code>（默认）或 <code>hierarchical</code></td>
+</tr>
+<tr>
+<td><code>verbose</code> &#x2F; <code>memory</code> &#x2F; <code>cache</code> &#x2F; <code>max_rpm</code></td>
+<td>Crew 级治理</td>
+</tr>
+<tr>
+<td><code>planning</code> &#x2F; <code>planning_llm</code></td>
+<td>Crew 级先规划再执行</td>
+</tr>
+<tr>
+<td><code>manager_llm</code> &#x2F; <code>manager_agent</code></td>
+<td>hierarchical 必需</td>
+</tr>
+<tr>
+<td><code>tracing</code></td>
+<td>内置追踪</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="2-Process：sequential-vs-hierarchical"><a href="#2-Process：sequential-vs-hierarchical" class="headerlink" title="2. Process：sequential vs hierarchical"></a>2. Process：sequential vs hierarchical</h2><h3 id="2-1-Sequential（流水线）"><a href="#2-1-Sequential（流水线）" class="headerlink" title="2.1 Sequential（流水线）"></a>2.1 Sequential（流水线）</h3><p>Task <strong>严格按序</strong>执行；后一 Task 通过 <code>context</code> 读前一 Task 输出。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Researcher → Analyst → Writer → Editor</span><br></pre></td></tr></table></figure>
+
+<p><strong>适用：</strong> 步骤依赖清晰、质量链式传递（Research Agent 地图，见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/">Agent 四</a>）。</p>
+<p><strong>crew.jsonc 片段：</strong></p>
+<figure class="highlight jsonc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Content Crew&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;agents&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;researcher&quot;</span><span class="punctuation">,</span> <span class="string">&quot;writer&quot;</span><span class="punctuation">,</span> <span class="string">&quot;editor&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;tasks&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;research_task&quot;</span><span class="punctuation">,</span> <span class="string">&quot;write_task&quot;</span><span class="punctuation">,</span> <span class="string">&quot;edit_task&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;process&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sequential&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;verbose&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Hierarchical（Manager-委派）"><a href="#2-2-Hierarchical（Manager-委派）" class="headerlink" title="2.2 Hierarchical（Manager 委派）"></a>2.2 Hierarchical（Manager 委派）</h3><p><strong>Manager Agent&#x2F;LLM</strong> 动态分配 Task、验收结果再继续。</p>
+<p><strong>要求：</strong> 必须提供 <code>manager_llm</code> 或 <code>manager_agent</code>。</p>
+<p><strong>适用：</strong> 子任务边界运行时才能确定、需 Manager 质检（类似 LangGraph Supervisor，但声明在 Crew 层）。</p>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>Sequential</th>
+<th>Hierarchical</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>顺序</td>
+<td>固定</td>
+<td>Manager 决定</td>
+</tr>
+<tr>
+<td>可预测性</td>
+<td>高</td>
+<td>中</td>
+</tr>
+<tr>
+<td>与 LangGraph</td>
+<td>类似固定边</td>
+<td>类似 Supervisor 节点</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-Flow：事件驱动编排"><a href="#3-Flow：事件驱动编排" class="headerlink" title="3. Flow：事件驱动编排"></a>3. Flow：事件驱动编排</h2><p>Flow 是 <strong>应用入口</strong>——管状态、分支、持久化，并在合适步骤调用 Crew。</p>
+<h3 id="3-1-装饰器"><a href="#3-1-装饰器" class="headerlink" title="3.1 装饰器"></a>3.1 装饰器</h3><table>
+<thead>
+<tr>
+<th>装饰器</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@start()</code></td>
+<td>流程入口</td>
+</tr>
+<tr>
+<td><code>@listen(fn)</code></td>
+<td>监听某步完成后执行</td>
+</tr>
+<tr>
+<td><code>@listen(or_(a, b))</code></td>
+<td>多条件触发（修订循环）</td>
+</tr>
+<tr>
+<td><code>@router()</code></td>
+<td>按返回值分支</td>
+</tr>
+<tr>
+<td><code>@persist</code></td>
+<td>状态持久化</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-State（Pydantic）"><a href="#3-2-State（Pydantic）" class="headerlink" title="3.2 State（Pydantic）"></a>3.2 State（Pydantic）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pydantic <span class="keyword">import</span> BaseModel, Field</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Dict</span>, <span class="type">List</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GuideOutline</span>(<span class="title class_ inherited__">BaseModel</span>):</span><br><span class="line">    title: <span class="built_in">str</span></span><br><span class="line">    sections: <span class="type">List</span>[<span class="built_in">dict</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GuideState</span>(<span class="title class_ inherited__">BaseModel</span>):</span><br><span class="line">    topic: <span class="built_in">str</span> = <span class="string">&quot;&quot;</span></span><br><span class="line">    audience_level: <span class="built_in">str</span> = <span class="string">&quot;beginner&quot;</span></span><br><span class="line">    outline: GuideOutline | <span class="literal">None</span> = <span class="literal">None</span></span><br><span class="line">    sections_content: <span class="type">Dict</span>[<span class="built_in">str</span>, <span class="built_in">str</span>] = &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>原则（官方 Production Architecture）：</strong></p>
+<ul>
+<li>State <strong>尽量小</strong>——只存跨步必需字段  </li>
+<li>避免无结构大 dict  </li>
+<li>传入 Crew 的 inputs <strong>从 state 显式提取</strong></li>
+</ul>
+<h3 id="3-3-三种交互模式混用"><a href="#3-3-三种交互模式混用" class="headerlink" title="3.3 三种交互模式混用"></a>3.3 三种交互模式混用</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">① Python        → input()、写文件、调 DB</span><br><span class="line">② LLM.call      → 结构化大纲（Pydantic response_format）</span><br><span class="line">③ crew.kickoff  → Writer + Reviewer 协作写一节</span><br></pre></td></tr></table></figure>
+
+<p><strong>不必把 JSON 提取、文件 IO 都塞进 Crew</strong>——这是 Flow 的核心价值。</p>
+<hr>
+<h2 id="4-Guide-Creator-模式拆解"><a href="#4-Guide-Creator-模式拆解" class="headerlink" title="4. Guide Creator 模式拆解"></a>4. Guide Creator 模式拆解</h2><p>官方 <a target="_blank" rel="noopener" href="https://docs.crewai.com/v1.15.4/en/guides/flows/first-flow">First Flow</a> 主线：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">get_user_input（@start）</span><br><span class="line">  → create_guide_outline（LLM.call → GuideOutline JSON）</span><br><span class="line">  → for section in outline.sections:</span><br><span class="line">        content_crew.kickoff(section_inputs)   # Writer + Reviewer</span><br><span class="line">  → compile complete_guide.md（Python 拼装）</span><br></pre></td></tr></table></figure>
+
+<p><strong>Content Crew（sequential）：</strong></p>
+<ol>
+<li><code>write_section_task</code> — Writer  </li>
+<li><code>review_section_task</code> — Reviewer，<code>context: [&quot;write_section_task&quot;]</code></li>
+</ol>
+<p><strong>Flow 层传递 <code>previous_sections</code></strong>，保证章节间上下文连贯——类似 Working state 摘要（<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/">Agent 五</a>）。</p>
+<p><strong>最小 Flow 骨架：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> crewai.flow.flow <span class="keyword">import</span> Flow, listen, start</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GuideCreatorFlow</span>(Flow[GuideState]):</span><br><span class="line"><span class="meta">    @start()</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">get_user_input</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="variable language_">self</span>.state.topic = <span class="built_in">input</span>(<span class="string">&quot;Topic? &quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>.state</span><br><span class="line"></span><br><span class="line"><span class="meta">    @listen(<span class="params">get_user_input</span>)</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">create_outline</span>(<span class="params">self, state</span>):</span><br><span class="line">        <span class="comment"># LLM.call with response_format=GuideOutline</span></span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line"><span class="meta">    @listen(<span class="params">create_outline</span>)</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">write_sections</span>(<span class="params">self, outline</span>):</span><br><span class="line">        <span class="keyword">for</span> section <span class="keyword">in</span> outline.sections:</span><br><span class="line">            result = kickoff_content_crew(inputs=&#123;...&#125;)</span><br><span class="line">            <span class="variable language_">self</span>.state.sections_content[section.title] = result.raw</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>.state</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-持久化与恢复"><a href="#5-持久化与恢复" class="headerlink" title="5. 持久化与恢复"></a>5. 持久化与恢复</h2><p><code>@persist</code> 将 Flow state 写入存储（默认可 SQLite），支持长任务与人审暂停后续跑。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 恢复同一 lineage</span></span><br><span class="line">flow.kickoff(inputs=&#123;<span class="string">&quot;id&quot;</span>: <span class="string">&quot;&lt;previous-state-id&gt;&quot;</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从旧状态 fork 新 lineage（hydrate 但不延续原 history）</span></span><br><span class="line">flow.kickoff(restore_from_state_id=<span class="string">&quot;&lt;previous-run-state-id&gt;&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>场景：</strong> 崩溃恢复、HITL 等待、A&#x2F;B 实验 fork。</p>
+<p><strong>与 LangGraph Checkpoint 对照：</strong> 二者都解决 durable state；CrewAI Flow 装饰器更偏 <strong>应用层</strong> 表达，LangGraph 更偏 <strong>Runtime 通道</strong>。</p>
+<hr>
+<h2 id="6-路由与并行（认名）"><a href="#6-路由与并行（认名）" class="headerlink" title="6. 路由与并行（认名）"></a>6. 路由与并行（认名）</h2><ul>
+<li><code>@router</code>：上一步返回值决定下一监听者  </li>
+<li><code>and_()</code> &#x2F; <code>or_()</code>：复合触发——修订循环常用 <code>or_(&quot;start&quot;, &quot;needs_revision&quot;)</code>  </li>
+<li>独立 section 可并行 kickoff Crew（需注意 API 速率与成本）</li>
+</ul>
+<p>Conversational Flows（<code>ChatSession</code>、<code>kickoff</code> per message）属进阶——多轮聊天式应用，本篇认名即可。</p>
+<hr>
+<h2 id="7-Crew-级回调"><a href="#7-Crew-级回调" class="headerlink" title="7. Crew 级回调"></a>7. Crew 级回调</h2><table>
+<thead>
+<tr>
+<th>回调</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>before_kickoff_callbacks</code></td>
+<td>注入 inputs、鉴权</td>
+</tr>
+<tr>
+<td><code>after_kickoff_callbacks</code></td>
+<td>写库、发 webhook</td>
+</tr>
+</tbody></table>
+<p>Flow 层亦可纯 Python 接 API——生产入口推荐 <strong>Flow 接 HTTP，内部 kickoff Crew</strong>。</p>
+<hr>
+<h2 id="8-实践阶梯-L1-→-L2（编排篇）"><a href="#8-实践阶梯-L1-→-L2（编排篇）" class="headerlink" title="8. 实践阶梯 L1 → L2（编排篇）"></a>8. 实践阶梯 L1 → L2（编排篇）</h2><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>做什么</th>
+<th>证明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L1</strong></td>
+<td>Sequential Crew：Researcher → Writer → Editor，3 Task + context</td>
+<td>链式输出可追溯</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>Guide Creator 式 Flow：outline LLM + 循环 kickoff Crew + 拼装 md</td>
+<td><code>crewai flow plot</code> 可视化</td>
+</tr>
+</tbody></table>
+<p>（五）叠加 HITL、MCP、Knowledge 与发版 Checklist。</p>
+<hr>
+<h2 id="9-与-Loop-Engineering-对齐"><a href="#9-与-Loop-Engineering-对齐" class="headerlink" title="9. 与 Loop Engineering 对齐"></a>9. 与 Loop Engineering 对齐</h2><table>
+<thead>
+<tr>
+<th>LE 概念</th>
+<th>CrewAI 落点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Contract &#x2F; Done</td>
+<td>Task <code>expected_output</code> + Guardrail</td>
+</tr>
+<tr>
+<td>Budget</td>
+<td><code>max_iter</code>、<code>max_rpm</code>、Flow 层循环次数</td>
+</tr>
+<tr>
+<td>轨迹回归</td>
+<td>Tracing + Task Success Scenario（五）</td>
+</tr>
+<tr>
+<td>假完成</td>
+<td>Guardrail 无引用即 fail</td>
+</tr>
+</tbody></table>
+<p>完整发版指标见 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a>；<a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/#3-%E7%94%A8%E8%BD%A8%E8%BF%B9%E6%8C%87%E6%A0%87%E5%9B%9E%E5%BD%92-Loop">LE（三）§3</a> 轨迹指标可映射到 Crew 重复 Task &#x2F; Guardrail 失败率。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完 CrewAI 系列五篇后，请到 <a href="/2026/09/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">CrewAI · 自检与面试</a>。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Crew</strong>：agents + tasks + process；sequential 流水线 &#x2F; hierarchical Manager。</p>
+<p><strong>Flow</strong>：@start&#x2F;@listen&#x2F;@router + Pydantic state；Python &#x2F; LLM &#x2F; Crew 混用。</p>
+<p><strong>Guide Creator</strong>：outline → 逐节 Crew → 拼装——标准 Flow+Crew 模式。</p>
+<p><strong>持久化</strong>：@persist + kickoff(id) &#x2F; restore_from_state_id。</p>
+<p><strong>CrewAI 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/">（一）定位与架构</a></li>
+<li><a href="/2026/08/29/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%8C/">（二）Agent 与 Task</a></li>
+<li><a href="/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/">（三）Crew 与 Flow</a>（本篇）</li>
+<li><a href="/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/">（四）Knowledge 与观测</a></li>
+<li><a href="/2026/09/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%94/">（五）生产与项目</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/08/29/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%8C/">CrewAI（二）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#4-Research-Agent-%E5%9C%B0%E5%9B%BE">Agent 四 Research 地图</a></p>
+<p><strong>下一篇</strong>：<a href="/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/">CrewAI（四）· Knowledge、Memory 与观测</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/CrewAI/" rel="tag"># CrewAI</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/29/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%8C/" rel="prev" title="AI-Agent工程学习-CrewAI(二)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-CrewAI(二)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/" rel="next" title="AI-Agent工程学习-CrewAI(四)">
+                  AI-Agent工程学习-CrewAI(四) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

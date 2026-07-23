@@ -26,8 +26,8 @@
 <meta property="og:site_name" content="我的记录小站">
 <meta property="og:description" content="Subgraph、Router&#x2F;Supervisor、create_agent 入图、Multi-Agent、实践阶梯；收口至 Deep Agents。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-07-17T05:30:00.000Z">
-<meta property="article:modified_time" content="2026-07-20T10:40:42.363Z">
+<meta property="article:published_time" content="2026-07-17T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.981Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="LangGraph">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">72</span>
+          <span class="site-state-item-count">87</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">27</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -215,14 +215,14 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2026-07-17 13:30:00" itemprop="dateCreated datePublished" datetime="2026-07-17T13:30:00+08:00">2026-07-17</time>
+      <time title="创建时间：2026-07-17 14:00:00" itemprop="dateCreated datePublished" datetime="2026-07-17T14:00:00+08:00">2026-07-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-07-20 18:40:42" itemprop="dateModified" datetime="2026-07-20T18:40:42+08:00">2026-07-20</time>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -247,7 +247,8 @@
     <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%94/">LangGraph（五）</a>：Interrupt 与 LE 对齐之后，用 <strong>Subgraph 与多 Agent 模式</strong> 拼装企业拓扑，并收口本系列。</p>
 <span id="more"></span>
 <h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>前四篇：Graph &#x2F; State &#x2F; Persistence &#x2F; 执行；第五篇：可控运行。</p>
-<p>本篇：<strong>模块化 + 模式 + 与 LangChain 拼装 + 实践阶梯</strong>。</p>
+<p>本篇：<strong>模块化 + 模式 + 与 LangChain 拼装 + 实践阶梯</strong>（<strong>实现层</strong> Multi-Agent 初体验）。</p>
+<p><strong>深度理论（五角色 &#x2F; 五协作 &#x2F; 四通信 &#x2F; canonical 映射表）</strong> 见 <a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">Multi-Agent 系列</a>——本篇只讲图级代码与拓扑，不重复理论长文。</p>
 <p>官方：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/use-subgraphs">Subgraphs</a></p>
 <hr>
 <h2 id="1-Subgraph"><a href="#1-Subgraph" class="headerlink" title="1. Subgraph"></a>1. Subgraph</h2><p>把一段流程编译成 <strong>子图</strong>，作为父图的一个 <strong>Node</strong> 嵌入。</p>
@@ -409,7 +410,7 @@
 <li>部署认名：LangSmith Deployment &#x2F; Agent Server（平台篇，此处不展开）。</li>
 </ul>
 <hr>
-<h2 id="9-全路径与下一模块"><a href="#9-全路径与下一模块" class="headerlink" title="9. 全路径与下一模块"></a>9. 全路径与下一模块</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LLM → Prompt → Agent → Loop Engineering</span><br><span class="line">        ↓</span><br><span class="line">LangChain（一）～（六）</span><br><span class="line">        ↓</span><br><span class="line">LangGraph（一）Graph →（二）State →（三）Persistence</span><br><span class="line">    →（四）执行 →（五）Interrupt/LE →（六）模式拼装（本篇）</span><br><span class="line">        ↓</span><br><span class="line">下一模块：Deep Agents（厚 harness）</span><br></pre></td></tr></table></figure>
+<h2 id="9-全路径与下一模块"><a href="#9-全路径与下一模块" class="headerlink" title="9. 全路径与下一模块"></a>9. 全路径与下一模块</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LLM → Prompt → Agent → Loop Engineering</span><br><span class="line">        ↓</span><br><span class="line">LangChain（一）～（六）</span><br><span class="line">        ↓</span><br><span class="line">LangGraph（一）Graph →（二）State →（三）Persistence</span><br><span class="line">    →（四）执行 →（五）Interrupt/LE →（六）模式拼装（本篇）</span><br><span class="line">        ↓</span><br><span class="line">下一模块：Multi-Agent（理论）→ Deep Agents（厚 harness）</span><br></pre></td></tr></table></figure>
 
 <table>
 <thead>
@@ -427,20 +428,24 @@
 <td><strong>LangGraph（本系列）</strong></td>
 </tr>
 <tr>
+<td>多 Agent 理论（角色&#x2F;协作&#x2F;通信）</td>
+<td><strong>Multi-Agent</strong></td>
+</tr>
+<tr>
 <td>开箱 FS &#x2F; Skills &#x2F; subagent 栈</td>
 <td><strong>Deep Agents</strong></td>
 </tr>
 </tbody></table>
 <p>除本系列主讲的 Graph API 外，Functional API（<code>@entrypoint</code> &#x2F; <code>@task</code>）可在保留函数式结构时获得同一 Runtime 能力；两者可混用，回看<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/#1-%E4%B8%A4%E7%A7%8D-API%EF%BC%9AGraph-%E4%B8%8E-Functional">（一）</a>。</p>
 <hr>
-<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本篇后，请到 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph · 自检与面试</a> 完成学习自检与面试题（含推荐回答）。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Subgraph</strong>：模块化；checkpoint 作用域要显式选。</p>
 <p><strong>Router &#x2F; Supervisor</strong>：分流与分派；Handoff 带摘要与规则。</p>
 <p><strong>拼装</strong>：<code>create_agent</code> 整段入图。</p>
 <p><strong>工具环</strong>：<code>ToolNode</code> + <code>tools_condition</code> 提供细粒度拓扑控制。</p>
 <p><strong>Multi-Agent</strong>：隔离 + Store + 图级 LE 门禁。</p>
 <p><strong>阶梯</strong>：L0 DAG → L1 持久&#x2F;HITL → L2 Supervisor 拓扑。</p>
-<p><strong>下一步</strong>：Deep Agents。</p>
+<p><strong>下一步</strong>：<a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">Multi-Agent（一）</a>（理论系统化）→ Deep Agents。</p>
 <p><strong>LangGraph 系列导航：</strong></p>
 <ul>
 <li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">（一）定位与 Graph 基础</a></li>
@@ -451,7 +456,7 @@
 <li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">（六）模式拼装与收口</a>（本篇）</li>
 </ul>
 <p><strong>前置：</strong> <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">LangChain（六）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/">LE（三）</a></p>
-<p>LangGraph（编排 Runtime）到此收口。<strong>下一篇</strong>：<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph · 自检与面试</a>。下一模块：<strong>Deep Agents</strong>——在 LangGraph 之上，用预装规划、虚拟文件系统、Skills 与 Subagent 做长任务厚 harness。</p>
+<p>LangGraph（编排 Runtime）到此收口。<strong>下一篇</strong>：<a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph · 自检与面试</a>。下一模块：<strong><a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">Multi-Agent（一）</a></strong>（理论）→ 再进入 <strong>Deep Agents</strong> 厚 harness。</p>
 
     </div>
 
@@ -474,7 +479,7 @@
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-LangGraph(自检与面试)">
+                <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-LangGraph(自检与面试)">
                   AI-Agent工程学习-LangGraph(自检与面试) <i class="fa fa-angle-right"></i>
                 </a>
             </div>

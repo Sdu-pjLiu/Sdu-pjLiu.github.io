@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Role-Based &#x2F; Debate &#x2F; Voting &#x2F; Swarm &#x2F; Hierarchical 五协作模式；选型口诀与框架落点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Multi-Agent(三)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Role-Based &#x2F; Debate &#x2F; Voting &#x2F; Swarm &#x2F; Hierarchical 五协作模式；选型口诀与框架落点。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-18T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.981Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Multi-Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/","path":"/2026/08/07/Agent工程学习-Multi-Agent-三/","title":"AI-Agent工程学习-Multi-Agent(三)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Multi-Agent(三) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Role-Based-Collaboration"><span class="nav-number">2.</span> <span class="nav-text">1. Role-Based Collaboration</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Debate-System"><span class="nav-number">3.</span> <span class="nav-text">2. Debate System</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Voting-System"><span class="nav-number">4.</span> <span class="nav-text">3. Voting System</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Swarm-Intelligence"><span class="nav-number">5.</span> <span class="nav-text">4. Swarm Intelligence</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Hierarchical-Agent-System"><span class="nav-number">6.</span> <span class="nav-text">5. Hierarchical Agent System</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%8D%8F%E4%BD%9C%E6%A8%A1%E5%BC%8F%E9%80%89%E5%9E%8B%E8%A1%A8"><span class="nav-number">7.</span> <span class="nav-text">6. 协作模式选型表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%8D%8F%E4%BD%9C%E6%88%90%E6%9C%AC%E6%A8%A1%E5%9E%8B"><span class="nav-number">8.</span> <span class="nav-text">7. 协作成本模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Multi-Agent(三) | 我的记录小站">
+      <meta itemprop="description" content="Role-Based &#x2F; Debate &#x2F; Voting &#x2F; Swarm &#x2F; Hierarchical 五协作模式；选型口诀与框架落点。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Multi-Agent(三)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-18 12:00:00" itemprop="dateCreated datePublished" datetime="2026-07-18T12:00:00+08:00">2026-07-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Role-Based / Debate / Voting / Swarm / Hierarchical 五协作模式；选型口诀与框架落点。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/">Multi-Agent（二）</a>：五角色已定，本篇讲 <strong>五种协作模式</strong>——结构、适用场景、风险与 LangGraph &#x2F; Deep Agents &#x2F; CrewAI 落点。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>协作模式回答 <strong>「多个 Agent 如何一起完成任务」</strong>；与（二）角色、（四）通信正交组合。</p>
+<p>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#2-%E8%A7%84%E5%88%92%E5%BC%8F-Agent%EF%BC%88Plan-and-Execute-%E5%8F%8A%E8%A7%84%E5%88%92%E6%8A%80%E6%B3%95">Agent（二）Hierarchical 规划</a>）——高层阶段目标与 Multi-Agent Hierarchical 可叠加，但 <strong>不等同</strong>。</p>
+<hr>
+<h2 id="1-Role-Based-Collaboration"><a href="#1-Role-Based-Collaboration" class="headerlink" title="1. Role-Based Collaboration"></a>1. Role-Based Collaboration</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>结构</strong></td>
+<td>固定角色按序执行：Researcher → Analyst → Writer → Reviewer</td>
+</tr>
+<tr>
+<td><strong>适用</strong></td>
+<td>流水线明确、每步验收标准清晰、开放质量要求</td>
+</tr>
+<tr>
+<td><strong>风险</strong></td>
+<td>串行延迟；上游错误传导；角色「空壳」无独立 Tool</td>
+</tr>
+<tr>
+<td><strong>框架落点</strong></td>
+<td><strong>CrewAI sequential Process</strong>（主战场）；LangGraph 线性子图链</td>
+</tr>
+</tbody></table>
+<p><strong>场景片段：</strong> 内容运营——调研 Crew 输出带来源摘要 → 写作 Crew 成稿 → Guardrail 失败则回炉——角色固定，不按轮动态重组。</p>
+<p><strong>选型口诀：</strong> Researcher + Writer + Editor 流水线 → CrewAI sequential 或 LangGraph 线性子图。</p>
+<hr>
+<h2 id="2-Debate-System"><a href="#2-Debate-System" class="headerlink" title="2. Debate System"></a>2. Debate System</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>结构</strong></td>
+<td>多 Agent 正反或多视角辩论，经 N 轮后综合</td>
+</tr>
+<tr>
+<td><strong>适用</strong></td>
+<td>策略取舍、方案评审、风险辩驳</td>
+</tr>
+<tr>
+<td><strong>风险</strong></td>
+<td>Token 爆炸；争论不收敛；无仲裁者</td>
+</tr>
+<tr>
+<td><strong>框架落点</strong></td>
+<td>CrewAI 多 Task 迭代；<a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/">AutoGen GroupChat</a>（巡览）；LangGraph 循环边 + 轮次上限</td>
+</tr>
+</tbody></table>
+<p><strong>治理要点：</strong></p>
+<ol>
+<li><strong>max_rounds</strong> 硬上限</li>
+<li><strong>仲裁节点</strong>（Supervisor 或规则聚合）必须存在</li>
+<li>辩论内容 <strong>摘要后</strong> 再进入下游，避免全文灌窗</li>
+</ol>
+<hr>
+<h2 id="3-Voting-System"><a href="#3-Voting-System" class="headerlink" title="3. Voting System"></a>3. Voting System</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>结构</strong></td>
+<td>N 路 Worker 独立产出 → 聚合节点（多数票 &#x2F; 加权 &#x2F; LLM judge）</td>
+</tr>
+<tr>
+<td><strong>适用</strong></td>
+<td>分类、评分、冗余校验、降低单点幻觉</td>
+</tr>
+<tr>
+<td><strong>风险</strong></td>
+<td>成本 × N；聚合规则不当仍错</td>
+</tr>
+<tr>
+<td><strong>框架落点</strong></td>
+<td>LangGraph <code>Send</code> 并行 + 聚合 Node；CrewAI 多 Agent 同 Task 不同 backstory（慎用）</td>
+</tr>
+</tbody></table>
+<p><strong>场景片段：</strong> 同一 FAQ 问题 → 3 个 Worker 各检索回答 → Voting 节点选证据最充分者 → 无一致则 HITL。</p>
+<hr>
+<h2 id="4-Swarm-Intelligence"><a href="#4-Swarm-Intelligence" class="headerlink" title="4. Swarm Intelligence"></a>4. Swarm Intelligence</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>结构</strong></td>
+<td>对等 Peer 自治，局部规则驱动，无中心 Supervisor</td>
+</tr>
+<tr>
+<td><strong>适用</strong></td>
+<td>探索型搜索、创意发散、去中心化任务</td>
+</tr>
+<tr>
+<td><strong>风险</strong></td>
+<td>难审计；冲突无解；重复探索</td>
+</tr>
+<tr>
+<td><strong>框架落点</strong></td>
+<td>LangGraph 核心 <strong>无内建 Swarm 一等 API</strong>；可用 <code>langgraph-swarm</code> 等 companion 或自建多 Peer 节点 + Store；行业模式名</td>
+</tr>
+</tbody></table>
+<p>回链 <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph 自检 I12</a>：Swarm 仅当中心协调成瓶颈且冲突有协议时考虑；<strong>多数业务不必上</strong>。</p>
+<hr>
+<h2 id="5-Hierarchical-Agent-System"><a href="#5-Hierarchical-Agent-System" class="headerlink" title="5. Hierarchical Agent System"></a>5. Hierarchical Agent System</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>结构</strong></td>
+<td>多层 Supervisor：顶层分解 → 中层再分派 → 叶子 Worker</td>
+</tr>
+<tr>
+<td><strong>适用</strong></td>
+<td>企业多部门流程、大型 Research 项目</td>
+</tr>
+<tr>
+<td><strong>风险</strong></td>
+<td>层级过深 → 延迟与 Token 倍增；责任链断裂</td>
+</tr>
+<tr>
+<td><strong>框架落点</strong></td>
+<td><strong>CrewAI hierarchical Process</strong>；LangGraph 嵌套 Subgraph + Supervisor</td>
+</tr>
+</tbody></table>
+<p>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/">Agent（二）分层规划</a>：高层阶段目标可映射为顶层 Supervisor 的 <code>open[]</code>；层间须传 Handoff 合同。</p>
+<p><strong>场景片段：</strong> 顶层「行业报告」→ 中层 Supervisor 分行业 → 叶子 Research Worker 并行 → 中层汇总 → 顶层 Writer。</p>
+<hr>
+<h2 id="6-协作模式选型表"><a href="#6-协作模式选型表" class="headerlink" title="6. 协作模式选型表"></a>6. 协作模式选型表</h2><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>首选模式</th>
+<th>首选框架</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>固定流水线、角色清晰</td>
+<td>Role-Based</td>
+<td>CrewAI sequential &#x2F; LangGraph 链</td>
+</tr>
+<tr>
+<td>方案辩论、多视角</td>
+<td>Debate</td>
+<td>AutoGen &#x2F; CrewAI 多轮 + 仲裁</td>
+</tr>
+<tr>
+<td>分类&#x2F;评分&#x2F;冗余校验</td>
+<td>Voting</td>
+<td>LangGraph Send + 聚合</td>
+</tr>
+<tr>
+<td>探索发散、无中心</td>
+<td>Swarm</td>
+<td>LangGraph Store 拓扑（高级）</td>
+</tr>
+<tr>
+<td>企业多层级委派</td>
+<td>Hierarchical</td>
+<td>CrewAI hierarchical &#x2F; 嵌套 Subgraph</td>
+</tr>
+<tr>
+<td>单次意图分流</td>
+<td><strong>非协作模式</strong></td>
+<td>Router（见（二））</td>
+</tr>
+</tbody></table>
+<p><strong>与 Router &#x2F; Supervisor 关系：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Router        → 一次分类，分支独立</span><br><span class="line">Supervisor    → 多轮协调，动态选 Worker</span><br><span class="line">Role-Based    → 角色顺序通常预定义（可由 Supervisor 触发每步）</span><br><span class="line">Hierarchical  → Supervisor 的多层叠套</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-协作成本模型"><a href="#7-协作成本模型" class="headerlink" title="7. 协作成本模型"></a>7. 协作成本模型</h2><p>Multi-Agent <strong>不是免费抽象</strong>。粗算：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">成本 ≈ 角色数 × 每角色轮次 × 单轮 Token/费用</span><br><span class="line">       ×（Voting 时再 × N）</span><br><span class="line">       ×（Debate 时再 × max_rounds 量级）</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>旋钮</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>角色数</strong></td>
+<td>每多一角色多一套 System + 工具描述</td>
+</tr>
+<tr>
+<td><strong>轮次</strong></td>
+<td>Supervisor 多跳、Debate 多轮直接倍增</td>
+</tr>
+<tr>
+<td><strong>Voting N</strong></td>
+<td>近似线性 ×N；无收益时降 N 或改 Role-Based</td>
+</tr>
+<tr>
+<td><strong>预算硬顶</strong></td>
+<td>Runtime 总 Token&#x2F;费用&#x2F;墙钟——<a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">工程化（一）（二）</a></td>
+</tr>
+</tbody></table>
+<p><strong>选型约束：</strong> Token 升而 Task Success 不变 → 减角色或退回单 Agent；Voting&#x2F;Debate 须能证明指标收益。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Role-Based：</strong> 固定流水线；CrewAI sequential 主战场。</p>
+<p><strong>Debate：</strong> 多轮视角；须 max_rounds + 仲裁。</p>
+<p><strong>Voting：</strong> N 路并行聚合；LangGraph Send。</p>
+<p><strong>Swarm：</strong> 对等自治；非默认；无独立 API。</p>
+<p><strong>Hierarchical：</strong> 多层委派；控制深度 ≤ 3 层为宜。</p>
+<p><strong>下一步：</strong> <a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">Multi-Agent（四）· 通信机制</a></p>
+<p><strong>前置：</strong> <a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/">Multi-Agent（二）</a> · <a href="/2026/08/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LangGraph 自检 I12</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Multi-Agent/" rel="tag"># Multi-Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/" rel="prev" title="AI-Agent工程学习-Multi-Agent(二)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Multi-Agent(二)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/" rel="next" title="AI-Agent工程学习-Multi-Agent(四)">
+                  AI-Agent工程学习-Multi-Agent(四) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

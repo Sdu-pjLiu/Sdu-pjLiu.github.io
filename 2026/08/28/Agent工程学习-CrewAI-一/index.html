@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="CrewAI 开篇：Flow&#x2F;Crew 双层架构、Role&#x2F;Task 模型、与 LangGraph&#x2F;Deep Agents 选型；CLI 脚手架。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-CrewAI(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="CrewAI 开篇：Flow&#x2F;Crew 双层架构、Role&#x2F;Task 模型、与 LangGraph&#x2F;Deep Agents 选型；CLI 脚手架。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-22T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.983Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="CrewAI">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/","path":"/2026/08/28/Agent工程学习-CrewAI-一/","title":"AI-Agent工程学习-CrewAI(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-CrewAI(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0-1-CrewAI-%E6%A8%A1%E5%9D%97%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">0.1 CrewAI 模块地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Flow-vs-Crew%EF%BC%9A%E4%BD%95%E6%97%B6%E7%94%A8%E5%93%AA%E4%B8%AA"><span class="nav-number">3.</span> <span class="nav-text">1. Flow vs Crew：何时用哪个</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%8E-LangGraph-Deep-Agents-%E9%80%89%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">2. 与 LangGraph &#x2F; Deep Agents 选型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%E9%80%9F%E6%9F%A5"><span class="nav-number">5.</span> <span class="nav-text">3. 核心概念速查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-CLI-%E4%B8%8E%E9%A1%B9%E7%9B%AE%E8%84%9A%E6%89%8B%E6%9E%B6"><span class="nav-number">6.</span> <span class="nav-text">4. CLI 与项目脚手架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-LLM-%E4%B8%8E-Provider-%E8%AE%A4%E5%90%8D"><span class="nav-number">7.</span> <span class="nav-text">5. LLM 与 Provider 认名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF-L0%EF%BC%88%E6%9C%AC%E7%AF%87%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">6. 实践阶梯 L0（本篇）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E8%BE%B9%E7%95%8C"><span class="nav-number">9.</span> <span class="nav-text">7. 边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">10.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">11.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-CrewAI(一) | 我的记录小站">
+      <meta itemprop="description" content="CrewAI 开篇：Flow&#x2F;Crew 双层架构、Role&#x2F;Task 模型、与 LangGraph&#x2F;Deep Agents 选型；CLI 脚手架。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-CrewAI(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-22 08:00:00" itemprop="dateCreated datePublished" datetime="2026-07-22T08:00:00+08:00">2026-07-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">CrewAI 开篇：Flow/Crew 双层架构、Role/Task 模型、与 LangGraph/Deep Agents 选型；CLI 脚手架。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/27/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">MCP · 自检与面试</a>：外部能力经 MCP 标准接入后，<strong>Multi-Agent 协作模式已系统化学完</strong>；理论→CrewAI 落点见 <a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/#4-%E7%90%86%E8%AE%BA%E5%88%B0%E6%A1%86%E6%9E%B6%E6%98%A0%E5%B0%84%EF%BC%88canonical%EF%BC%89">Multi-Agent（五）§4 canonical 映射</a>（本系列正文只回链、不重写该表）。本篇讲 <strong>CrewAI 如何产品化表达</strong> Role-Based &#x2F; Hierarchical——官方 v1.15+ 以 <strong>Flow（流程骨架）+ Crew（协作团队）</strong> 组织生产级多 Agent 应用。</p>
+<span id="more"></span>
+<h2 id="0-本系列在学习路径中的位置"><a href="#0-本系列在学习路径中的位置" class="headerlink" title="0. 本系列在学习路径中的位置"></a>0. 本系列在学习路径中的位置</h2><p><strong>理论已学：</strong></p>
+<ul>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%8C/#2-%E8%A7%84%E5%88%92%E5%BC%8F-Agent%EF%BC%88Plan-and-Execute-%E5%8F%8A%E8%A7%84%E5%88%92%E6%8A%80%E6%B3%95%EF%BC%89">Agent（二）规划式 &#x2F; Hierarchical</a> — 任务分解与委派</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）Supervisor &#x2F; Router</a> — 图级 Multi-Agent 拓扑</li>
+<li><a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">Deep Agents（四）Subagent</a> — 厚 Harness 内委托与 Context 隔离</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6 发版 Checklist</a> — 评测与回归口径</li>
+</ul>
+<p><strong>本系列分工：</strong> LangGraph &#x3D; 显式图编排 Runtime；Deep Agents &#x3D; 预装 FS&#x2F;Skills&#x2F;Subagent 的厚 Harness；<strong>CrewAI &#x3D; 角色驱动 Crew + 事件驱动 Flow 的产品化多 Agent 框架</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>产品&#x2F;框架</th>
+<th>本路径角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangGraph</strong></td>
+<td>StateGraph、Checkpoint、Interrupt</td>
+</tr>
+<tr>
+<td><strong>Deep Agents</strong></td>
+<td><code>create_deep_agent</code> 长任务厚栈</td>
+</tr>
+<tr>
+<td><strong>CrewAI</strong></td>
+<td>Flow 应用骨架 + Crew 协作单元</td>
+</tr>
+</tbody></table>
+<p>官方：<a target="_blank" rel="noopener" href="https://docs.crewai.com/v1.15.4/en/introduction">CrewAI Introduction</a> · <a target="_blank" rel="noopener" href="https://docs.crewai.com/v1.15.4/en/guides/flows/first-flow">First Flow</a> · <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/production-architecture">Production Architecture</a></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LangGraph Supervisor（图级、显式边）</span><br><span class="line">        ↓</span><br><span class="line">Deep Agents task()（厚 harness 内委托）</span><br><span class="line">        ↓</span><br><span class="line">CrewAI Flow + Crew（Role/Task/Process 声明式）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="0-1-CrewAI-模块地图"><a href="#0-1-CrewAI-模块地图" class="headerlink" title="0.1 CrewAI 模块地图"></a>0.1 CrewAI 模块地图</h2><p>官方架构：<strong>Flow 是 backbone，Crew 是 intelligence</strong>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Flow（应用入口）</span><br><span class="line">  ├─ State（Pydantic，跨步共享）</span><br><span class="line">  ├─ @start / @listen / @router（事件驱动控制流）</span><br><span class="line">  ├─ 普通 Python / 直接 LLM.call（轻量步骤）</span><br><span class="line">  └─ crew.kickoff()（复杂协作子问题）</span><br><span class="line">        ↓</span><br><span class="line">Crew（协作团队）</span><br><span class="line">  ├─ Agents（role / goal / backstory）</span><br><span class="line">  ├─ Tasks（description / expected_output / context）</span><br><span class="line">  └─ Process（sequential / hierarchical）</span><br><span class="line">        ↓</span><br><span class="line">Capabilities（Tools / MCP / Apps / Skills / Knowledge）</span><br><span class="line">        ↓</span><br><span class="line">Governance（Guardrail / HITL / Memory / Tracing）</span><br></pre></td></tr></table></figure>
+
+<p>本系列五篇分工：</p>
+<table>
+<thead>
+<tr>
+<th>篇</th>
+<th>覆盖</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>（一）</td>
+<td>定位、双层架构、选型、CLI</td>
+</tr>
+<tr>
+<td>（二）</td>
+<td>Agent &#x2F; Task &#x2F; 五类能力扩展</td>
+</tr>
+<tr>
+<td>（三）</td>
+<td>Crew &#x2F; Process &#x2F; Flow 编排</td>
+</tr>
+<tr>
+<td>（四）</td>
+<td>Knowledge &#x2F; Memory &#x2F; MCP &#x2F; 观测</td>
+</tr>
+<tr>
+<td>（五）</td>
+<td>HITL &#x2F; Training &#x2F; 生产项目 &#x2F; 全路径收口</td>
+</tr>
+</tbody></table>
+<p><strong>生产建议（官方）：</strong> 任何生产应用 <strong>先从 Flow 开始</strong>；需要创意协作的子步骤再委派 Crew。</p>
+<hr>
+<h2 id="1-Flow-vs-Crew：何时用哪个"><a href="#1-Flow-vs-Crew：何时用哪个" class="headerlink" title="1. Flow vs Crew：何时用哪个"></a>1. Flow vs Crew：何时用哪个</h2><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>用 Flow</th>
+<th>用 Crew</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>管状态、分支、持久化、接 API</td>
+<td>✓</td>
+<td></td>
+</tr>
+<tr>
+<td>多角色辩论、写作+审稿协作</td>
+<td></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>单次结构化 LLM 输出（大纲 JSON）</td>
+<td>直接 <code>LLM.call</code></td>
+<td>过重</td>
+</tr>
+<tr>
+<td>10 步固定 ETL</td>
+<td>Python 任务链</td>
+<td>过重</td>
+</tr>
+<tr>
+<td>调研→分析→成稿（开放质量）</td>
+<td>Flow 编排</td>
+<td>Crew 执行</td>
+</tr>
+</tbody></table>
+<p><strong>协作六步（官方）：</strong></p>
+<ol>
+<li>Flow 触发事件  </li>
+<li>Flow 管理状态、决定下一步  </li>
+<li>Flow 委派复杂任务给 Crew  </li>
+<li>Crew 内 Agent 协作完成  </li>
+<li>Crew 返回结果给 Flow  </li>
+<li>Flow 继续后续逻辑</li>
+</ol>
+<hr>
+<h2 id="2-与-LangGraph-Deep-Agents-选型"><a href="#2-与-LangGraph-Deep-Agents-选型" class="headerlink" title="2. 与 LangGraph &#x2F; Deep Agents 选型"></a>2. 与 LangGraph &#x2F; Deep Agents 选型</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>LangGraph</th>
+<th>Deep Agents</th>
+<th>CrewAI</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>编排表达</td>
+<td>Node&#x2F;Edge 显式图</td>
+<td>编译图 + 默认 Middleware</td>
+<td>Flow 装饰器 + Crew 声明</td>
+</tr>
+<tr>
+<td>多 Agent</td>
+<td>Supervisor&#x2F;Subgraph</td>
+<td><code>task()</code> Subagent</td>
+<td>Role + Process</td>
+</tr>
+<tr>
+<td>配置风格</td>
+<td>Python 为主</td>
+<td>Python + Profiles</td>
+<td>JSONC + Python</td>
+</tr>
+<tr>
+<td>长任务 Context</td>
+<td>自建 Middleware</td>
+<td>预装 Summarization&#x2F;FS</td>
+<td>Memory + Flow state</td>
+</tr>
+<tr>
+<td>适合</td>
+<td>精细拓扑、混合确定性步骤</td>
+<td>长任务 coding&#x2F;research</td>
+<td>角色化团队、快速产品化</td>
+</tr>
+</tbody></table>
+<p><strong>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%85%AD/#7-Harness-%E8%B0%B1%E7%B3%BB%E4%B8%8E%E5%90%8E%E7%BB%AD%E6%A1%86%E6%9E%B6">Agent（六）§7</a>：</strong> CrewAI 是 <strong>Multi-Agent 协作框架</strong> 的一种实现，不替代 Loop Contract 与 Runtime Gate——仍须 Budget、Citation、越权拦截（见 LE、Agent 四）。</p>
+<p><strong>默认组合建议：</strong></p>
+<ul>
+<li>企业流程 <strong>步骤固定</strong> → LangGraph 或 Flow 内 Python  </li>
+<li><strong>长材料 + FS + Subagent 隔离</strong> → Deep Agents  </li>
+<li><strong>Researcher + Writer + Editor 角色团队</strong> → CrewAI Crew</li>
+</ul>
+<hr>
+<h2 id="3-核心概念速查"><a href="#3-核心概念速查" class="headerlink" title="3. 核心概念速查"></a>3. 核心概念速查</h2><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Agent</strong></td>
+<td>带 role&#x2F;goal&#x2F;backstory 的执行者</td>
+</tr>
+<tr>
+<td><strong>Task</strong></td>
+<td>可验收工作单元 + expected_output</td>
+</tr>
+<tr>
+<td><strong>Crew</strong></td>
+<td>Agent 团队 + Task 列表 + Process</td>
+</tr>
+<tr>
+<td><strong>Process</strong></td>
+<td>sequential（流水线）&#x2F; hierarchical（Manager 委派）</td>
+</tr>
+<tr>
+<td><strong>Flow</strong></td>
+<td>事件驱动工作流 + 状态 + 控制流</td>
+</tr>
+<tr>
+<td><strong>Guardrail</strong></td>
+<td>Task 输出校验，失败可重试</td>
+</tr>
+<tr>
+<td><strong>Knowledge</strong></td>
+<td>预加载 RAG 事实库</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>跨 run 统一记忆 API</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-CLI-与项目脚手架"><a href="#4-CLI-与项目脚手架" class="headerlink" title="4. CLI 与项目脚手架"></a>4. CLI 与项目脚手架</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生产推荐：先建 Flow 项目</span></span><br><span class="line">crewai create flow content_ops_flow</span><br><span class="line"><span class="built_in">cd</span> content_ops_flow</span><br><span class="line">crewai install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在 Flow 内添加 Crew</span></span><br><span class="line">crewai flow add-crew research-crew</span><br><span class="line"></span><br><span class="line"><span class="comment"># 运行与可视化</span></span><br><span class="line">crewai run</span><br><span class="line">crewai flow plot</span><br><span class="line"></span><br><span class="line"><span class="comment"># 追踪（任选其一）</span></span><br><span class="line">crewai traces <span class="built_in">enable</span></span><br><span class="line"><span class="comment"># 或 CREWAI_TRACING_ENABLED=true</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>典型目录（Flow 项目）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">src/content_ops_flow/</span><br><span class="line">├── main.py                 # Flow 入口</span><br><span class="line">├── crews/</span><br><span class="line">│   └── research_crew/</span><br><span class="line">│       ├── crew.jsonc</span><br><span class="line">│       ├── agents/*.jsonc</span><br><span class="line">│       └── research_crew.py   # load_crew 加载器</span><br><span class="line">└── tools/custom_tool.py</span><br></pre></td></tr></table></figure>
+
+<p>v1.15+ 新项目推荐 <strong>JSONC</strong> 配置 Agent&#x2F;Task&#x2F;Crew；老项目常见 Python + YAML，读源码时需两种都认。</p>
+<hr>
+<h2 id="5-LLM-与-Provider-认名"><a href="#5-LLM-与-Provider-认名" class="headerlink" title="5. LLM 与 Provider 认名"></a>5. LLM 与 Provider 认名</h2><ul>
+<li>模型字符串格式：<code>provider/model-id</code>（如 <code>openai/gpt-4o-mini</code>）  </li>
+<li>底层经 LiteLLM 统一多厂商  </li>
+<li><code>.env</code> 配置各厂商 API Key  </li>
+<li>Crew 级可设 <code>llm</code>；Agent 级可覆盖；另有 <code>function_calling_llm</code> 专用于 tool call</li>
+</ul>
+<p><strong>与 LangChain 路径关系：</strong> CrewAI 是 <strong>独立框架</strong>，不编译为 LangGraph Runnable；可与 LangChain Tool&#x2F;MCP 概念对照，但 API 不混用。</p>
+<hr>
+<h2 id="6-实践阶梯-L0（本篇）"><a href="#6-实践阶梯-L0（本篇）" class="headerlink" title="6. 实践阶梯 L0（本篇）"></a>6. 实践阶梯 L0（本篇）</h2><table>
+<thead>
+<tr>
+<th>级别</th>
+<th>做什么</th>
+<th>证明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L0</strong></td>
+<td><code>crewai create flow</code> + 跑通官方 Quickstart</td>
+<td>CLI、目录结构、trace 可开</td>
+</tr>
+</tbody></table>
+<p>（二）起：单 Agent Task；（三）：Sequential Crew；（五）：Flow + Crew + 项目验收。</p>
+<hr>
+<h2 id="7-边界"><a href="#7-边界" class="headerlink" title="7. 边界"></a>7. 边界</h2><table>
+<thead>
+<tr>
+<th>本篇讲</th>
+<th>后续篇讲</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定位、架构、选型</td>
+<td>Agent&#x2F;Task 细节（二）</td>
+</tr>
+<tr>
+<td>CLI 脚手架</td>
+<td>Flow 装饰器（三）</td>
+</tr>
+<tr>
+<td>概念认名</td>
+<td>Knowledge&#x2F;Memory&#x2F;MCP（四）</td>
+</tr>
+</tbody></table>
+<p>不重讲：LangGraph 节点写法、Deep Agents Middleware 栈、RAG 索引细节、MCP 协议——只回链。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完 CrewAI 系列五篇后，请到 <a href="/2026/09/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">CrewAI · 自检与面试</a>。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>定位</strong>：CrewAI &#x3D; Flow（控制流 + 状态）+ Crew（角色协作）；接 MCP 后的 Multi-Agent 产品化路径。</p>
+<p><strong>架构</strong>：生产应用先 Flow；复杂子问题再 Crew；轻量步骤用 Python&#x2F;直接 LLM。</p>
+<p><strong>选型</strong>：精细图 → LangGraph；长任务厚栈 → Deep Agents；角色团队 → CrewAI。</p>
+<p><strong>CLI</strong>：<code>create flow</code> → <code>add-crew</code> → <code>run</code> &#x2F; <code>plot</code> &#x2F; traces。</p>
+<p><strong>CrewAI 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/08/28/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%80/">（一）定位与架构</a>（本篇）</li>
+<li><a href="/2026/08/29/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%8C/">（二）Agent 与 Task</a></li>
+<li><a href="/2026/08/30/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%B8%89/">（三）Crew 与 Flow</a></li>
+<li><a href="/2026/08/31/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E5%9B%9B/">（四）Knowledge 与观测</a></li>
+<li><a href="/2026/09/01/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%94/">（五）生产与项目</a></li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/08/27/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">MCP 自检</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）</a> · <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E5%9B%9B/">Deep Agents（四）</a></p>
+<p><strong>下一篇</strong>：<a href="/2026/08/29/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%8C/">CrewAI（二）· Agent 与 Task 建模</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/CrewAI/" rel="tag"># CrewAI</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/27/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="prev" title="AI-Agent工程学习-MCP(自检与面试)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-MCP(自检与面试)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/29/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-CrewAI(二)">
+                  AI-Agent工程学习-CrewAI(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

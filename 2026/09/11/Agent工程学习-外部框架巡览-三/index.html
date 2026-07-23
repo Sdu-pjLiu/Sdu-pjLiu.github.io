@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="外部框架巡览：LlamaIndex 的 RAG Agent、Query Engine；与 RAG 系列边界；Workflow 认名。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-外部框架巡览(三)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%89/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="外部框架巡览：LlamaIndex 的 RAG Agent、Query Engine；与 RAG 系列边界；Workflow 认名。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-23T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.984Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LlamaIndex">
+<meta property="article:tag" content="外部框架巡览">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%89/","path":"/2026/09/11/Agent工程学习-外部框架巡览-三/","title":"AI-Agent工程学习-外部框架巡览(三)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-外部框架巡览(三) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C%EF%BC%88%E9%87%8D%E8%A6%81%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界（重要）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%AE%9A%E4%BD%8D"><span class="nav-number">2.</span> <span class="nav-text">1. 一句话定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Query-Engine"><span class="nav-number">3.</span> <span class="nav-text">2. Query Engine</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-RAG-Agent"><span class="nav-number">4.</span> <span class="nav-text">3. RAG Agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Workflow-Agent%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. Workflow &#x2F; Agent（认名）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E4%B8%8E%E4%B8%BB%E8%B7%AF%E5%BE%84%E5%AF%B9%E7%85%A7"><span class="nav-number">6.</span> <span class="nav-text">5. 与主路径对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-外部框架巡览(三) | 我的记录小站">
+      <meta itemprop="description" content="外部框架巡览：LlamaIndex 的 RAG Agent、Query Engine；与 RAG 系列边界；Workflow 认名。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-外部框架巡览(三)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-23 10:00:00 / 修改时间：19:02:46" itemprop="dateCreated datePublished" datetime="2026-07-23T10:00:00+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">外部框架巡览：LlamaIndex 的 RAG Agent、Query Engine；与 RAG 系列边界；Workflow 认名。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/">外部框架巡览（二）</a>：AutoGen 偏对话协作；本篇巡览 <strong>LlamaIndex</strong>——检索增强与 Query 抽象见长，Agent 能力建立在其 RAG 栈之上。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界（重要）"><a href="#0-本篇位置与边界（重要）" class="headerlink" title="0. 本篇位置与边界（重要）"></a>0. 本篇位置与边界（重要）</h2><table>
+<thead>
+<tr>
+<th>文档</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">RAG 系列</a></strong></td>
+<td>检索质量、切分、评测、企业 ingestion——<strong>canonical</strong></td>
+</tr>
+<tr>
+<td><strong>本篇</strong></td>
+<td>LlamaIndex 作为 <strong>框架面</strong> 的 Agent &#x2F; Query Engine 认名</td>
+</tr>
+</tbody></table>
+<p><strong>本篇不重写：</strong> RAGAS、切片策略、ACL、发版检索指标——一律回链 RAG 系列。</p>
+<hr>
+<h2 id="1-一句话定位"><a href="#1-一句话定位" class="headerlink" title="1. 一句话定位"></a>1. 一句话定位</h2><p><strong>LlamaIndex：</strong> 以 <strong>索引与检索编排</strong> 为中心的框架；上层提供 Query Engine、RAG Agent &#x2F; Workflow，把「问文档」产品化。与 LangChain 同属应用开发层，但默认重心在数据与查询管线。</p>
+<hr>
+<h2 id="2-Query-Engine"><a href="#2-Query-Engine" class="headerlink" title="2. Query Engine"></a>2. Query Engine</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>含义</strong></td>
+<td>对索引发起查询的统一入口：检索 →（可选压缩&#x2F;重排）→ 合成回答</td>
+</tr>
+<tr>
+<td><strong>强项</strong></td>
+<td>多种索引与查询模式组合快</td>
+</tr>
+<tr>
+<td><strong>对照</strong></td>
+<td>主路径用 LangChain Retriever Tool &#x2F; 自建 RAG 节点 + <a href="/2026/08/19/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%89/">RAG（三）</a> 等</td>
+</tr>
+<tr>
+<td><strong>工程</strong></td>
+<td>引用与空检索行为仍须 Gate——回链 LE &#x2F; Agent（四）§6</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-RAG-Agent"><a href="#3-RAG-Agent" class="headerlink" title="3. RAG Agent"></a>3. RAG Agent</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>含义</strong></td>
+<td>在工具环中调用检索&#x2F;查询引擎，多步改写 query、比对证据</td>
+</tr>
+<tr>
+<td><strong>风险</strong></td>
+<td>无评测的「Agent 化」掩盖检索差；假引用</td>
+</tr>
+<tr>
+<td><strong>对照</strong></td>
+<td>主路径：RAG Tool + LE Gate + 发版 Scenario；不必为 Agent 而 Agent</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-Workflow-Agent（认名）"><a href="#4-Workflow-Agent（认名）" class="headerlink" title="4. Workflow &#x2F; Agent（认名）"></a>4. Workflow &#x2F; Agent（认名）</h2><p>LlamaIndex 后续用 Workflow 等表达多步控制流——概念上接近「轻量编排」。</p>
+<table>
+<thead>
+<tr>
+<th>需求</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>复杂分支、HITL、精细 Checkpoint</td>
+<td><strong>LangGraph</strong></td>
+</tr>
+<tr>
+<td>文档问答 &#x2F; 索引实验快</td>
+<td>LlamaIndex 可借鉴</td>
+</tr>
+<tr>
+<td>检索评测与企业 ingestion</td>
+<td><strong>RAG 系列</strong>，与框架无关</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-与主路径对照"><a href="#5-与主路径对照" class="headerlink" title="5. 与主路径对照"></a>5. 与主路径对照</h2><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>LlamaIndex</th>
+<th>本路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>查询入口</td>
+<td>Query Engine</td>
+<td>Retriever + 合成节点 &#x2F; Tool</td>
+</tr>
+<tr>
+<td>检索 Agent</td>
+<td>RAG Agent</td>
+<td>create_agent + RAG Tool</td>
+</tr>
+<tr>
+<td>编排</td>
+<td>Workflow</td>
+<td>LangGraph &#x2F; CrewAI Flow</td>
+</tr>
+<tr>
+<td>评测</td>
+<td>生态工具可选</td>
+<td>RAG 系列 + Agent（四）§6</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Query Engine &#x2F; RAG Agent</strong> 是巡览核心；<strong>评测与生产检索规范回链 RAG 系列</strong>。</p>
+<p><strong>不换栈理由：</strong> 主路径已具备 RAG+Harness；仅当团队以 LlamaIndex 索引栈为中心时借鉴。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E5%9B%9B/">外部框架巡览（四）· Google ADK</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/">外部框架巡览（二）</a> · <a href="/2026/08/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-RAG-%E4%B8%80/">RAG（一）</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/LlamaIndex/" rel="tag"># LlamaIndex</a>
+              <a href="/tags/%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88/" rel="tag"># 外部框架巡览</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/" rel="prev" title="AI-Agent工程学习-外部框架巡览(二)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-外部框架巡览(二)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E5%9B%9B/" rel="next" title="AI-Agent工程学习-外部框架巡览(四)">
+                  AI-Agent工程学习-外部框架巡览(四) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

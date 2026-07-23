@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Agent 工程化部署：FastAPI 契约、Worker Queue、Async&#x2F;Batch&#x2F;Serverless；Redis&#x2F;Celery&#x2F;PG&#x2F;Docker 与 MQ 边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Agent工程化(四)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Agent 工程化部署：FastAPI 契约、Worker Queue、Async&#x2F;Batch&#x2F;Serverless；Redis&#x2F;Celery&#x2F;PG&#x2F;Docker 与 MQ 边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-22T15:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.984Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Agent工程化">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/","path":"/2026/09/07/Agent工程学习-Agent工程化-四/","title":"AI-Agent工程学习-Agent工程化(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Agent工程化(四) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-FastAPI-Agent-API"><span class="nav-number">2.</span> <span class="nav-text">1. FastAPI Agent API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Worker-Queue"><span class="nav-number">3.</span> <span class="nav-text">2. Worker Queue</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Async-Execution"><span class="nav-number">4.</span> <span class="nav-text">3. Async Execution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Batch-Agent"><span class="nav-number">5.</span> <span class="nav-text">4. Batch Agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Serverless-Agent"><span class="nav-number">6.</span> <span class="nav-text">5. Serverless Agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E6%8A%80%E6%9C%AF%E6%A0%88%E8%81%8C%E8%B4%A3"><span class="nav-number">7.</span> <span class="nav-text">6. 技术栈职责</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%9B%BE%E5%86%85-Event-Bus-vs-%E7%94%9F%E4%BA%A7-MQ"><span class="nav-number">8.</span> <span class="nav-text">7. 图内 Event Bus vs 生产 MQ</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5%E4%B8%8E%E5%8F%91%E5%B8%83"><span class="nav-number">9.</span> <span class="nav-text">8. 健康检查与发布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Agent工程化(四) | 我的记录小站">
+      <meta itemprop="description" content="Agent 工程化部署：FastAPI 契约、Worker Queue、Async&#x2F;Batch&#x2F;Serverless；Redis&#x2F;Celery&#x2F;PG&#x2F;Docker 与 MQ 边界。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Agent工程化(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-22 23:00:00" itemprop="dateCreated datePublished" datetime="2026-07-22T23:00:00+08:00">2026-07-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Agent 工程化部署：FastAPI 契约、Worker Queue、Async/Batch/Serverless；Redis/Celery/PG/Docker 与 MQ 边界。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">Agent 工程化（三）</a>：韧性策略已定；本篇讲 <strong>如何把 Agent 接到线上</strong>——API 契约、队列、异步&#x2F;批跑&#x2F;Serverless，以及 Redis &#x2F; Celery &#x2F; PostgreSQL &#x2F; Docker 分工。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>部署层把 Runtime（一）与观测&#x2F;韧性（二）（三）落到进程与基础设施。框架托管（如 LangGraph Platform）与自托管二选一或组合；本篇给 <strong>自托管 canonical 口径</strong>，托管产品认名即可。</p>
+<hr>
+<h2 id="1-FastAPI-Agent-API"><a href="#1-FastAPI-Agent-API" class="headerlink" title="1. FastAPI Agent API"></a>1. FastAPI Agent API</h2><p>最小契约（名称可映射等价框架）：</p>
+<table>
+<thead>
+<tr>
+<th>端点</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>POST /invoke</code></strong></td>
+<td>同步跑完或提交短任务；返回结果 + <code>run_id</code></td>
+</tr>
+<tr>
+<td><strong><code>POST /stream</code></strong></td>
+<td>SSE&#x2F;WebSocket 流式 token &#x2F; 事件</td>
+</tr>
+<tr>
+<td><strong><code>POST /resume</code></strong></td>
+<td>HITL 或 interrupt 后续跑；带 <code>thread_id</code> + 决策载荷</td>
+</tr>
+</tbody></table>
+<p><strong>请求上下文必带：</strong> 鉴权身份、<code>tenant_id</code>、可选 <code>thread_id</code>、预算提示。响应回传 <code>run_id</code> &#x2F; 状态枚举（running &#x2F; interrupted &#x2F; success &#x2F; partial &#x2F; failed）。</p>
+<p><strong>原则：</strong> API 层做鉴权与配额；业务副作用仍走 Runtime allowlist 与幂等——回链（一）（三）。</p>
+<hr>
+<h2 id="2-Worker-Queue"><a href="#2-Worker-Queue" class="headerlink" title="2. Worker Queue"></a>2. Worker Queue</h2><p>长任务（多步 research、批处理、等人审后继续）不宜堵在 HTTP 工作进程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">API  →  入队（Redis/Broker）  →  Worker（Celery 等）执行 Agent</span><br><span class="line">         ↑                              ↓</span><br><span class="line">      返回 job_id                 写 Checkpoint / 发回调</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>超时</strong></td>
+<td>任务级 soft&#x2F;hard time limit</td>
+</tr>
+<tr>
+<td><strong>取消</strong></td>
+<td>协作式取消 + 冻结写工具</td>
+</tr>
+<tr>
+<td><strong>并发上限</strong></td>
+<td>按租户&#x2F;全局限制，防打爆模型配额</td>
+</tr>
+<tr>
+<td><strong>重试</strong></td>
+<td>与（三）分类一致；写任务依赖幂等键</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-Async-Execution"><a href="#3-Async-Execution" class="headerlink" title="3. Async Execution"></a>3. Async Execution</h2><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>同步 invoke</strong></td>
+<td>低延迟、短环、可接受阻塞</td>
+</tr>
+<tr>
+<td><strong>流式</strong></td>
+<td>对话体验；注意中断边界（三）§7</td>
+</tr>
+<tr>
+<td><strong>异步 job</strong></td>
+<td>长任务；客户端轮询或 webhook</td>
+</tr>
+<tr>
+<td><strong>背压</strong></td>
+<td>队列深度告警；拒绝或降级新请求</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-Batch-Agent"><a href="#4-Batch-Agent" class="headerlink" title="4. Batch Agent"></a>4. Batch Agent</h2><p>离线批跑（日更报告、全量重评）：</p>
+<ol>
+<li>限速（QPS &#x2F; 并发）对齐供应商配额</li>
+<li>每条样本独立 <code>run_id</code>；失败进 DLQ 不阻断整批</li>
+<li><strong>断点续跑</strong>：进度表或 Checkpoint，勿整批重来</li>
+<li>成本单独账本，避免与在线流量混报</li>
+</ol>
+<hr>
+<h2 id="5-Serverless-Agent"><a href="#5-Serverless-Agent" class="headerlink" title="5. Serverless Agent"></a>5. Serverless Agent</h2><table>
+<thead>
+<tr>
+<th>约束</th>
+<th>对策</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>冷启动</strong></td>
+<td>减小依赖；预热；或改常驻 Worker</td>
+</tr>
+<tr>
+<td><strong>执行时限</strong></td>
+<td>长图改队列；状态外置 Checkpointer</td>
+</tr>
+<tr>
+<td><strong>无本地盘假设</strong></td>
+<td>材料进对象存储 &#x2F; FS 抽象</td>
+</tr>
+<tr>
+<td><strong>连接复用</strong></td>
+<td>谨慎管理 DB&#x2F;Redis 连接池</td>
+</tr>
+</tbody></table>
+<p>适合突发短任务；重 Multi-Agent 长跑优先常驻 Worker。</p>
+<hr>
+<h2 id="6-技术栈职责"><a href="#6-技术栈职责" class="headerlink" title="6. 技术栈职责"></a>6. 技术栈职责</h2><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Redis</strong></td>
+<td>Broker、缓存、分布式锁、Pub&#x2F;Sub（跨服务事件）</td>
+</tr>
+<tr>
+<td><strong>Celery</strong>（或同类）</td>
+<td>异步任务执行、定时、重试钩子</td>
+</tr>
+<tr>
+<td><strong>PostgreSQL</strong></td>
+<td>业务数据、Checkpointer 生产存储、审计</td>
+</tr>
+<tr>
+<td><strong>Docker</strong></td>
+<td>可复现运行时；配置与密钥经环境注入</td>
+</tr>
+</tbody></table>
+<p><strong>Checkpoint 选型：</strong> 开发可用 SQLite&#x2F;内存；生产优先 <strong>PostgreSQL</strong>（或框架官方推荐的持久后端）；Redis 更适缓存与队列，不宜作为唯一权威会话库（除非明确短 TTL 场景）。</p>
+<p><strong>密钥：</strong> API Key &#x2F; DB URL 仅进环境或密钥管理；默认参数与业务常量写代码——对齐项目配置规范。正文不写真实密钥。</p>
+<hr>
+<h2 id="7-图内-Event-Bus-vs-生产-MQ"><a href="#7-图内-Event-Bus-vs-生产-MQ" class="headerlink" title="7. 图内 Event Bus vs 生产 MQ"></a>7. 图内 Event Bus vs 生产 MQ</h2><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>图内 &#x2F; Flow 事件</strong></th>
+<th><strong>跨服务 MQ</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>示例</strong></td>
+<td>CrewAI <code>@listen</code>、LangGraph 边</td>
+<td>Redis Pub&#x2F;Sub、Celery、Kafka</td>
+</tr>
+<tr>
+<td><strong>范围</strong></td>
+<td>单应用进程&#x2F;部署单元内编排</td>
+<td>多服务解耦</td>
+</tr>
+<tr>
+<td><strong>须注意</strong></td>
+<td>不等于生产总线</td>
+<td>幂等消费、顺序、死信、分区键</td>
+</tr>
+</tbody></table>
+<p>回链 <a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">Multi-Agent（四）Event Bus</a>：Flow 事件驱动步骤；跨服务须显式 MQ，并按（三）做幂等与 DLQ。</p>
+<hr>
+<h2 id="8-健康检查与发布"><a href="#8-健康检查与发布" class="headerlink" title="8. 健康检查与发布"></a>8. 健康检查与发布</h2><table>
+<thead>
+<tr>
+<th>项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>liveness</strong></td>
+<td>进程存活</td>
+</tr>
+<tr>
+<td><strong>readiness</strong></td>
+<td>DB&#x2F;Redis&#x2F;模型凭据可达后再接流量</td>
+</tr>
+<tr>
+<td><strong>滚动发布</strong></td>
+<td>先排空队列再杀 Worker；interrupt 中会话依赖外置 Checkpoint</td>
+</tr>
+</tbody></table>
+<p>托管平台（LangSmith Deployment 等）可替代部分运维面；能力对照见 <a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">实现框架对比</a>。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>API：</strong> invoke &#x2F; stream &#x2F; resume + 鉴权租户 + <code>run_id</code>。</p>
+<p><strong>长任务：</strong> 队列 + Worker；取消、超时、并发上限。</p>
+<p><strong>Batch &#x2F; Serverless：</strong> 限速续跑；状态外置；冷启动与时限清醒。</p>
+<p><strong>栈：</strong> Redis 管消息与缓存，Celery 跑任务，PG 管权威状态，Docker 固化环境。</p>
+<p><strong>事件：</strong> 图内编排 ≠ 跨服务总线。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 工程化 · 自检与面试</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">Agent 工程化（三）</a> · <a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">Multi-Agent（四）</a></p>
+<p><strong>系列导航：</strong></p>
+<ul>
+<li><a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">（一）Runtime</a></li>
+<li><a href="/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/">（二）Observability</a></li>
+<li><a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">（三）Reliability</a></li>
+<li><a href="/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/">（四）Deployment</a>（本篇）</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Agent%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag"># Agent工程化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/" rel="prev" title="AI-Agent工程学习-Agent工程化(三)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Agent工程化(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-Agent工程化(自检与面试)">
+                  AI-Agent工程学习-Agent工程化(自检与面试) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

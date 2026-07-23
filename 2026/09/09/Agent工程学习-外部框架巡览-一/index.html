@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="外部框架巡览：OpenAI Agents SDK 的 Tool Calling Runtime、Handoff、Guardrails；与主路径对照。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-外部框架巡览(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="外部框架巡览：OpenAI Agents SDK 的 Tool Calling Runtime、Handoff、Guardrails；与主路径对照。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-23T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.984Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="OpenAI Agents">
+<meta property="article:tag" content="外部框架巡览">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/","path":"/2026/09/09/Agent工程学习-外部框架巡览-一/","title":"AI-Agent工程学习-外部框架巡览(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-外部框架巡览(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E5%B7%A1%E8%A7%88%E7%B3%BB%E5%88%97%E5%AE%9A%E4%BD%8D"><span class="nav-number">1.</span> <span class="nav-text">0. 巡览系列定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%AE%9A%E4%BD%8D"><span class="nav-number">2.</span> <span class="nav-text">1. 一句话定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Tool-Calling-Runtime"><span class="nav-number">3.</span> <span class="nav-text">2. Tool Calling Runtime</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Handoff"><span class="nav-number">4.</span> <span class="nav-text">3. Handoff</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Guardrails"><span class="nav-number">5.</span> <span class="nav-text">4. Guardrails</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Sessions-%E4%B8%8E-Tracing%EF%BC%88%E8%A1%A5%E7%82%B9%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. Sessions 与 Tracing（补点）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E4%B8%8E%E4%B8%BB%E8%B7%AF%E5%BE%84%E4%B8%80%E8%A1%8C%E5%AF%B9%E7%85%A7"><span class="nav-number">7.</span> <span class="nav-text">6. 与主路径一行对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-外部框架巡览(一) | 我的记录小站">
+      <meta itemprop="description" content="外部框架巡览：OpenAI Agents SDK 的 Tool Calling Runtime、Handoff、Guardrails；与主路径对照。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-外部框架巡览(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-07-23 08:00:00 / 修改时间：19:02:46" itemprop="dateCreated datePublished" datetime="2026-07-23T08:00:00+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">外部框架巡览：OpenAI Agents SDK 的 Tool Calling Runtime、Handoff、Guardrails；与主路径对照。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 工程化 · 自检与面试</a>：生产工程层已齐；本系列 <strong>巡览</strong> 主路径外的四套框架——只建立心智模型与映射，<strong>不替代</strong> LangChain &#x2F; LangGraph &#x2F; Deep Agents &#x2F; CrewAI 默认实现线。</p>
+<span id="more"></span>
+<h2 id="0-巡览系列定位"><a href="#0-巡览系列定位" class="headerlink" title="0. 巡览系列定位"></a>0. 巡览系列定位</h2><table>
+<thead>
+<tr>
+<th>篇</th>
+<th>框架</th>
+<th>焦点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>（一）</td>
+<td>OpenAI Agents SDK</td>
+<td>Tool Runtime &#x2F; Handoff &#x2F; Guardrails</td>
+</tr>
+<tr>
+<td>（二）</td>
+<td>AutoGen</td>
+<td>Conversation &#x2F; UserProxy &#x2F; GroupChat</td>
+</tr>
+<tr>
+<td>（三）</td>
+<td>LlamaIndex</td>
+<td>RAG Agent &#x2F; Query Engine</td>
+</tr>
+<tr>
+<td>（四）</td>
+<td>Google ADK</td>
+<td>开源开发套件 + 可选云托管 Runtime</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">主路径深讲（已完成）</span><br><span class="line">    ↓</span><br><span class="line">Agent 工程化（生产层）</span><br><span class="line">    ↓</span><br><span class="line">外部框架巡览（本系列）← 认名 + 对照</span><br><span class="line">    ↓</span><br><span class="line">实现框架对比（八框架全体；发布日可能早于巡览，请按导航回看）</span><br></pre></td></tr></table></figure>
+
+<p><strong>未收录（刻意裁剪）：</strong> Semantic Kernel、Haystack、Microsoft Agent Framework、Claude Agent SDK 等——本巡览只固定外四；需要时自行对照「认名 + 不换主路径」原则即可。</p>
+<p><strong>本篇不做：</strong> 完整 API 教程、迁移指南、宣称换栈。</p>
+<hr>
+<h2 id="1-一句话定位"><a href="#1-一句话定位" class="headerlink" title="1. 一句话定位"></a>1. 一句话定位</h2><p><strong>OpenAI Agents SDK：</strong> 面向 OpenAI 生态的轻量 Agent 运行时——把 <strong>Agent + Tools + Handoff + Guardrails</strong> 组装成可跑环，强调会话与追踪开箱体验。</p>
+<p>官方文档随版本演进；学习时抓住抽象名，细节以当时文档为准。</p>
+<hr>
+<h2 id="2-Tool-Calling-Runtime"><a href="#2-Tool-Calling-Runtime" class="headerlink" title="2. Tool Calling Runtime"></a>2. Tool Calling Runtime</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>环</strong></td>
+<td>模型提出 tool_calls → 运行时执行 → 结果回灌 → 再推理</td>
+</tr>
+<tr>
+<td><strong>与主路径</strong></td>
+<td>同构于 LangChain <code>create_agent</code> 工具环；治理挂运行时而非仅 Prompt</td>
+</tr>
+<tr>
+<td><strong>工程要点</strong></td>
+<td>Schema 校验、超时、幂等写工具——回链 <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">工程化（三）</a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-Handoff"><a href="#3-Handoff" class="headerlink" title="3. Handoff"></a>3. Handoff</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>含义</strong></td>
+<td>控制权交给另一 Agent（专员），携带必要上下文</td>
+</tr>
+<tr>
+<td><strong>理论映射</strong></td>
+<td><a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/">Multi-Agent（二）</a> Handoff 合同：Goal、<code>open[]</code>&#x2F;<code>done[]</code>、硬规则、证据指针</td>
+</tr>
+<tr>
+<td><strong>与主路径</strong></td>
+<td>类似 LangGraph handoff &#x2F; Deep Agents subagent 摘要返回。<strong>治理要求</strong>须 Context 隔离（禁全文 Trace 灌窗）；注意 OpenAI SDK <strong>默认 Handoff 常可带完整对话历史</strong>，隔离靠 <code>input_filter</code> 等显式配置，勿把「须隔离」误当成 SDK 默认行为</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-Guardrails"><a href="#4-Guardrails" class="headerlink" title="4. Guardrails"></a>4. Guardrails</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>含义</strong></td>
+<td>输入&#x2F;输出或工具前的确定性或模型辅助护栏</td>
+</tr>
+<tr>
+<td><strong>与主路径</strong></td>
+<td>对照 LangChain Middleware Guardrails、<code>after_model</code> &#x2F; <code>wrap_tool_call</code>——<a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangChain-%E5%85%AD/">LangChain（六）</a></td>
+</tr>
+<tr>
+<td><strong>边界</strong></td>
+<td>护栏 ≠ 替代 Runtime allowlist &#x2F; HITL &#x2F; LE Gate</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-Sessions-与-Tracing（补点）"><a href="#5-Sessions-与-Tracing（补点）" class="headerlink" title="5. Sessions 与 Tracing（补点）"></a>5. Sessions 与 Tracing（补点）</h2><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>巡览口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Sessions</strong></td>
+<td>多轮会话状态；对照主路径 <code>thread_id</code> + Checkpointer</td>
+</tr>
+<tr>
+<td><strong>Tracing</strong></td>
+<td>运行轨迹排障；对照 LangSmith &#x2F; 工程化（二）</td>
+</tr>
+</tbody></table>
+<p>生产仍须自备租户隔离、成本账本与发版 Checklist——框架开箱 Trace 不自动等于 Agent（四）§6 达标。</p>
+<hr>
+<h2 id="6-与主路径一行对照"><a href="#6-与主路径一行对照" class="headerlink" title="6. 与主路径一行对照"></a>6. 与主路径一行对照</h2><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>OpenAI Agents SDK</th>
+<th>主路径落点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>工具环</td>
+<td>Tool Calling Runtime</td>
+<td>LangChain <code>create_agent</code></td>
+</tr>
+<tr>
+<td>交接</td>
+<td>Handoff</td>
+<td>LangGraph handoff &#x2F; DA subagent</td>
+</tr>
+<tr>
+<td>护栏</td>
+<td>Guardrails</td>
+<td>Middleware &#x2F; LE Gate</td>
+</tr>
+<tr>
+<td>会话</td>
+<td>Sessions</td>
+<td><code>thread_id</code> + Checkpointer</td>
+</tr>
+<tr>
+<td>观测</td>
+<td>Tracing</td>
+<td>LangSmith + 工程化（二）</td>
+</tr>
+</tbody></table>
+<p><strong>选型口诀：</strong> 已锁定 OpenAI 生态、要官方 SDK 心智 → 可借鉴；默认交付与精细图编排 → 仍走 LangGraph 生态。全体表见 <a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">实现框架对比</a>。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>巡览焦点：</strong> Tool Runtime、Handoff、Guardrails；Sessions&#x2F;Tracing 认名。</p>
+<p><strong>映射：</strong> 合同与隔离要求与 Multi-Agent &#x2F; 工程化 universal 一致。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/">外部框架巡览（二）· AutoGen</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Agent 工程化自检</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/OpenAI-Agents/" rel="tag"># OpenAI Agents</a>
+              <a href="/tags/%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88/" rel="tag"># 外部框架巡览</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="prev" title="AI-Agent工程学习-Agent工程化(自检与面试)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Agent工程化(自检与面试)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-外部框架巡览(二)">
+                  AI-Agent工程学习-外部框架巡览(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Agent 工程化开篇：Runtime 层 State &#x2F; Session &#x2F; Lifecycle；Run ID、治理字段与优雅收尾。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Agent工程化(一)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Agent 工程化开篇：Runtime 层 State &#x2F; Session &#x2F; Lifecycle；Run ID、治理字段与优雅收尾。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-22T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.983Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Agent工程化">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/","path":"/2026/09/04/Agent工程学习-Agent工程化-一/","title":"AI-Agent工程学习-Agent工程化(一)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Agent工程化(一) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0-1-Runtime-%E6%A8%A1%E5%9D%97%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">0.1 Runtime 模块地图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-State-Management"><span class="nav-number">3.</span> <span class="nav-text">1. State Management</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Session-Management"><span class="nav-number">4.</span> <span class="nav-text">2. Session Management</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Lifecycle-Management"><span class="nav-number">5.</span> <span class="nav-text">3. Lifecycle Management</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Run-ID-Invocation-ID"><span class="nav-number">6.</span> <span class="nav-text">4. Run ID &#x2F; Invocation ID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E4%BC%98%E9%9B%85%E6%94%B6%E5%B0%BE%E4%B8%8E-handoff-note"><span class="nav-number">7.</span> <span class="nav-text">5. 优雅收尾与 handoff note</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Agent工程化(一) | 我的记录小站">
+      <meta itemprop="description" content="Agent 工程化开篇：Runtime 层 State &#x2F; Session &#x2F; Lifecycle；Run ID、治理字段与优雅收尾。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Agent工程化(一)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-22 20:00:00" itemprop="dateCreated datePublished" datetime="2026-07-22T20:00:00+08:00">2026-07-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Agent 工程化开篇：Runtime 层 State / Session / Lifecycle；Run ID、治理字段与优雅收尾。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">CrewAI · 自检与面试</a>：主路径四框架与垂直能力已齐；本系列把「能跑」升格为 <strong>可恢复、可观测、可部署的生产 Runtime</strong>——本篇先讲 State &#x2F; Session &#x2F; Lifecycle。</p>
+<span id="more"></span>
+<h2 id="0-本系列在学习路径中的位置"><a href="#0-本系列在学习路径中的位置" class="headerlink" title="0. 本系列在学习路径中的位置"></a>0. 本系列在学习路径中的位置</h2><p><strong>前置已学：</strong></p>
+<ul>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">Agent（三）Runtime 治理</a> — Budget &#x2F; HITL &#x2F; Guardrails 概念</li>
+<li><a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">LangGraph（二）State &#x2F; Reducer</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">（三）Checkpointer &#x2F; thread_id</a> — 图级状态与会话</li>
+<li><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/">Loop Engineering（二）（三）</a> — Checkpoint、优雅收尾</li>
+<li><a href="/2026/09/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">CrewAI 自检</a> — 实现线收口</li>
+</ul>
+<p><strong>本系列分工：</strong></p>
+<table>
+<thead>
+<tr>
+<th>篇</th>
+<th>覆盖</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>（一）本篇</td>
+<td>Runtime：State &#x2F; Session &#x2F; Lifecycle</td>
+</tr>
+<tr>
+<td>（二）</td>
+<td>Observability：Log &#x2F; Trace &#x2F; Metrics &#x2F; Cost &#x2F; Token</td>
+</tr>
+<tr>
+<td>（三）</td>
+<td>Reliability：Retry &#x2F; Fallback &#x2F; Timeout &#x2F; Breaker &#x2F; Idempotency</td>
+</tr>
+<tr>
+<td>（四）</td>
+<td>Deployment：API &#x2F; Queue &#x2F; Async &#x2F; Batch &#x2F; Serverless</td>
+</tr>
+<tr>
+<td>自检</td>
+<td>四篇验收与面试</td>
+</tr>
+</tbody></table>
+<p><strong>安全点名（贯穿四篇）：</strong> API&#x2F;webhook 边界鉴权与配额、密钥轮换、沙箱执行、审计留存；Prompt 层 Injection 回链 <a href="/2026/07/15/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Prompt-Engineering-%E5%9B%9B/">PE（四）</a>，本系列不替代安全专论。</p>
+<p><strong>系列导航：</strong> <a href="/2026/09/04/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%80/">（一）</a> · <a href="/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/">（二）</a> · <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">（三）</a> · <a href="/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/">（四）</a> · <a href="/2026/09/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">自检</a></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CrewAI 自检</span><br><span class="line">    ↓</span><br><span class="line">Agent 工程化（本系列）    ← 本篇起</span><br><span class="line">    ↓</span><br><span class="line">外部框架巡览</span><br><span class="line">    ↓</span><br><span class="line">实现框架对比（全体 canonical）</span><br></pre></td></tr></table></figure>
+
+<p><strong>本篇不做：</strong> 框架 API 教程、观测平台操作、部署清单（见后续篇）。</p>
+<hr>
+<h2 id="0-1-Runtime-模块地图"><a href="#0-1-Runtime-模块地图" class="headerlink" title="0.1 Runtime 模块地图"></a>0.1 Runtime 模块地图</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Identity     Run ID / Invocation ID / tenant</span><br><span class="line">    ↓</span><br><span class="line">State        运行态 ↔ 持久态（Schema + Reducer）</span><br><span class="line">    ↓</span><br><span class="line">Session      thread_id 边界 + 租户隔离</span><br><span class="line">    ↓</span><br><span class="line">Lifecycle    create → run → interrupt/resume → cancel → expire</span><br><span class="line">    ↓</span><br><span class="line">收尾         Checkpoint + handoff note（非假完成）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="1-State-Management"><a href="#1-State-Management" class="headerlink" title="1. State Management"></a>1. State Management</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>运行态</strong></td>
+<td>当前步可见的 messages、todos、中间工具结果；可被摘要&#x2F;丢弃策略触及</td>
+</tr>
+<tr>
+<td><strong>持久态</strong></td>
+<td>Checkpointer &#x2F; <code>@persist</code> &#x2F; 外存 FS 中的快照；跨请求可恢复</td>
+</tr>
+<tr>
+<td><strong>Schema</strong></td>
+<td>字段类型、谁可写、Reducer（append &#x2F; merge &#x2F; last）</td>
+</tr>
+<tr>
+<td><strong>可重放</strong></td>
+<td>interrupt &#x2F; 故障恢复后节点可能从头执行 → 副作用须幂等</td>
+</tr>
+</tbody></table>
+<p><strong>原则：</strong></p>
+<ol>
+<li><strong>治理字段</strong>（Contract、预算、<code>open[]</code>&#x2F;<code>done[]</code>、副作用记录、权限）进结构化 State，<strong>禁止</strong>当普通聊天消息交给摘要模型改写——回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%BA%94/#2-Context-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A%E4%BD%95%E6%97%B6%E5%8E%8B%E7%BC%A9%E3%80%81%E5%8E%8B%E4%BB%80%E4%B9%88">Agent（五）§2</a>、<a href="/2026/07/21/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">LE 自检</a>。</li>
+<li>大材料走外存与证据指针，不把全文塞进 state 热路径——回链 <a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">Multi-Agent（四）Message Passing</a>。</li>
+<li>并行写同键必须声明 Reducer 或由 Coordinator 串行化——回链 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%BA%8C/">LangGraph（二）</a>。</li>
+</ol>
+<p><strong>场景片段：</strong> 研究流水线中 Research Worker 只写 <code>&#123;summary, evidence_refs[], status&#125;</code>；Writer 读指针；预算与 <code>open[]</code> 仅 Supervisor &#x2F; Runtime 更新。</p>
+<hr>
+<h2 id="2-Session-Management"><a href="#2-Session-Management" class="headerlink" title="2. Session Management"></a>2. Session Management</h2><p>不要把口语 <strong>Session</strong> 当作 LangGraph &#x2F; LangChain 官方一等 API；生产会话单元用：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>thread_id</code></strong></td>
+<td>Checkpointer 内一条线程；多轮续聊、HITL resume 的主键</td>
+</tr>
+<tr>
+<td><strong>租户 &#x2F; 用户前缀</strong></td>
+<td>Store namespace、业务表隔离；防串数据</td>
+</tr>
+<tr>
+<td><strong>会话边界</strong></td>
+<td>新业务目标是否新开 thread；过期策略（TTL &#x2F; 归档）</td>
+</tr>
+</tbody></table>
+<p>回链 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">LangGraph（三）</a>：Checkpointer ≈ 会话内短时；Store ≈ 跨 thread 长时。</p>
+<p><strong>隔离清单：</strong></p>
+<ol>
+<li>不同租户不得共用未加前缀的 Store 键</li>
+<li>resume 必须校验调用方对 <code>thread_id</code> 的所有权</li>
+<li>日志与 Trace 带 <code>thread_id</code> + <code>tenant_id</code>，便于审计</li>
+</ol>
+<hr>
+<h2 id="3-Lifecycle-Management"><a href="#3-Lifecycle-Management" class="headerlink" title="3. Lifecycle Management"></a>3. Lifecycle Management</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">create  →  分配 Run ID，加载 Contract / 预算 / 权限</span><br><span class="line">run     →  步进执行（模型 / 工具 / 确定性节点）</span><br><span class="line">interrupt →  HITL 或外部等待；持久化 Checkpoint</span><br><span class="line">resume  →  同 thread_id 继续；节点前半段须可重放</span><br><span class="line">cancel  →  停止新副作用；保留已发生副作用记录</span><br><span class="line">expire  →  TTL 后归档或删除敏感会话态</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>允许动作</th>
+<th>禁止</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>running</strong></td>
+<td>步进、写 Trace</td>
+<td>无预算继续</td>
+</tr>
+<tr>
+<td><strong>interrupted</strong></td>
+<td>resume &#x2F; cancel</td>
+<td>静默当成功</td>
+</tr>
+<tr>
+<td><strong>cancelled &#x2F; expired</strong></td>
+<td>只读审计</td>
+<td>再触发写工具</td>
+</tr>
+<tr>
+<td><strong>budget_exceeded &#x2F; partial</strong></td>
+<td>交付部分结果 + handoff</td>
+<td>标 Success</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-Run-ID-Invocation-ID"><a href="#4-Run-ID-Invocation-ID" class="headerlink" title="4. Run ID &#x2F; Invocation ID"></a>4. Run ID &#x2F; Invocation ID</h2><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>粒度</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Run ID</strong></td>
+<td>一次用户目标执行</td>
+<td>关联日志、Trace、成本、告警</td>
+</tr>
+<tr>
+<td><strong>Invocation ID</strong></td>
+<td>单次工具&#x2F;模型调用</td>
+<td>幂等键、重试去重、副作用对账</td>
+</tr>
+<tr>
+<td><strong>thread_id</strong></td>
+<td>会话线程</td>
+<td>恢复与 HITL</td>
+</tr>
+</tbody></table>
+<p>生产 API 响应应回传 <code>run_id</code>；写工具参数或业务表写入 <code>invocation_id</code>，避免重试双写。</p>
+<hr>
+<h2 id="5-优雅收尾与-handoff-note"><a href="#5-优雅收尾与-handoff-note" class="headerlink" title="5. 优雅收尾与 handoff note"></a>5. 优雅收尾与 handoff note</h2><p>撞预算、不可恢复错误、用户取消时：<strong>不得假完成</strong>。最低交付：</p>
+<ol>
+<li><strong>Checkpoint</strong>（Contract、计划、<code>open[]</code>&#x2F;<code>done[]</code>、关键 Observation、剩余&#x2F;耗尽预算、副作用记录）</li>
+<li><strong>handoff note</strong>（停止原因、已尝试策略、缺口、建议下一步）</li>
+<li><strong>面向用户的部分结果</strong>（明确边界）</li>
+</ol>
+<p>回链 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%BA%8C/">LE（二）优雅收尾</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Loop-Engineering-%E4%B8%89/">LE（三）</a>。续跑时从 Checkpoint 恢复，只处理 <code>open[]</code>，分配<strong>新的显式预算</strong>，不整段重放猜测。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>State：</strong> 运行态可压缩；治理字段进持久结构化 State；并行写要 Reducer。</p>
+<p><strong>Session：</strong> 以 <code>thread_id</code> 为单元；租户隔离与所有权校验。</p>
+<p><strong>Lifecycle：</strong> create→run→interrupt&#x2F;resume→cancel→expire；部分成功不是 Success。</p>
+<p><strong>Identity：</strong> Run &#x2F; Invocation &#x2F; thread 三级 ID 贯穿观测与幂等。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/">Agent 工程化（二）· Observability</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/02/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-CrewAI-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">CrewAI 自检</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%89/">LangGraph（三）</a> · <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E4%B8%89/#5-Runtime-%E6%B2%BB%E7%90%86">Agent（三）Runtime</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Agent%E5%B7%A5%E7%A8%8B%E5%8C%96/" rel="tag"># Agent工程化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/" rel="prev" title="AI-Agent工程学习-实现框架对比">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-实现框架对比
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/" rel="next" title="AI-Agent工程学习-Agent工程化(二)">
+                  AI-Agent工程学习-Agent工程化(二) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

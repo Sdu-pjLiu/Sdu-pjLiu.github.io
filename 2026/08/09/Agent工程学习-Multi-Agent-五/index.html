@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Multi-Agent 拓扑设计四步、三种 canonical 模板、理论→框架映射（主三+巡览占位）、实践阶梯；收口至 Deep Agents。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Agent工程学习-Multi-Agent(五)">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Multi-Agent 拓扑设计四步、三种 canonical 模板、理论→框架映射（主三+巡览占位）、实践阶梯；收口至 Deep Agents。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-18T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T11:02:46.981Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Multi-Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/","path":"/2026/08/09/Agent工程学习-Multi-Agent-五/","title":"AI-Agent工程学习-Multi-Agent(五)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>AI-Agent工程学习-Multi-Agent(五) | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%8B%93%E6%89%91%E8%AE%BE%E8%AE%A1%E5%9B%9B%E6%AD%A5"><span class="nav-number">2.</span> <span class="nav-text">1. 拓扑设计四步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%89%E7%A7%8D-canonical-%E6%8B%93%E6%89%91%E6%A8%A1%E6%9D%BF"><span class="nav-number">3.</span> <span class="nav-text">2. 三种 canonical 拓扑模板</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%A0%94%E7%A9%B6%E6%B5%81%E6%B0%B4%E7%BA%BF%EF%BC%88Role-Based-Message-Passing%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 研究流水线（Role-Based + Message Passing）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E4%BC%81%E4%B8%9A%E5%AE%A1%E6%89%B9%E6%B5%81%EF%BC%88Hierarchical-Event-Bus-HITL%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 企业审批流（Hierarchical + Event Bus + HITL）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%B9%B6%E8%A1%8C%E6%8A%95%E7%A5%A8%E6%A0%A1%E9%AA%8C%EF%BC%88Voting-Shared-Memory%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 并行投票校验（Voting + Shared Memory）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E4%B8%8E-LE-Gate%E3%80%81%E5%8F%91%E7%89%88-Checklist-%E5%AF%B9%E9%BD%90"><span class="nav-number">4.</span> <span class="nav-text">3. 与 LE Gate、发版 Checklist 对齐</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%90%86%E8%AE%BA%E5%88%B0%E6%A1%86%E6%9E%B6%E6%98%A0%E5%B0%84%EF%BC%88canonical%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. 理论到框架映射（canonical）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AE%9E%E8%B7%B5%E9%98%B6%E6%A2%AF%EF%BC%88LangGraph-%E4%B8%BA%E4%B8%BB%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. 实践阶梯（LangGraph 为主）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">7.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">87</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="AI-Agent工程学习-Multi-Agent(五) | 我的记录小站">
+      <meta itemprop="description" content="Multi-Agent 拓扑设计四步、三种 canonical 模板、理论→框架映射（主三+巡览占位）、实践阶梯；收口至 Deep Agents。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AI-Agent工程学习-Multi-Agent(五)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-18 16:00:00" itemprop="dateCreated datePublished" datetime="2026-07-18T16:00:00+08:00">2026-07-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-07-23 19:02:46" itemprop="dateModified" datetime="2026-07-23T19:02:46+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Multi-Agent 拓扑设计四步、三种 canonical 模板、理论→框架映射（主三+巡览占位）、实践阶梯；收口至 Deep Agents。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">Multi-Agent（四）</a>：角色、协作、通信已齐；本篇讲 <strong>拓扑设计方法</strong>、三种 canonical 模板、<strong>理论→三框架映射 canonical 表</strong>，并收口本系列。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>（一）～（四）为理论层；（五）为 <strong>设计方法论 + 映射收口 + 实践阶梯</strong>。</p>
+<p>完整「理论→三框架」对照 <strong>只在本篇 §4 维护</strong>；<a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">实现框架对比</a> §5、CrewAI &#x2F; Deep Agents 系列正文 <strong>只回链此处</strong>，不重写全表。</p>
+<hr>
+<h2 id="1-拓扑设计四步"><a href="#1-拓扑设计四步" class="headerlink" title="1. 拓扑设计四步"></a>1. 拓扑设计四步</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. 定角色（Who）     → Supervisor / Worker / Router / …</span><br><span class="line">2. 定协作（How）     → Role-Based / Hierarchical / Voting / …</span><br><span class="line">3. 定通信（Talk）    → Message Passing / Store / Event Bus / …</span><br><span class="line">4. 定治理（Govern）  → Handoff 合同 · Budget · LE Gate · HITL</span><br></pre></td></tr></table></figure>
+
+<p><strong>每步产出物：</strong></p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>产出</th>
+<th>验收问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>角色</td>
+<td>角色表 + 工具边界 + 验收标准</td>
+<td>能否删掉某角色而不丢能力？</td>
+</tr>
+<tr>
+<td>协作</td>
+<td>顺序图或状态机草图</td>
+<td>是否可退回单 Agent？</td>
+</tr>
+<tr>
+<td>通信</td>
+<td>State Schema &#x2F; 事件表</td>
+<td>并行写是否安全？</td>
+</tr>
+<tr>
+<td>治理</td>
+<td>Checklist 映射 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a></td>
+<td>假完成能否被 Gate 拦住？</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="2-三种-canonical-拓扑模板"><a href="#2-三种-canonical-拓扑模板" class="headerlink" title="2. 三种 canonical 拓扑模板"></a>2. 三种 canonical 拓扑模板</h2><h3 id="2-1-研究流水线（Role-Based-Message-Passing）"><a href="#2-1-研究流水线（Role-Based-Message-Passing）" class="headerlink" title="2.1 研究流水线（Role-Based + Message Passing）"></a>2.1 研究流水线（Role-Based + Message Passing）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Router（可选）→ Supervisor</span><br><span class="line">  → Research Worker × N（并行 Send）</span><br><span class="line">  → 聚合验收</span><br><span class="line">  → Writer Worker</span><br><span class="line">  → Final Gate（LE）</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>协作：</strong> Role-Based + 可选 Voting 校验</li>
+<li><strong>通信：</strong> Worker 摘要 Handoff；证据指针进 Store</li>
+<li><strong>实现：</strong> LangGraph L2；或 CrewAI sequential Crew</li>
+</ul>
+<h3 id="2-2-企业审批流（Hierarchical-Event-Bus-HITL）"><a href="#2-2-企业审批流（Hierarchical-Event-Bus-HITL）" class="headerlink" title="2.2 企业审批流（Hierarchical + Event Bus + HITL）"></a>2.2 企业审批流（Hierarchical + Event Bus + HITL）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Coordinator（Flow）</span><br><span class="line">  → 取数 Worker</span><br><span class="line">  → 分析 Crew（hierarchical）</span><br><span class="line">  → interrupt 人审</span><br><span class="line">  → 执行 Worker（确认档）</span><br><span class="line">  → 归档</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>协作：</strong> Hierarchical + Role-Based</li>
+<li><strong>通信：</strong> Event Bus 驱动步骤；关键 state 持久化</li>
+<li><strong>实现：</strong> LangGraph interrupt + CrewAI Flow <code>@human_feedback</code></li>
+</ul>
+<h3 id="2-3-并行投票校验（Voting-Shared-Memory）"><a href="#2-3-并行投票校验（Voting-Shared-Memory）" class="headerlink" title="2.3 并行投票校验（Voting + Shared Memory）"></a>2.3 并行投票校验（Voting + Shared Memory）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Router → Send × 3（独立 Worker）</span><br><span class="line">  → 聚合 Node（judge / 规则）</span><br><span class="line">  → 输出或 HITL</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>协作：</strong> Voting</li>
+<li><strong>通信：</strong> Shared Memory 写入各 Worker 结论；聚合只读</li>
+<li><strong>实现：</strong> LangGraph <code>Send</code> + Reducer</li>
+</ul>
+<hr>
+<h2 id="3-与-LE-Gate、发版-Checklist-对齐"><a href="#3-与-LE-Gate、发版-Checklist-对齐" class="headerlink" title="3. 与 LE Gate、发版 Checklist 对齐"></a>3. 与 LE Gate、发版 Checklist 对齐</h2><p>Multi-Agent 上线 <strong>不降低</strong> <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a> 标准：</p>
+<table>
+<thead>
+<tr>
+<th>域</th>
+<th>Multi-Agent 额外关注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Loop&#x2F;Agent</strong></td>
+<td>每 Worker Task Success；Supervisor 假完成</td>
+</tr>
+<tr>
+<td><strong>Context</strong></td>
+<td>Handoff 后约束完整性；子 Trace 不灌主窗</td>
+</tr>
+<tr>
+<td><strong>安全</strong></td>
+<td>Worker 工具白名单；并行租户 namespace</td>
+</tr>
+<tr>
+<td><strong>成本</strong></td>
+<td>角色数 × 轮次；Voting N 倍成本</td>
+</tr>
+<tr>
+<td><strong>可观测</strong></td>
+<td>节点&#x2F;角色级 Trace（非仅最终回答）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-理论到框架映射（canonical）"><a href="#4-理论到框架映射（canonical）" class="headerlink" title="4. 理论到框架映射（canonical）"></a>4. 理论到框架映射（canonical）</h2><p><strong>主路径三框架完整映射</strong>——其他主路径文档只回链本节（标题锚点保持稳定）。产品层八框架全体选型见 <a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">实现框架对比</a>。</p>
+<p><strong>与 LangChain 官方多 Agent 模式对照（认名）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>官方模式</th>
+<th>本系列落点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Subagents</strong></td>
+<td>Worker + Deep Agents <code>task()</code> &#x2F; 子图</td>
+</tr>
+<tr>
+<td><strong>Handoffs</strong></td>
+<td>Handoff 合同 + Message Passing；控制权转移拓扑</td>
+</tr>
+<tr>
+<td><strong>Skills</strong></td>
+<td>单 Agent + Skill（不拆角色的优先选项）</td>
+</tr>
+<tr>
+<td><strong>Router</strong></td>
+<td>Router 角色 &#x2F; conditional edge &#x2F; Flow <code>@router</code></td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>理论概念</th>
+<th>LangGraph</th>
+<th>Deep Agents</th>
+<th>CrewAI</th>
+<th>OpenAI Agents（巡览）</th>
+<th>AutoGen（巡览）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Supervisor</strong></td>
+<td>Supervisor 节点</td>
+<td>主 Agent 委派</td>
+<td>hierarchical Manager</td>
+<td>经理式 Agent（认名）</td>
+<td>选人经理 Agent（认名）</td>
+</tr>
+<tr>
+<td><strong>Worker</strong></td>
+<td>子图 &#x2F; <code>create_agent</code> Node</td>
+<td><code>task()</code> Subagent</td>
+<td>Agent + Task</td>
+<td>被 Handoff 的专员</td>
+<td>Conversation Agent</td>
+</tr>
+<tr>
+<td><strong>Coordinator</strong></td>
+<td>Python 节点 + 边编排</td>
+<td>—</td>
+<td>Flow <code>@start</code> &#x2F; <code>@listen</code></td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Router</strong></td>
+<td>conditional edge</td>
+<td>—</td>
+<td>Flow <code>@router</code></td>
+<td>—</td>
+<td>Speaker 规则（弱）</td>
+</tr>
+<tr>
+<td><strong>Peer</strong></td>
+<td>多节点 + Store 无中心</td>
+<td>—</td>
+<td>多 Agent 对等（少用）</td>
+<td>—</td>
+<td>GroupChat 对等</td>
+</tr>
+<tr>
+<td><strong>Role-Based</strong></td>
+<td>线性子图链</td>
+<td>串行 subagent</td>
+<td>sequential Process</td>
+<td>专员链（认名）</td>
+<td>固定角色群聊</td>
+</tr>
+<tr>
+<td><strong>Debate</strong></td>
+<td>循环边 + max_rounds</td>
+<td>—</td>
+<td>多 Task 迭代</td>
+<td>—</td>
+<td><strong>GroupChat</strong></td>
+</tr>
+<tr>
+<td><strong>Voting</strong></td>
+<td><code>Send</code> 并行 + 聚合 Node</td>
+<td>—</td>
+<td>多 Agent 同 Task（慎用）</td>
+<td>—</td>
+<td>多回复后聚合（自建）</td>
+</tr>
+<tr>
+<td><strong>Swarm</strong></td>
+<td>多节点 + Store + 路由</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>无中心群聊（慎）</td>
+</tr>
+<tr>
+<td><strong>Hierarchical</strong></td>
+<td>嵌套 Subgraph</td>
+<td>嵌套 <code>task()</code></td>
+<td>hierarchical Process</td>
+<td>多层 Handoff（认名）</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Message Passing</strong></td>
+<td>state 字段 Handoff</td>
+<td>subagent 摘要返回</td>
+<td>Task context &#x2F; output</td>
+<td><strong>Handoff</strong></td>
+<td>消息传递</td>
+</tr>
+<tr>
+<td><strong>Shared Memory</strong></td>
+<td>Store + Reducer</td>
+<td>FS + memory</td>
+<td>Flow State + Memory</td>
+<td>Sessions（弱对照）</td>
+<td>共享对话（易膨胀）</td>
+</tr>
+<tr>
+<td><strong>Event Bus</strong></td>
+<td>Command &#x2F; 外部队列</td>
+<td>—</td>
+<td>Flow 事件装饰器</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Blackboard</strong></td>
+<td>Store 结构化 schema</td>
+<td>FS 材料层</td>
+<td>Knowledge + state</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p>巡览列仅占位映射；深讲见 <a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">巡览（一）</a> · <a href="/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/">巡览（二）</a>。LlamaIndex &#x2F; Google ADK 偏查询与企业 Runtime，不进本表主列——见对比文。</p>
+<p><strong>选型口诀（与 <a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/#5-%E5%A4%9A-agent-%E6%A8%A1%E5%BC%8F%E5%AF%B9%E6%AF%94">实现框架对比 §5</a> 一致）：</strong></p>
+<ul>
+<li>每步图级门禁、复杂 handoff → <strong>LangGraph</strong></li>
+<li>快速委托重 research、主 context 要干净 → <strong>Deep Agents Subagent</strong></li>
+<li>Researcher + Writer + Editor 角色团队 → <strong>CrewAI sequential</strong></li>
+<li>借鉴 Debate 群聊模式 → <strong>AutoGen 巡览</strong>；生产实现仍优先主路径</li>
+</ul>
+<hr>
+<h2 id="5-实践阶梯（LangGraph-为主）"><a href="#5-实践阶梯（LangGraph-为主）" class="headerlink" title="5. 实践阶梯（LangGraph 为主）"></a>5. 实践阶梯（LangGraph 为主）</h2><p>不重复 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）</a> 教程；只给 <strong>理论验收导向</strong> 的阶梯：</p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>目标</th>
+<th>验收</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L0</strong></td>
+<td>Router → 2 Worker → 聚合</td>
+<td>Handoff 含证据指针；Trace 可复盘</td>
+</tr>
+<tr>
+<td><strong>L1</strong></td>
+<td>Supervisor + Checkpointer + Store</td>
+<td>子任务失败可局部重试；interrupt 可恢复</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>混合拓扑 + LE Gate + 成本记录</td>
+<td><a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a> 相关项全绿</td>
+</tr>
+</tbody></table>
+<p><strong>退回单 Agent 信号：</strong> 仅增加角色名、无独立工具&#x2F;状态&#x2F;验收；Token 升而成功率不变；Supervisor 与 Worker 职责重叠。</p>
+<hr>
+<h2 id="本模块自检与面试"><a href="#本模块自检与面试" class="headerlink" title="本模块自检与面试"></a>本模块自检与面试</h2><p>学完本系列后，请到 <a href="/2026/08/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Multi-Agent · 自检与面试</a> 完成验收。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>设计四步：</strong> 角色 → 协作 → 通信 → 治理。</p>
+<p><strong>三模板：</strong> 研究流水线 &#x2F; 企业审批 &#x2F; 并行投票。</p>
+<p><strong>映射表：</strong> §4 canonical（主三框架 + 巡览占位）；全体产品选型见 <a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">实现框架对比</a>。</p>
+<p><strong>阶梯：</strong> L0→L2；LangGraph 实现见（六）。</p>
+<p><strong>下一步：</strong> <a href="/2026/07/20/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-DeepAgents-%E4%B8%80/">Deep Agents（一）</a> — Worker&#x2F;Subagent 厚 Harness 实现。</p>
+<p><strong>Multi-Agent 系列导航：</strong></p>
+<ul>
+<li><a href="/2026/08/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%80/">（一）定位与分水岭</a></li>
+<li><a href="/2026/08/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%8C/">（二）五角色</a></li>
+<li><a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">（三）五协作</a></li>
+<li><a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">（四）四通信</a></li>
+<li><a href="/2026/08/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%BA%94/">（五）拓扑与映射</a>（本篇）</li>
+</ul>
+<p><strong>前置：</strong> <a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/">Multi-Agent（四）</a> · <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E5%85%AD/">LangGraph（六）</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Multi-Agent/" rel="tag"># Multi-Agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/08/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E5%9B%9B/" rel="prev" title="AI-Agent工程学习-Multi-Agent(四)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-Multi-Agent(四)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="AI-Agent工程学习-Multi-Agent(自检与面试)">
+                  AI-Agent工程学习-Multi-Agent(自检与面试) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
