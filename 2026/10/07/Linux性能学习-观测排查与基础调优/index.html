@@ -27,7 +27,7 @@
 <meta property="og:description" content="Linux 性能观测路径：CPU&#x2F;内存&#x2F;IO&#x2F;网络机制、工具阶梯、运维命令详解、容器叠层、案例与自检。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-08-07T10:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-20T08:19:18.669Z">
+<meta property="article:modified_time" content="2026-08-20T09:03:25.201Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="可观测">
 <meta property="article:tag" content="Linux">
@@ -150,7 +150,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-count">113</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -160,7 +160,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">64</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -223,7 +223,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+      <time title="修改时间：2026-08-20 17:03:25" itemprop="dateModified" datetime="2026-08-20T17:03:25+08:00">2026-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -814,6 +814,9 @@
 </tr>
 </tbody></table>
 <p>K8s 探针、HPA、资源请求见 <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">K8s 篇</a>；发布后回归见 <a href="/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/">可观测 CI</a>。</p>
+<p>容器侧快速对照（认名）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl top pod -n &lt;ns&gt;          <span class="comment"># 实际用量 vs request/limit</span></span><br><span class="line">kubectl describe pod &lt;name&gt;      <span class="comment"># OOMKilled、Throttle 事件</span></span><br><span class="line"><span class="comment"># 节点仍空但 Pod 慢：先看 limit/throttle，再回本篇 mpstat/iostat</span></span><br></pre></td></tr></table></figure>
+
 <hr>
 <h2 id="9-案例决策表与反模式"><a href="#9-案例决策表与反模式" class="headerlink" title="9. 案例决策表与反模式"></a>9. 案例决策表与反模式</h2><h3 id="9-1-案例"><a href="#9-1-案例" class="headerlink" title="9.1 案例"></a>9.1 案例</h3><table>
 <thead>
@@ -864,7 +867,7 @@
 <hr>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>先应用 Trace，再资源饱和；分清 us 忙与 wa 等 IO；Cache≠泄漏；容器限额与节点现实一起看。</strong></p>
 <p><strong>工具：先宽后窄（§6）；命令功能见 §7；有基线再调优。</strong></p>
-<p><strong>上一篇：</strong> <a href="/2026/10/06/Elasticsearch%E5%AD%A6%E4%B9%A0-%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2%E4%B8%8ERAG%E5%AF%B9%E7%85%A7/">Elasticsearch</a> · <strong>系列回链：</strong> <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">后端自检</a> · <a href="/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/">可观测与 CI&#x2F;CD</a></p>
+<p><strong>上一篇：</strong> <a href="/2026/10/06/Elasticsearch%E5%AD%A6%E4%B9%A0-%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2%E4%B8%8ERAG%E5%AF%B9%E7%85%A7/">Elasticsearch</a> · <strong>系列回链：</strong> <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">后端自检</a> · <a href="/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/">可观测与 CI&#x2F;CD</a> · <strong>自检：</strong> <a href="/2026/10/08/%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">基础设施自检</a></p>
 
     </div>
 
@@ -888,6 +891,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2026/10/08/%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/" rel="next" title="基础设施学习-自检面试与对照">
+                  基础设施学习-自检面试与对照 <i class="fa fa-angle-right"></i>
+                </a>
             </div>
           </div>
     </footer>

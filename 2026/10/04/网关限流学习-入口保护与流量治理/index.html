@@ -27,7 +27,7 @@
 <meta property="og:description" content="API 网关职责、限流算法认名、配额与多租户、与鉴权&#x2F;熔断&#x2F;429 契约对齐。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-08-07T07:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-20T08:19:18.668Z">
+<meta property="article:modified_time" content="2026-08-20T09:03:25.201Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="后端">
 <meta property="article:tag" content="网关">
@@ -137,7 +137,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E7%BD%91%E5%85%B3%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">2.</span> <span class="nav-text">1. 网关是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95%E8%AE%A4%E5%90%8D"><span class="nav-number">3.</span> <span class="nav-text">2. 限流算法认名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%85%8D%E9%A2%9D%E7%BB%B4%E5%BA%A6%E4%B8%8E%E5%86%B3%E7%AD%96%E8%A1%A8"><span class="nav-number">4.</span> <span class="nav-text">3. 配额维度与决策表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%8E%E7%86%94%E6%96%AD%E3%80%81%E9%87%8D%E8%AF%95%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">5.</span> <span class="nav-text">4. 与熔断、重试的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E8%A7%82%E6%B5%8B%E4%B8%8E%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">5. 观测与反模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%87%AA%E6%A3%80%EF%BC%88%E7%9F%AD%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. 自检（短）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%B8%8E%E6%BC%8F%E6%A1%B6%E5%B7%AE%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">7.1.</span> <span class="nav-text">S1. 令牌桶与漏桶差在哪？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E5%A4%9A%E7%A7%9F%E6%88%B7%E9%99%90%E6%B5%81%E6%9C%80%E5%B0%91%E5%87%A0%E5%B1%82%EF%BC%9F"><span class="nav-number">7.2.</span> <span class="nav-text">S2. 多租户限流最少几层？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%E8%A2%AB%E4%B8%80%E5%AE%B6%E7%A7%9F%E6%88%B7%E6%89%93%E6%BB%A1%EF%BC%8C%E5%A6%82%E4%BD%95%E6%94%B9%EF%BC%9F"><span class="nav-number">7.3.</span> <span class="nav-text">I1. 开放平台被一家租户打满，如何改？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E7%BD%91%E5%85%B3%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">2.</span> <span class="nav-text">1. 网关是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95%E8%AE%A4%E5%90%8D"><span class="nav-number">3.</span> <span class="nav-text">2. 限流算法认名</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%9C%AC%E5%9C%B0%E9%99%90%E6%B5%81-vs-Redis-%E5%88%86%E5%B8%83%E5%BC%8F%E9%99%90%E6%B5%81"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 本地限流 vs Redis 分布式限流</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Redis-%E9%94%AE%E7%BB%B4%E5%BA%A6%E7%A4%BA%E4%BE%8B%EF%BC%88%E5%A4%9A%E7%A7%9F%E6%88%B7%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 Redis 键维度示例（多租户）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%85%8D%E9%A2%9D%E7%BB%B4%E5%BA%A6%E4%B8%8E%E5%86%B3%E7%AD%96%E8%A1%A8"><span class="nav-number">4.</span> <span class="nav-text">3. 配额维度与决策表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%BA%A7%E5%93%81%E8%AE%A4%E5%90%8D%EF%BC%9ANginx-Kong-Envoy"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 产品认名：Nginx &#x2F; Kong &#x2F; Envoy</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%8E%E7%86%94%E6%96%AD%E3%80%81%E9%87%8D%E8%AF%95%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">5.</span> <span class="nav-text">4. 与熔断、重试的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E8%A7%82%E6%B5%8B%E4%B8%8E%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">5. 观测与反模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%87%AA%E6%A3%80%EF%BC%88%E7%9F%AD%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. 自检（短）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%B8%8E%E6%BC%8F%E6%A1%B6%E5%B7%AE%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">7.1.</span> <span class="nav-text">S1. 令牌桶与漏桶差在哪？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E5%A4%9A%E7%A7%9F%E6%88%B7%E9%99%90%E6%B5%81%E6%9C%80%E5%B0%91%E5%87%A0%E5%B1%82%EF%BC%9F"><span class="nav-number">7.2.</span> <span class="nav-text">S2. 多租户限流最少几层？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%E8%A2%AB%E4%B8%80%E5%AE%B6%E7%A7%9F%E6%88%B7%E6%89%93%E6%BB%A1%EF%BC%8C%E5%A6%82%E4%BD%95%E6%94%B9%EF%BC%9F"><span class="nav-number">7.3.</span> <span class="nav-text">I1. 开放平台被一家租户打满，如何改？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -150,7 +150,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-count">113</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -160,7 +160,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">64</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -223,7 +223,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+      <time title="修改时间：2026-08-20 17:03:25" itemprop="dateModified" datetime="2026-08-20T17:03:25+08:00">2026-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -326,6 +326,28 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">令牌桶：每秒放入 r 个令牌，桶容量 b</span><br><span class="line">  请求耗 1 令牌；无令牌 → 429</span><br></pre></td></tr></table></figure>
 
 <p>实现常落在网关插件或 Redis（INCR&#x2F;Lua）——计数器细节见 Redis 篇，本篇定 <strong>策略与位置</strong>。</p>
+<h3 id="2-1-本地限流-vs-Redis-分布式限流"><a href="#2-1-本地限流-vs-Redis-分布式限流" class="headerlink" title="2.1 本地限流 vs Redis 分布式限流"></a>2.1 本地限流 vs Redis 分布式限流</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">单实例进程内计数：快，多副本各自算 → 实际放行 ≈ N 倍配额（不准）</span><br><span class="line">Redis 令牌桶/滑动窗口：多实例共享键 → 配额全局一致（有 RTT）</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选型</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>本地</strong></td>
+<td>单实例、粗防、可接受近似</td>
+</tr>
+<tr>
+<td><strong>Redis</strong></td>
+<td>多副本网关&#x2F;服务；租户级硬顶</td>
+</tr>
+</tbody></table>
+<p>时序（Redis）：<code>鉴权通过 → INCR/Lua 扣令牌 → 允许则路由；否则 429</code>（失败策略：fail-open 还是 fail-closed 须产品决策，支付类常 fail-closed）。</p>
+<h3 id="2-2-Redis-键维度示例（多租户）"><a href="#2-2-Redis-键维度示例（多租户）" class="headerlink" title="2.2 Redis 键维度示例（多租户）"></a>2.2 Redis 键维度示例（多租户）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 滑动窗口计数（示意）</span><br><span class="line">rl:ip:&#123;client_ip&#125;:&#123;yyyyMMddHHmm&#125;     → INCR，TTL 120s   # IP 粗限</span><br><span class="line">rl:tenant:&#123;tenant_id&#125;:api:&#123;route&#125;    → 令牌桶/滑动窗     # 鉴权后租户配额</span><br><span class="line">rl:tenant:&#123;tenant_id&#125;:write          → 更严写路由配额</span><br><span class="line"></span><br><span class="line"># 令牌桶字段常见拆法（Hash 或 Lua 原子更新）</span><br><span class="line">tb:&#123;tenant_id&#125;:&#123;route&#125; → tokens, last_refill_ms</span><br></pre></td></tr></table></figure>
+
+<p>键必须带 <strong>租户&#x2F;路由维度</strong>，避免全局一把锁误伤；与 §3 配额决策表对齐。</p>
 <hr>
 <h2 id="3-配额维度与决策表"><a href="#3-配额维度与决策表" class="headerlink" title="3. 配额维度与决策表"></a>3. 配额维度与决策表</h2><table>
 <thead>
@@ -379,6 +401,34 @@
 </tr>
 </tbody></table>
 <p>返回 <strong>429</strong> + 可选 <code>Retry-After</code>；错误体带稳定 <code>code</code>——对齐 <a href="/2026/09/30/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-API%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/">API 篇</a>。</p>
+<h3 id="3-1-产品认名：Nginx-Kong-Envoy"><a href="#3-1-产品认名：Nginx-Kong-Envoy" class="headerlink" title="3.1 产品认名：Nginx &#x2F; Kong &#x2F; Envoy"></a>3.1 产品认名：Nginx &#x2F; Kong &#x2F; Envoy</h3><table>
+<thead>
+<tr>
+<th>产品</th>
+<th>限流认名</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Nginx</strong></td>
+<td><code>limit_req_zone</code> + <code>limit_req</code>（漏桶风格）；<code>limit_conn</code></td>
+<td>经典入口；配置在 server&#x2F;location</td>
+</tr>
+<tr>
+<td><strong>Kong</strong></td>
+<td>Rate Limiting &#x2F; Rate Limiting Advanced 插件</td>
+<td>API 网关插件化；可对接 Redis</td>
+</tr>
+<tr>
+<td><strong>Envoy</strong></td>
+<td>local &#x2F; global rate limit（常配外部 RLS）</td>
+<td>服务网格&#x2F;边车常见；全局需 rate limit service</td>
+</tr>
+</tbody></table>
+<p>本篇不贴厂商长配置；要求能口述：<strong>键（IP&#x2F;租户&#x2F;路由）+ 算法 + 超限 429 + 是否共享存储</strong>。</p>
+<p><strong>租户 + 写路由示例口径：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">key = tenant_id + &quot;:&quot; + route_class   # route_class=read|write</span><br><span class="line">write: 10 r/s, burst 20</span><br><span class="line">read:  100 r/s, burst 50</span><br><span class="line">超限 → 429 + Retry-After: 1 + code=RATE_LIMITED</span><br></pre></td></tr></table></figure>
+
 <hr>
 <h2 id="4-与熔断、重试的关系"><a href="#4-与熔断、重试的关系" class="headerlink" title="4. 与熔断、重试的关系"></a>4. 与熔断、重试的关系</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">限流：保护自己不被打爆（入站）</span><br><span class="line">熔断：保护下游/保护自己不被坏依赖拖死（出站）</span><br><span class="line">重试：放大流量 —— 必须有退避 + 幂等，且尊重 429</span><br></pre></td></tr></table></figure>
 
@@ -417,7 +467,7 @@
 <h3 id="I1-开放平台被一家租户打满，如何改？"><a href="#I1-开放平台被一家租户打满，如何改？" class="headerlink" title="I1. 开放平台被一家租户打满，如何改？"></a>I1. 开放平台被一家租户打满，如何改？</h3><p><strong>推荐回答：</strong> 按 API Key&#x2F;tenant 独立配额；超额 429；观测分租户 QPS；必要时隔离集群或降级只读。</p>
 <hr>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>网关管入口统一策略；限流按身份与路由分层；与鉴权、熔断、幂等重试同设计。</strong></p>
-<p><strong>上一篇：</strong> <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">后端自检</a> · <strong>下一篇：</strong> <a href="/2026/10/05/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E5%AD%A6%E4%B9%A0-%E6%96%87%E4%BB%B6%E4%B8%8E%E5%A4%A7%E6%9D%90%E6%96%99%E5%B7%A5%E7%A8%8B/">对象存储</a></p>
+<p><strong>上一篇：</strong> <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">后端自检</a> · <strong>下一篇：</strong> <a href="/2026/10/05/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E5%AD%A6%E4%B9%A0-%E6%96%87%E4%BB%B6%E4%B8%8E%E5%A4%A7%E6%9D%90%E6%96%99%E5%B7%A5%E7%A8%8B/">对象存储</a> · <strong>自检：</strong> <a href="/2026/10/08/%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">基础设施自检</a></p>
 
     </div>
 

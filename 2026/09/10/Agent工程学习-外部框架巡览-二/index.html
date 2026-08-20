@@ -19,17 +19,18 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="外部框架巡览：AutoGen 的 Conversation Agent、UserProxy、GroupChat；映射 Debate &#x2F; Peer。">
+    <meta name="description" content="外部框架巡览：Microsoft Agent Framework（MAF）为主；AutoGen&#x2F;SK 沿革与 GroupChat&#x2F;UserProxy 模式映射 Debate&#x2F;Peer。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="AI-Agent工程学习-外部框架巡览(二)">
 <meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/10/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%BA%8C/index.html">
 <meta property="og:site_name" content="我的记录小站">
-<meta property="og:description" content="外部框架巡览：AutoGen 的 Conversation Agent、UserProxy、GroupChat；映射 Debate &#x2F; Peer。">
+<meta property="og:description" content="外部框架巡览：Microsoft Agent Framework（MAF）为主；AutoGen&#x2F;SK 沿革与 GroupChat&#x2F;UserProxy 模式映射 Debate&#x2F;Peer。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-23T01:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-20T08:19:18.666Z">
+<meta property="article:modified_time" content="2026-08-20T09:03:25.199Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Microsoft Agent Framework">
 <meta property="article:tag" content="AutoGen">
 <meta property="article:tag" content="外部框架巡览">
 <meta name="twitter:card" content="summary">
@@ -137,7 +138,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%AE%9A%E4%BD%8D"><span class="nav-number">2.</span> <span class="nav-text">1. 一句话定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Conversation-Agent"><span class="nav-number">3.</span> <span class="nav-text">2. Conversation Agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-UserProxy-Pattern"><span class="nav-number">4.</span> <span class="nav-text">3. UserProxy Pattern</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-GroupChat-%E4%B8%8E-Speaker-selection"><span class="nav-number">5.</span> <span class="nav-text">4. GroupChat 与 Speaker selection</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%98%A0%E5%B0%84-Debate-Peer"><span class="nav-number">6.</span> <span class="nav-text">5. 映射 Debate &#x2F; Peer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E4%B8%8E%E4%B8%BB%E8%B7%AF%E5%BE%84%E5%AF%B9%E7%85%A7"><span class="nav-number">7.</span> <span class="nav-text">6. 与主路径对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%BA%E4%BD%95%E4%BB%8E-AutoGen-%E5%8D%87%E7%BA%A7%E5%88%B0-MAF%EF%BC%88%E5%BF%85%E8%AF%BB%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">1. 为何从 AutoGen 升级到 MAF（必读）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-MAF-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%AE%9A%E4%BD%8D"><span class="nav-number">3.</span> <span class="nav-text">2. MAF 一句话定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%B2%BF%E9%9D%A9%EF%BC%9AAutoGen-%E6%A8%A1%E5%BC%8F-%E2%86%92-MAF-%E5%AF%B9%E7%85%A7"><span class="nav-number">4.</span> <span class="nav-text">3. 沿革：AutoGen 模式 → MAF 对照</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Conversation-%E6%B6%88%E6%81%AF%E5%8D%8F%E4%BD%9C"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 Conversation &#x2F; 消息协作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-UserProxy-%E2%86%92-HITL-%E4%BA%BA%E7%B1%BB%E4%BE%A7"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 UserProxy → HITL &#x2F; 人类侧</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-GroupChat-Speaker-selection"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 GroupChat &#x2F; Speaker selection</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E6%98%A0%E5%B0%84-Debate-Peer"><span class="nav-number">5.</span> <span class="nav-text">4. 映射 Debate &#x2F; Peer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E4%B8%8E%E4%B8%BB%E8%B7%AF%E5%BE%84%E5%AF%B9%E7%85%A7"><span class="nav-number">6.</span> <span class="nav-text">5. 与主路径对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E6%B3%A8%E6%84%8F%E7%82%B9-%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.</span> <span class="nav-text">6. 注意点 &#x2F; 反模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -150,7 +151,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-count">113</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -160,7 +161,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">64</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -201,7 +202,7 @@
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
       <meta itemprop="name" content="AI-Agent工程学习-外部框架巡览(二) | 我的记录小站">
-      <meta itemprop="description" content="外部框架巡览：AutoGen 的 Conversation Agent、UserProxy、GroupChat；映射 Debate &#x2F; Peer。">
+      <meta itemprop="description" content="外部框架巡览：Microsoft Agent Framework（MAF）为主；AutoGen&#x2F;SK 沿革与 GroupChat&#x2F;UserProxy 模式映射 Debate&#x2F;Peer。">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -223,7 +224,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+      <time title="修改时间：2026-08-20 17:03:25" itemprop="dateModified" datetime="2026-08-20T17:03:25+08:00">2026-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -238,20 +239,75 @@
   
 </div>
 
-            <div class="post-description">外部框架巡览：AutoGen 的 Conversation Agent、UserProxy、GroupChat；映射 Debate / Peer。</div>
+            <div class="post-description">外部框架巡览：Microsoft Agent Framework（MAF）为主；AutoGen/SK 沿革与 GroupChat/UserProxy 模式映射 Debate/Peer。</div>
         </div>
       </header>
 
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">外部框架巡览（一）</a>：OpenAI Agents SDK 偏工具环与交接；本篇巡览 <strong>AutoGen</strong>——以对话与群聊组织多 Agent，是 Debate &#x2F; Peer 的常见产品化表达之一。</p>
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">外部框架巡览（一）</a>：OpenAI Agents SDK 偏工具环与交接；本篇巡览 <strong>Microsoft Agent Framework（MAF）</strong>——Microsoft 多 Agent &#x2F; 企业编排的 <strong>现行默认入口</strong>；AutoGen 的 Conversation &#x2F; UserProxy &#x2F; GroupChat 作为 <strong>沿革与模式映射</strong> 保留认名。</p>
 <span id="more"></span>
-<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>回链 <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">Multi-Agent（三）Debate</a>：框架落点曾指向本篇 GroupChat。巡览级理解即可，不展开全 API。</p>
+<h2 id="0-本篇位置"><a href="#0-本篇位置" class="headerlink" title="0. 本篇位置"></a>0. 本篇位置</h2><p>回链 <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">Multi-Agent（三）Debate</a>：历史落点常写 AutoGen GroupChat；<strong>产品线已收束到 MAF</strong> 后，模式仍可映射，选型入口以本篇为准。巡览级理解即可，不展开全 API。</p>
+<p><strong>permalink 未改</strong>（仍为 <code>/2026/09/10/…</code>），旧链可点；正文口径以 MAF 为准。</p>
 <hr>
-<h2 id="1-一句话定位"><a href="#1-一句话定位" class="headerlink" title="1. 一句话定位"></a>1. 一句话定位</h2><p><strong>AutoGen（含后续 AgentChat 等形态）：</strong> 以 <strong>多 Agent 对话</strong> 为中心的编排——Agent 互发消息，可选 <strong>UserProxy</strong> 引入人类或代码执行，<strong>GroupChat</strong> 管理多人轮次与发言者选择。</p>
+<h2 id="1-为何从-AutoGen-升级到-MAF（必读）"><a href="#1-为何从-AutoGen-升级到-MAF（必读）" class="headerlink" title="1. 为何从 AutoGen 升级到 MAF（必读）"></a>1. 为何从 AutoGen 升级到 MAF（必读）</h2><p>这不是换时髦名字，而是 <strong>官方产品线与新项目默认入口已变</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>事实</th>
+<th>对学习&#x2F;选型的影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Microsoft 将 <strong>AutoGen 的多 Agent 编排</strong> 与 <strong>Semantic Kernel 的企业底座</strong> 收束为统一的 <strong>Microsoft Agent Framework</strong>（公开叙述约 2026-04 标 1.0&#x2F;GA；仓库见 <a target="_blank" rel="noopener" href="https://github.com/microsoft/agent-framework">microsoft&#x2F;agent-framework</a>）</td>
+<td>只学 AutoGen &#x3D; 指向 <strong>已降级产品线</strong></td>
+</tr>
+<tr>
+<td>AutoGen &#x2F; Semantic Kernel 多为 <strong>maintenance mode</strong>（修 bug&#x2F;安全，无新功能主投入）；新项目文档指向 MAF + 迁移指南</td>
+<td>按旧文选型会 <strong>选错默认 SDK</strong></td>
+</tr>
+<tr>
+<td>Conversation、UserProxy、GroupChat、Debate&#x2F;Peer 映射仍有教学价值</td>
+<td><strong>保留为沿革与模式对照</strong>，挂在 MAF 下，不删光</td>
+</tr>
+</tbody></table>
+<p><strong>canonical 口径：</strong></p>
+<blockquote>
+<p>AutoGen 代表的「对话式多 Agent」模式仍值得认名；但 <strong>2026 起 Microsoft 新项目默认入口是 MAF</strong>。本巡览以 MAF 为主，AutoGen&#x2F;SK 仅作沿革与模式对照；<strong>主路径仍不换出</strong> LangGraph &#x2F; CrewAI。</p>
+</blockquote>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AutoGen ──┐</span><br><span class="line">           ├──→ Microsoft Agent Framework（新项目默认）</span><br><span class="line">Semantic Kernel ─┘</span><br><span class="line">历史模式（GroupChat / UserProxy）→ 映射认名，不单独当默认栈</span><br></pre></td></tr></table></figure>
+
+<p><strong>为何不把主路径改成 MAF：</strong> MAF 偏 Microsoft &#x2F; Azure &#x2F; .NET+Python 企业栈；本课程默认实现线仍是开源可控的 LangGraph +（可选）CrewAI。</p>
 <hr>
-<h2 id="2-Conversation-Agent"><a href="#2-Conversation-Agent" class="headerlink" title="2. Conversation Agent"></a>2. Conversation Agent</h2><table>
+<h2 id="2-MAF-一句话定位"><a href="#2-MAF-一句话定位" class="headerlink" title="2. MAF 一句话定位"></a>2. MAF 一句话定位</h2><p><strong>Microsoft Agent Framework：</strong> 面向生产的开源 Agent &#x2F; 多 Agent 工作流 SDK（Python 与 .NET）——把原 AutoGen 侧的编排思路与 Semantic Kernel 侧的连接器、中间件、遥测等企业能力收进 <strong>同一套 API 表面</strong>；并认名支持 MCP 等工具接入（细节以当时文档为准）。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>语言</strong></td>
+<td>Python、.NET（对等能力叙事）</td>
+</tr>
+<tr>
+<td><strong>强项</strong></td>
+<td>Azure&#x2F;Microsoft 生态集成、企业治理组件、多 Agent 工作流</td>
+</tr>
+<tr>
+<td><strong>风险</strong></td>
+<td>栈绑定；图级可审计性与 Checkpoint 心智仍常对照 LangGraph</td>
+</tr>
+<tr>
+<td><strong>文档</strong></td>
+<td>以 Microsoft Learn &#x2F; 仓库 README 为准；本篇不跟版号刷 API</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-沿革：AutoGen-模式-→-MAF-对照"><a href="#3-沿革：AutoGen-模式-→-MAF-对照" class="headerlink" title="3. 沿革：AutoGen 模式 → MAF 对照"></a>3. 沿革：AutoGen 模式 → MAF 对照</h2><p>下列概念来自 <strong>AutoGen 时代教学心智</strong>；在 MAF 中名称可能不同，但 <strong>问题形态</strong> 仍在。读文档时用「模式」对齐，勿死磕旧类名。</p>
+<h3 id="3-1-Conversation-消息协作"><a href="#3-1-Conversation-消息协作" class="headerlink" title="3.1 Conversation &#x2F; 消息协作"></a>3.1 Conversation &#x2F; 消息协作</h3><table>
 <thead>
 <tr>
 <th>维度</th>
@@ -260,7 +316,7 @@
 </thead>
 <tbody><tr>
 <td><strong>形态</strong></td>
-<td>Agent 主要通过消息协作，而非显式 StateGraph 边</td>
+<td>Agent 主要通过消息&#x2F;轮次协作，而非显式 StateGraph 边</td>
 </tr>
 <tr>
 <td><strong>强项</strong></td>
@@ -272,11 +328,10 @@
 </tr>
 <tr>
 <td><strong>对照</strong></td>
-<td>精细分支&#x2F;恢复仍偏 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">LangGraph</a></td>
+<td>精细分支&#x2F;恢复仍偏 <a href="/2026/07/17/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-LangGraph-%E4%B8%80/">LangGraph</a>；MAF 工作流图能力以文档为准</td>
 </tr>
 </tbody></table>
-<hr>
-<h2 id="3-UserProxy-Pattern"><a href="#3-UserProxy-Pattern" class="headerlink" title="3. UserProxy Pattern"></a>3. UserProxy Pattern</h2><table>
+<h3 id="3-2-UserProxy-→-HITL-人类侧"><a href="#3-2-UserProxy-→-HITL-人类侧" class="headerlink" title="3.2 UserProxy → HITL &#x2F; 人类侧"></a>3.2 UserProxy → HITL &#x2F; 人类侧</h3><table>
 <thead>
 <tr>
 <th>维度</th>
@@ -284,7 +339,7 @@
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>含义</strong></td>
+<td><strong>历史含义</strong></td>
 <td>代理「用户侧」：转发人类输入，或代表用户执行代码&#x2F;工具</td>
 </tr>
 <tr>
@@ -293,15 +348,14 @@
 </tr>
 <tr>
 <td><strong>对照</strong></td>
-<td>LangGraph <code>interrupt</code> &#x2F; CrewAI <code>@human_feedback</code> &#x2F; 工程化 resume API</td>
+<td>LangGraph <code>interrupt</code> &#x2F; CrewAI <code>@human_feedback</code> &#x2F; 工程化 resume API；MAF 侧看官方 HITL&#x2F;审批原语</td>
 </tr>
 <tr>
 <td><strong>注意</strong></td>
-<td>UserProxy 执行写操作同样要幂等与权限——<a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">工程化（三）</a></td>
+<td>人类代理执行写操作同样要幂等与权限——<a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">工程化（三）</a></td>
 </tr>
 </tbody></table>
-<hr>
-<h2 id="4-GroupChat-与-Speaker-selection"><a href="#4-GroupChat-与-Speaker-selection" class="headerlink" title="4. GroupChat 与 Speaker selection"></a>4. GroupChat 与 Speaker selection</h2><table>
+<h3 id="3-3-GroupChat-Speaker-selection"><a href="#3-3-GroupChat-Speaker-selection" class="headerlink" title="3.3 GroupChat &#x2F; Speaker selection"></a>3.3 GroupChat &#x2F; Speaker selection</h3><table>
 <thead>
 <tr>
 <th>概念</th>
@@ -321,18 +375,18 @@
 <td><strong>max_rounds</strong> + 仲裁者；辩论摘要后再下游——回链 Multi-Agent Debate</td>
 </tr>
 </tbody></table>
-<p>无收敛协议的 GroupChat ≈ 无预算的 Peer&#x2F;Swarm，生产慎用。</p>
+<p>无收敛协议的群聊 ≈ 无预算的 Peer&#x2F;Swarm，生产慎用——在 MAF 中同样成立。</p>
 <hr>
-<h2 id="5-映射-Debate-Peer"><a href="#5-映射-Debate-Peer" class="headerlink" title="5. 映射 Debate &#x2F; Peer"></a>5. 映射 Debate &#x2F; Peer</h2><table>
+<h2 id="4-映射-Debate-Peer"><a href="#4-映射-Debate-Peer" class="headerlink" title="4. 映射 Debate &#x2F; Peer"></a>4. 映射 Debate &#x2F; Peer</h2><table>
 <thead>
 <tr>
 <th>Multi-Agent 理论</th>
-<th>AutoGen 落点</th>
+<th>落点（MAF &#x2F; 沿革）</th>
 </tr>
 </thead>
 <tbody><tr>
 <td><strong>Debate</strong></td>
-<td>多角色 GroupChat + 轮次上限 + 总结 Agent</td>
+<td>多角色协作 + 轮次上限 + 总结；历史常落 GroupChat</td>
 </tr>
 <tr>
 <td><strong>Peer</strong></td>
@@ -340,11 +394,11 @@
 </tr>
 <tr>
 <td><strong>Supervisor</strong></td>
-<td>可用「经理」Agent 选人，但图级可审计性弱于 LangGraph Supervisor</td>
+<td>「经理」选人可做；图级可审计性通常仍弱于 LangGraph Supervisor</td>
 </tr>
 </tbody></table>
 <hr>
-<h2 id="6-与主路径对照"><a href="#6-与主路径对照" class="headerlink" title="6. 与主路径对照"></a>6. 与主路径对照</h2><table>
+<h2 id="5-与主路径对照"><a href="#5-与主路径对照" class="headerlink" title="5. 与主路径对照"></a>5. 与主路径对照</h2><table>
 <thead>
 <tr>
 <th>需求</th>
@@ -352,12 +406,16 @@
 </tr>
 </thead>
 <tbody><tr>
-<td>快速多角色对话原型</td>
-<td>AutoGen 可借鉴</td>
+<td>Azure&#x2F;.NET 企业栈、要跟 Microsoft 默认 SDK</td>
+<td><strong>评估 MAF</strong></td>
+</tr>
+<tr>
+<td>快速多角色对话 <strong>模式</strong> 借鉴</td>
+<td>MAF 文档 + 历史 GroupChat 心智</td>
 </tr>
 <tr>
 <td>每步 Checkpoint &#x2F; interrupt &#x2F; Send 并行</td>
-<td><strong>LangGraph</strong></td>
+<td><strong>LangGraph</strong>（本课默认）</td>
 </tr>
 <tr>
 <td>Researcher→Writer 产品化流水线</td>
@@ -367,12 +425,24 @@
 <td>长材料 Context 隔离</td>
 <td><strong>Deep Agents</strong></td>
 </tr>
+<tr>
+<td>新项目仍装「仅 AutoGen 0.4」当默认</td>
+<td><strong>不推荐</strong>（维护模式）</td>
+</tr>
 </tbody></table>
 <hr>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Conversation + UserProxy + GroupChat</strong> 是 AutoGen 心智核心。</p>
-<p><strong>映射</strong> Debate&#x2F;Peer；生产必须 max_rounds 与仲裁。</p>
+<h2 id="6-注意点-反模式"><a href="#6-注意点-反模式" class="headerlink" title="6. 注意点 &#x2F; 反模式"></a>6. 注意点 &#x2F; 反模式</h2><ol>
+<li>把 AutoGen 当 2026 新项目默认入口。  </li>
+<li>以为改名 MAF 后主路径必须迁移——<strong>本课不强制</strong>。  </li>
+<li>群聊无 max_rounds &#x2F; 仲裁 → 成本与假完成。  </li>
+<li>UserProxy&#x2F;代码执行写库无幂等——与框架无关的工程债。</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>为何改：</strong> 产品线收束到 MAF；AutoGen&#x2F;SK 维护模式；模式保留、入口更新。</p>
+<p><strong>MAF</strong> &#x3D; Microsoft 现行 Agent&#x2F;多 Agent SDK；<strong>沿革</strong> &#x3D; Conversation &#x2F; UserProxy &#x2F; GroupChat 认名。</p>
+<p><strong>主路径不变：</strong> LC &#x2F; LG &#x2F; DA &#x2F; CrewAI。</p>
 <p><strong>下一步：</strong> <a href="/2026/09/11/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%89/">外部框架巡览（三）· LlamaIndex</a></p>
-<p><strong>前置：</strong> <a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">外部框架巡览（一）</a> · <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">Multi-Agent（三）</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/09/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E4%B8%80/">外部框架巡览（一）</a> · <a href="/2026/08/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Multi-Agent-%E4%B8%89/">Multi-Agent（三）</a> · <a href="/2026/09/03/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%AE%9E%E7%8E%B0%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94/">实现框架对比</a></p>
 
     </div>
 
@@ -383,6 +453,7 @@
     <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Microsoft-Agent-Framework/" rel="tag"># Microsoft Agent Framework</a>
               <a href="/tags/AutoGen/" rel="tag"># AutoGen</a>
               <a href="/tags/%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88/" rel="tag"># 外部框架巡览</a>
           </div>

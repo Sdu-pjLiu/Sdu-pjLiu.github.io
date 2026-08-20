@@ -27,7 +27,7 @@
 <meta property="og:description" content="Deep Agents 开篇：四层能力模型、create_deep_agent、默认 Middleware 栈、与 LangGraph 关系。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-20T00:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-20T08:19:18.664Z">
+<meta property="article:modified_time" content="2026-08-20T09:03:25.196Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="DeepAgents">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-count">113</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">64</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -222,7 +222,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+      <time title="修改时间：2026-08-20 17:03:25" itemprop="dateModified" datetime="2026-08-20T17:03:25+08:00">2026-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -391,7 +391,8 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Deep Agents 参数骨架：memory + skills + subagents 占位。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Author: pjliu</span></span><br><span class="line"><span class="string">Date: 2026-07-30</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-4.1-mini&quot;</span>,</span><br><span class="line">    tools=[...],</span><br><span class="line">    system_prompt=<span class="string">&quot;You are a research coordinator.&quot;</span>,</span><br><span class="line">    memory=[<span class="string">&quot;/AGENTS.md&quot;</span>],</span><br><span class="line">    skills=[<span class="string">&quot;/skills/&quot;</span>],</span><br><span class="line">    subagents=[...],</span><br><span class="line">    backend=...,  <span class="comment"># 默认 StateBackend</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="4-create-deep-agent-参数地图"><a href="#4-create-deep-agent-参数地图" class="headerlink" title="4. create_deep_agent 参数地图"></a>4. create_deep_agent 参数地图</h2><table>
+<h2 id="4-create-deep-agent-参数地图"><a href="#4-create-deep-agent-参数地图" class="headerlink" title="4. create_deep_agent 参数地图"></a>4. create_deep_agent 参数地图</h2><p>以 <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/customization">Deep Agents Customization</a> &#x2F; <a target="_blank" rel="noopener" href="https://reference.langchain.com/python/deepagents/graph/create_deep_agent">API reference</a> 现行签名为准；下表为教学地图。</p>
+<table>
 <thead>
 <tr>
 <th>参数</th>
@@ -478,6 +479,21 @@
 <td><code>name=</code></td>
 <td>Agent 名称</td>
 <td>trace metadata</td>
+</tr>
+<tr>
+<td><code>debug=</code></td>
+<td>调试开关</td>
+<td>开发期详细日志</td>
+</tr>
+<tr>
+<td><code>cache=</code></td>
+<td>缓存后端</td>
+<td>可选调用&#x2F;结果缓存</td>
+</tr>
+<tr>
+<td>profiles（文档节）</td>
+<td>按模型的默认捆绑</td>
+<td>见 customization · profiles</td>
 </tr>
 </tbody></table>
 <p>完整签名见 <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/customization">customization · Full function signature</a>。</p>
