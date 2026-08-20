@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Kafka 一篇写透：分区副本与 ISR、为何快、生产 acks 与消费组 offset、Rebalance、积压与监控；口径 Kafka 3.x &#x2F; KRaft 认名。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="消息队列学习-Kafka核心与生产实践">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Kafka 一篇写透：分区副本与 ISR、为何快、生产 acks 与消费组 offset、Rebalance、积压与监控；口径 Kafka 3.x &#x2F; KRaft 认名。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-06T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.668Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="消息队列">
+<meta property="article:tag" content="Kafka">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/","path":"/2026/09/26/消息队列学习-Kafka核心与生产实践/","title":"消息队列学习-Kafka核心与生产实践"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>消息队列学习-Kafka核心与生产实践 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%EF%BC%9ATopic%E3%80%81%E5%88%86%E5%8C%BA%E3%80%81%E5%89%AF%E6%9C%AC"><span class="nav-number">2.</span> <span class="nav-text">1. 核心概念：Topic、分区、副本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%89%AF%E6%9C%AC%E5%90%8C%E6%AD%A5%E4%B8%8E-ISR-%E6%94%B6%E7%BC%A9"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 副本同步与 ISR 收缩</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%BA%E4%BD%95%E5%BF%AB"><span class="nav-number">3.</span> <span class="nav-text">2. 为何快</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%94%9F%E4%BA%A7%E7%AB%AF%EF%BC%9A%E7%A1%AE%E8%AE%A4%E3%80%81%E9%87%8D%E8%AF%95%E4%B8%8E%E5%B9%82%E7%AD%89"><span class="nav-number">4.</span> <span class="nav-text">3. 生产端：确认、重试与幂等</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%8F%91%E9%80%81%E5%A4%B1%E8%B4%A5%E6%84%9F%E7%9F%A5%E4%B8%8E%E6%9C%AC%E5%9C%B0%E7%BC%93%E5%86%B2"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 发送失败感知与本地缓冲</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%B9%82%E7%AD%89-Producer-%E4%B8%8E%E4%BA%8B%E5%8A%A1%EF%BC%88%E5%B1%95%E5%BC%80%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 幂等 Producer 与事务（展开）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E6%B6%88%E8%B4%B9%E7%AB%AF%EF%BC%9AConsumer-Group-%E4%B8%8E-offset"><span class="nav-number">5.</span> <span class="nav-text">4. 消费端：Consumer Group 与 offset</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-poll-%E6%89%B9%E9%87%8F%E4%B8%8E%E6%8F%90%E4%BA%A4%E7%AD%96%E7%95%A5"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 poll 批量与提交策略</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Rebalance"><span class="nav-number">6.</span> <span class="nav-text">5. Rebalance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-acks-all-%E4%B8%8E-min-insync-replicas"><span class="nav-number">7.</span> <span class="nav-text">6. acks&#x3D;all 与 min.insync.replicas</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E4%B8%8E-unclean%E3%80%81ISR-%E7%9A%84%E7%BB%84%E5%90%88%E5%8F%A3%E5%BE%84"><span class="nav-number">7.1.</span> <span class="nav-text">6.1 与 unclean、ISR 的组合口径</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%88%86%E5%8C%BA%E9%94%AE%E4%B8%8E%E9%A1%BA%E5%BA%8F"><span class="nav-number">8.</span> <span class="nav-text">7. 分区键与顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E7%A7%AF%E5%8E%8B%E6%B2%BB%E7%90%86"><span class="nav-number">9.</span> <span class="nav-text">8. 积压治理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-1-%E6%97%A5%E5%BF%97%E4%BF%9D%E7%95%99%E4%B8%8E%E7%A3%81%E7%9B%98"><span class="nav-number">10.</span> <span class="nav-text">8.1 日志保留与磁盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E8%BF%90%E7%BB%B4%E4%B8%8E%E7%9B%91%E6%8E%A7%E8%AE%A4%E5%90%8D"><span class="nav-number">11.</span> <span class="nav-text">9. 运维与监控认名</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#9-1-%E5%AE%89%E5%85%A8%E4%B8%8E%E5%A4%9A%E7%A7%9F%E6%88%B7%E8%AE%A4%E5%90%8D"><span class="nav-number">11.1.</span> <span class="nav-text">9.1 安全与多租户认名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-2-%E6%B6%88%E6%81%AF%E6%A0%BC%E5%BC%8F%E4%B8%8E-Schema-%E5%A5%91%E7%BA%A6%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">11.2.</span> <span class="nav-text">9.2 消息格式与 Schema 契约（认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E5%85%B8%E5%9E%8B%E6%9E%B6%E6%9E%84%E5%8F%A3%E8%BF%B0"><span class="nav-number">12.</span> <span class="nav-text">10. 典型架构口述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">13.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="消息队列学习-Kafka核心与生产实践 | 我的记录小站">
+      <meta itemprop="description" content="Kafka 一篇写透：分区副本与 ISR、为何快、生产 acks 与消费组 offset、Rebalance、积压与监控；口径 Kafka 3.x &#x2F; KRaft 认名。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          消息队列学习-Kafka核心与生产实践
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-06 11:00:00" itemprop="dateCreated datePublished" datetime="2026-08-06T11:00:00+08:00">2026-08-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Kafka 一篇写透：分区副本与 ISR、为何快、生产 acks 与消费组 offset、Rebalance、积压与监控；口径 Kafka 3.x / KRaft 认名。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">基础模型与通用工程问题</a>：本篇把 <strong>Kafka</strong> 作为主路径写透——分区与副本如何支撑吞吐和耐久，生产&#x2F;消费参数如何对齐「至少一次 + 幂等」。叙述以 <strong>Kafka 3.x</strong> 为主；<strong>KRaft</strong> 认名，ZooKeeper 仅作遗留。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Topic&#x2F;分区&#x2F;副本、生产消费可靠性</td>
+<td>云控制台逐步截图</td>
+</tr>
+<tr>
+<td>Rebalance、积压、监控认名</td>
+<td>Broker 源码逐行精读</td>
+</tr>
+<tr>
+<td>与流处理边界点到</td>
+<td>Flink&#x2F;完整流平台教程</td>
+</tr>
+</tbody></table>
+<p><strong>元数据：</strong> 3.x 起 <strong>KRaft</strong> 可不再依赖 ZooKeeper 管元数据；老集群可能仍见 ZK——面试知演进即可。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/27/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-RabbitMQ%E4%B8%8ERocketMQ%E5%AF%B9%E7%85%A7%E9%80%89%E5%9E%8B/">RabbitMQ 与 RocketMQ 对照选型</a></p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1</td>
+<td>核心概念、ISR 与 unclean</td>
+</tr>
+<tr>
+<td>§2</td>
+<td>为何快</td>
+</tr>
+<tr>
+<td>§3</td>
+<td>生产端、失败感知、幂等与事务</td>
+</tr>
+<tr>
+<td>§4–§5</td>
+<td>消费组、poll&#x2F;提交策略、Rebalance</td>
+</tr>
+<tr>
+<td>§6</td>
+<td>acks、min.insync、副本滞后</td>
+</tr>
+<tr>
+<td>§7–§8</td>
+<td>顺序、积压、保留与「像丢」</td>
+</tr>
+<tr>
+<td>§9–§10</td>
+<td>监控、Schema、安全与架构口述</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="1-核心概念：Topic、分区、副本"><a href="#1-核心概念：Topic、分区、副本" class="headerlink" title="1. 核心概念：Topic、分区、副本"></a>1. 核心概念：Topic、分区、副本</h2><p><strong>是什么：</strong> Kafka 以 <strong>追加日志</strong> 为核心：消息写入 Topic 的某个 <strong>Partition</strong>，在分区内有序、有偏移量（offset）。</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Topic</strong></td>
+<td>逻辑主题</td>
+</tr>
+<tr>
+<td><strong>Partition</strong></td>
+<td>并行单位；分区内有序</td>
+</tr>
+<tr>
+<td><strong>Replica</strong></td>
+<td>分区副本；其一为 <strong>Leader</strong> 处理读写</td>
+</tr>
+<tr>
+<td><strong>Follower</strong></td>
+<td>向 Leader 拉数据</td>
+</tr>
+<tr>
+<td><strong>ISR</strong></td>
+<td>In-Sync Replicas：与 Leader 保持同步的副本集合</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Topic: order</span><br><span class="line">  Partition 0: Leader B1, Follower B2,B3</span><br><span class="line">  Partition 1: Leader B2, Follower B1,B3</span><br><span class="line">Consumer Group G: 成员均分分区（同组内一分区至多一活跃消费者）</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> 分区数影响并行度与文件数；盲目极多分区增加元数据与 Rebalance 成本。</p>
+<p><strong>Leader 选举认名：</strong> Leader 挂掉后从 ISR 中选新 Leader。若允许 <strong>unclean leader election</strong>（非 ISR 也当选），可能丢已确认数据——生产关键 Topic 通常 <strong><code>unclean.leader.election.enable=false</code></strong>，宁愿短暂不可写，也不要「假活旧数据」。</p>
+<h3 id="1-1-副本同步与-ISR-收缩"><a href="#1-1-副本同步与-ISR-收缩" class="headerlink" title="1.1 副本同步与 ISR 收缩"></a>1.1 副本同步与 ISR 收缩</h3><p><strong>是什么：</strong> Follower 持续从 Leader 拉取；跟得上的留在 ISR，落后过久会被踢出 ISR。</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ISR 变小</td>
+<td><code>acks=all</code> 可确认的副本变少；若低于 <code>min.insync.replicas</code> 则 <strong>拒绝写入</strong></td>
+</tr>
+<tr>
+<td>网络&#x2F;磁盘慢</td>
+<td>频繁进出 ISR，写入抖动</td>
+</tr>
+<tr>
+<td>UnderReplicatedPartitions &gt; 0</td>
+<td>副本不健康，要查 Broker&#x2F;盘&#x2F;网络</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 监控 ISR 与「拒绝写入」告警；不要为了「总能写入」把 <code>min.insync.replicas</code> 调成 1 还以为高耐久。</p>
+<hr>
+<h2 id="2-为何快"><a href="#2-为何快" class="headerlink" title="2. 为何快"></a>2. 为何快</h2><table>
+<thead>
+<tr>
+<th>因素</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>顺序写磁盘</td>
+<td>追加日志，吞吐远好于随机写</td>
+</tr>
+<tr>
+<td>零拷贝等</td>
+<td>发送文件数据减少用户态拷贝（实现认名）</td>
+</tr>
+<tr>
+<td>批量</td>
+<td>生产批量发送、消费批量拉取摊薄开销</td>
+</tr>
+<tr>
+<td>分区并行</td>
+<td>多分区多消费者水平扩展</td>
+</tr>
+<tr>
+<td>页缓存</td>
+<td>热数据吃 OS Cache</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 「快」依赖合理分区与硬件；大消息、同步刷盘过严、单分区热点都会变慢。</p>
+<hr>
+<h2 id="3-生产端：确认、重试与幂等"><a href="#3-生产端：确认、重试与幂等" class="headerlink" title="3. 生产端：确认、重试与幂等"></a>3. 生产端：确认、重试与幂等</h2><p><strong>是什么：</strong> Producer 把记录发到分区 Leader，按 <code>acks</code> 等待确认。</p>
+<p><strong>参数选型表（生产常用）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>常见取值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>acks=0</code></td>
+<td>不等待</td>
+<td>最快，可能丢</td>
+</tr>
+<tr>
+<td><code>acks=1</code></td>
+<td>Leader 写成功</td>
+<td>Leader 挂可能丢</td>
+</tr>
+<tr>
+<td><code>acks=all</code>（-1）</td>
+<td>ISR 内达标副本确认</td>
+<td>更耐久，延迟略高</td>
+</tr>
+<tr>
+<td><code>retries</code></td>
+<td>&gt;0</td>
+<td>可重试错误自动重试</td>
+</tr>
+<tr>
+<td><code>enable.idempotence=true</code></td>
+<td>建议开</td>
+<td>Broker 侧去重，防重试导致分区内重复</td>
+</tr>
+<tr>
+<td>事务 Producer</td>
+<td>认名</td>
+<td>跨分区原子写入等；复杂度高</td>
+</tr>
+</tbody></table>
+<p><strong>丢消息时序（生产侧）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">acks=0：发出即忘 → 网络丢则永丢失</span><br><span class="line">acks=1：Leader 成功后挂且未复制 → 可能丢</span><br><span class="line">acks=all 且 ISR 不足仍误配 → 仍可能不安全</span><br><span class="line">正确：acks=all + 足够 min.insync.replicas + 失败要感知并重试/落本地</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>幂等 Producer 降低 <strong>重试造成的重复</strong>，不替代业务幂等。  </li>
+<li>超时重试可能造成至少一次；配合幂等与业务键。  </li>
+<li>超大单条消息挤压批处理优势。  </li>
+<li><code>linger.ms</code> &#x2F; <code>batch.size</code>：适当批量提高吞吐，过大则延迟上升——按 SLA 调。</li>
+</ol>
+<h3 id="3-1-发送失败感知与本地缓冲"><a href="#3-1-发送失败感知与本地缓冲" class="headerlink" title="3.1 发送失败感知与本地缓冲"></a>3.1 发送失败感知与本地缓冲</h3><p><strong>是什么：</strong> 「发了」不等于「Broker 已确认」。生产端必须区分成功回调与失败路径。</p>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同步 send().get()</td>
+<td>简单，失败抛异常，易感知</td>
+</tr>
+<tr>
+<td>异步 + callback</td>
+<td>高吞吐；<strong>必须在失败回调里度量&#x2F;重试&#x2F;告警</strong></td>
+</tr>
+<tr>
+<td>本地落盘 &#x2F; Outbox</td>
+<td>业务先落库再异步发 Kafka，防进程崩溃丢「未确认发送」</td>
+</tr>
+<tr>
+<td>有限重试 + 死信表</td>
+<td>重试耗尽写入本地失败表人工补偿</td>
+</tr>
+</tbody></table>
+<p><strong>反模式：</strong> fire-and-forget（acks&#x3D;0 或忽略回调）还宣称「消息一定到」。</p>
+<h3 id="3-2-幂等-Producer-与事务（展开）"><a href="#3-2-幂等-Producer-与事务（展开）" class="headerlink" title="3.2 幂等 Producer 与事务（展开）"></a>3.2 幂等 Producer 与事务（展开）</h3><p><strong>幂等：</strong> Producer 带 PID 与序列号，Broker 对同分区去重，避免网络重试导致 <strong>重复写入</strong>。开启后常隐含 <code>acks=all</code> 等约束（以客户端文档为准）。</p>
+<p><strong>事务认名：</strong> 事务性 Producer 可把「写多分区 + 写消费位移」等纳入原子语义，支撑流处理 exactly-once 链路；业务微服务更常见仍是 <strong>至少一次 + 幂等</strong>，事务复杂度高，按需启用。</p>
+<p><strong>注意点：</strong> 幂等 Producer ≠ 跨系统 exactly-once；库存扣减仍要业务唯一键。</p>
+<hr>
+<h2 id="4-消费端：Consumer-Group-与-offset"><a href="#4-消费端：Consumer-Group-与-offset" class="headerlink" title="4. 消费端：Consumer Group 与 offset"></a>4. 消费端：Consumer Group 与 offset</h2><p><strong>是什么：</strong> 同一 <strong>Consumer Group</strong> 内消费者分摊分区；<strong>不同 Group</strong> 独立消费同一 Topic（广播给多类下游）。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Topic P0 P1 P2</span><br><span class="line">Group pay:   C1→P0,P1   C2→P2</span><br><span class="line">Group mail:  C3→P0,P1,P2（另一套进度）</span><br></pre></td></tr></table></figure>
+
+<p><strong>offset：</strong> 组内「下一个要读的位置」。提交到 Kafka（<code>__consumer_offsets</code>）或外部存储。</p>
+<table>
+<thead>
+<tr>
+<th>提交方式</th>
+<th>行为</th>
+<th>风险</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>自动提交</td>
+<td>定时提交</td>
+<td>易 <strong>先提交后处理失败 → 丢</strong></td>
+</tr>
+<tr>
+<td><strong>手动提交</strong></td>
+<td>业务成功后再 commit</td>
+<td>推荐；失败则重复（靠幂等）</td>
+</tr>
+</tbody></table>
+<p><strong>提交时机与幂等绑定：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">拉取 → 处理业务（写 DB，带唯一键）→ 成功 → commit offset</span><br><span class="line">崩溃在 commit 前 → 再消费 → 幂等跳过</span><br><span class="line">先 commit 再处理 → 崩溃则真丢</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> <code>enable.auto.commit=true</code> 且处理慢时，最容易踩「丢」的坑。</p>
+<p><strong>拉取循环（口述）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">poll 一批记录</span><br><span class="line">  → 逐条/批量处理业务</span><br><span class="line">  → 成功则（同步或异步）commit</span><br><span class="line">  → 再 poll</span><br><span class="line">处理过慢超过 max.poll.interval → 被视为离开组 → Rebalance</span><br></pre></td></tr></table></figure>
+
+<p>因此「业务里同步调超慢 RPC」不仅慢，还会触发踢组。</p>
+<h3 id="4-1-poll-批量与提交策略"><a href="#4-1-poll-批量与提交策略" class="headerlink" title="4.1 poll 批量与提交策略"></a>4.1 poll 批量与提交策略</h3><table>
+<thead>
+<tr>
+<th>参数&#x2F;策略</th>
+<th>作用</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>max.poll.records</code></td>
+<td>单次 poll 最多条数</td>
+<td>过大 → 单次处理久 → 易超 <code>max.poll.interval</code></td>
+</tr>
+<tr>
+<td><code>max.poll.interval.ms</code></td>
+<td>两次 poll 最大间隔</td>
+<td>处理慢会被踢出组</td>
+</tr>
+<tr>
+<td>按批 commit</td>
+<td>一批全成功再提交</td>
+<td>吞吐好；失败需整批可幂等重放</td>
+</tr>
+<tr>
+<td>按条 commit</td>
+<td>每条成功提交</td>
+<td>重复窗口小；提交开销大</td>
+</tr>
+<tr>
+<td>同步 commit</td>
+<td>确认位移写入</td>
+<td>更安全，略慢</td>
+</tr>
+<tr>
+<td>异步 commit</td>
+<td>高吞吐</td>
+<td>要处理回调失败，仍建议关键路径同步或可重试</td>
+</tr>
+</tbody></table>
+<p><strong>推荐默认心智：</strong> 手动提交 + 业务幂等；<code>max.poll.records</code> 与单条耗时匹配；禁止「poll 一大批再同步调三个下游 RPC」。</p>
+<p><strong>示例权衡：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">单条处理 50ms，max.poll.records=500</span><br><span class="line">→ 纯处理就要 ~25s，需 max.poll.interval 留足余量</span><br><span class="line">或把 records 降到 50～100，并异步化下游</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-Rebalance"><a href="#5-Rebalance" class="headerlink" title="5. Rebalance"></a>5. Rebalance</h2><p><strong>是什么：</strong> 组成员变化或订阅变更时，重新分配分区。</p>
+<p><strong>常见触发：</strong> 新消费者加入&#x2F;离开、<code>session.timeout</code> &#x2F; 心跳失败被踢、订阅 Topic 变更、分区数变化。</p>
+<p><strong>影响：</strong></p>
+<ol>
+<li>短暂停止消费；旧分配回收。  </li>
+<li>若使用自动提交或处理中未提交，易 <strong>重复消费</strong>。  </li>
+<li>频繁 Rebalance → lag 升高。</li>
+</ol>
+<p><strong>减少影响（认名）：</strong> 合理 <code>max.poll.interval.ms</code>、心跳；静态成员协议（cooperative sticky 等，按客户端版本）；避免在高峰频繁扩缩消费者；处理时间过长要调大 poll 间隔或拆短任务。</p>
+<p><strong>注意点：</strong> Rebalance 不是 bug，是机制；业务必须幂等。</p>
+<hr>
+<h2 id="6-acks-all-与-min-insync-replicas"><a href="#6-acks-all-与-min-insync-replicas" class="headerlink" title="6. acks&#x3D;all 与 min.insync.replicas"></a>6. acks&#x3D;all 与 min.insync.replicas</h2><p><strong>是什么：</strong> 耐久不只看 <code>acks=all</code>，还要 ISR 里有足够副本。</p>
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>acks=all</code></td>
+<td>等待 ISR 中达标副本确认</td>
+</tr>
+<tr>
+<td><code>min.insync.replicas</code></td>
+<td>ISR 少于此数则拒绝写入（避免「假成功」）</td>
+</tr>
+<tr>
+<td>副本因子</td>
+<td>如 3；常配 <code>min.insync.replicas=2</code></td>
+</tr>
+</tbody></table>
+<p><strong>链路（耐久写）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Producer acks=all</span><br><span class="line">  → Leader 写入</span><br><span class="line">  → 同步到足够 ISR</span><br><span class="line">  → 返回成功</span><br><span class="line">否则：写入失败，客户端重试（至少一次）</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> 副本因子&#x3D;1 时谈「高可用不丢」没有意义；磁盘与跨机架拓扑要进生产清单。</p>
+<h3 id="6-1-与-unclean、ISR-的组合口径"><a href="#6-1-与-unclean、ISR-的组合口径" class="headerlink" title="6.1 与 unclean、ISR 的组合口径"></a>6.1 与 unclean、ISR 的组合口径</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">耐久写入目标：</span><br><span class="line">  replication.factor &gt;= 3</span><br><span class="line">  min.insync.replicas = 2</span><br><span class="line">  acks = all</span><br><span class="line">  unclean.leader.election.enable = false</span><br><span class="line"></span><br><span class="line">含义：至少两个同步副本确认；Leader 故障只从 ISR 选；ISR 不足则拒绝写（可见失败）</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> 「拒绝写」比「写入后丢失」通常更可接受——配合生产重试与背压。</p>
+<hr>
+<h2 id="7-分区键与顺序"><a href="#7-分区键与顺序" class="headerlink" title="7. 分区键与顺序"></a>7. 分区键与顺序</h2><p><strong>是什么：</strong> 默认分区策略常对 key 哈希；<strong>同一 key → 同一分区 → 分区内有序</strong>。</p>
+<p><strong>示例心智：</strong> <code>key=orderId</code> 保证同订单事件同分区；无 key 则轮询&#x2F;随机，不保证相关消息有序。</p>
+<p><strong>热点分区：</strong> 超热 key（如固定 <code>&quot;all&quot;</code>）打到单分区 → 成为瓶颈。应对：打散 key、业务拆分、局部接受乱序。</p>
+<p><strong>注意点：</strong> 增加分区数 <strong>不保证</strong> 旧消息与 key 映射不变（按版本与工具）；有序业务变更分区要评估。</p>
+<hr>
+<h2 id="8-积压治理"><a href="#8-积压治理" class="headerlink" title="8. 积压治理"></a>8. 积压治理</h2><p><strong>发现：</strong> Consumer lag（对数、时间）、端到端延迟。</p>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>扩消费者</td>
+<td>同 Group 内，且 ≤ 分区数才有意义</td>
+</tr>
+<tr>
+<td>扩分区</td>
+<td>提高并行上限；之后才能再扩消费者</td>
+</tr>
+<tr>
+<td>优化处理</td>
+<td>批量写 DB、减同步 RPC、异步化</td>
+</tr>
+<tr>
+<td>临时分流</td>
+<td>新 Group&#x2F;新 Topic 救急（篇 1）</td>
+</tr>
+<tr>
+<td>重置 offset</td>
+<td>极端丢弃积压——业务上要能补偿</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 只加消费者不加分区，多出来的消费者会空闲；顺序主题扩分区要谨慎。</p>
+<hr>
+<h2 id="8-1-日志保留与磁盘"><a href="#8-1-日志保留与磁盘" class="headerlink" title="8.1 日志保留与磁盘"></a>8.1 日志保留与磁盘</h2><p><strong>是什么：</strong> Kafka 按时间或大小删除旧日志段（<code>retention.ms</code> &#x2F; <code>retention.bytes</code>），不是「消费完就删」。</p>
+<table>
+<thead>
+<tr>
+<th>点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>保留策略</td>
+<td>决定可回溯多久；与磁盘容量强相关</td>
+</tr>
+<tr>
+<td>未消费 + 短保留</td>
+<td>消费者太慢时消息可能过期删除 → <strong>业务视角像丢</strong></td>
+</tr>
+<tr>
+<td>压缩 Topic（log compaction）</td>
+<td>按 key 保留最新值——适合 changelog，不是普通队列默认</td>
+</tr>
+</tbody></table>
+<p><strong>「像丢」时序：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">保留 2 天；某 Group lag 已 3 天</span><br><span class="line">→ 最旧段被删</span><br><span class="line">→ 消费者再追也读不到那段</span><br><span class="line">→ 只监控「连通性」会漏掉这种丢</span><br></pre></td></tr></table></figure>
+
+<p><strong>compaction 适用例：</strong> 用户配置变更流，只关心每个 <code>userId</code> 最新配置；订单流水事件应用时间&#x2F;大小保留，而非默认 compaction。</p>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>lag 告警要结合保留时间：接近保留上限时风险是 <strong>丢数据</strong> 而非仅延迟。  </li>
+<li>扩磁盘与调长保留要一起做容量规划。  </li>
+<li>重置 offset 到很久以前可能无效（段已被删）。</li>
+</ol>
+<hr>
+<h2 id="9-运维与监控认名"><a href="#9-运维与监控认名" class="headerlink" title="9. 运维与监控认名"></a>9. 运维与监控认名</h2><table>
+<thead>
+<tr>
+<th>指标&#x2F;现象</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Consumer lag</td>
+<td>消费落后</td>
+</tr>
+<tr>
+<td>ISR 收缩 &#x2F; UnderReplicated</td>
+<td>副本不健康</td>
+</tr>
+<tr>
+<td>磁盘使用与 IO</td>
+<td>日志段占满则写入失败</td>
+</tr>
+<tr>
+<td>请求 P99</td>
+<td>Broker&#x2F;生产&#x2F;消费延迟</td>
+</tr>
+<tr>
+<td>频繁 Rebalance</td>
+<td>消费不稳定</td>
+</tr>
+</tbody></table>
+<p><strong>生产检查（口述级）：</strong> 副本因子与 <code>min.insync.replicas</code>；关键 Topic <code>acks=all</code>；消费手动提交；lag 告警；磁盘与保留策略（<code>retention</code>）；禁止无鉴权裸奔监听。</p>
+<h3 id="9-1-安全与多租户认名"><a href="#9-1-安全与多租户认名" class="headerlink" title="9.1 安全与多租户认名"></a>9.1 安全与多租户认名</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>监听与网络</td>
+<td>勿对公网裸奔 9092</td>
+</tr>
+<tr>
+<td>SASL &#x2F; ACL</td>
+<td>按 Topic 最小权限</td>
+</tr>
+<tr>
+<td>TLS</td>
+<td>跨网络加密</td>
+</tr>
+<tr>
+<td>Quota</td>
+<td>防单一客户端打满集群</td>
+</tr>
+</tbody></table>
+<h3 id="9-2-消息格式与-Schema-契约（认名）"><a href="#9-2-消息格式与-Schema-契约（认名）" class="headerlink" title="9.2 消息格式与 Schema 契约（认名）"></a>9.2 消息格式与 Schema 契约（认名）</h3><p><strong>是什么：</strong> Topic 上流转的是字节；生产者与多消费者要对 <strong>字段演进</strong> 达成契约，否则「半个下游解析失败」比 Broker 挂更隐蔽。</p>
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>约定 JSON + 版本字段</td>
+<td>简单；靠纪律兼容（只增字段、兼容默认值）</td>
+</tr>
+<tr>
+<td>Schema Registry（Avro&#x2F;Protobuf 等）</td>
+<td>集中管兼容性规则；大数据生态常见</td>
+</tr>
+<tr>
+<td>事件命名</td>
+<td>如 <code>OrderPaid</code>；payload 含 <code>eventId</code>&#x2F;<code>orderId</code> 利幂等与追踪</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> Schema 解决「结构兼容」，不解决业务幂等；破坏性改字段要新 Topic 或严格兼容策略。</p>
+<hr>
+<h2 id="10-典型架构口述"><a href="#10-典型架构口述" class="headerlink" title="10. 典型架构口述"></a>10. 典型架构口述</h2><ol>
+<li><strong>日志&#x2F;埋点采集：</strong> 高吞吐、可接受少量丢或后端补偿 → Kafka 主力。  </li>
+<li><strong>服务异步解耦：</strong> 订单事件多下游（库存、积分、搜索）→ 多 Consumer Group。  </li>
+<li><strong>与流计算：</strong> Kafka 常作缓冲与重放源；计算在 Flink 等——本系列不展开。  </li>
+<li><strong>何时换 Rocket&#x2F;Rabbit：</strong> 强业务事务消息、海量 Topic、复杂路由——见下一篇决策树。</li>
+</ol>
+<p><strong>订单支付事件（与基础篇案例呼应）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">订单服务：本地事务提交支付 + Outbox</span><br><span class="line">  → Relay 发 Topic order.paid（key=orderId，acks=all）</span><br><span class="line">  → Group inventory：幂等扣库存后 commit</span><br><span class="line">  → Group points：幂等加积分后 commit</span><br><span class="line">  → Group search：更新索引（可接受短暂延迟）</span><br><span class="line">失败超次 → 死信/告警人工；保留期内可重放</span><br></pre></td></tr></table></figure>
+
+<p>口述模板：「Topic 按事件类型拆；关键链路 acks&#x3D;all + ISR + unclean 关闭；消费手动提交 + 业务唯一键；lag 与保留一起看；分区键用业务 ID；多下游用多 Group。」</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Kafka 用分区换并行、用 ISR 与 acks 换耐久、用 Consumer Group 换多下游独立进度。默认目标仍是 <strong>至少一次 + 幂等</strong>。下一篇用同样四问题对照 RabbitMQ 与 RocketMQ，并给出选型决策树。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/27/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-RabbitMQ%E4%B8%8ERocketMQ%E5%AF%B9%E7%85%A7%E9%80%89%E5%9E%8B/">RabbitMQ 与 RocketMQ 对照选型</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">基础模型与通用工程问题</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" rel="tag"># 消息队列</a>
+              <a href="/tags/Kafka/" rel="tag"># Kafka</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/" rel="prev" title="消息队列学习-基础模型与通用工程问题">
+                  <i class="fa fa-angle-left"></i> 消息队列学习-基础模型与通用工程问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/27/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-RabbitMQ%E4%B8%8ERocketMQ%E5%AF%B9%E7%85%A7%E9%80%89%E5%9E%8B/" rel="next" title="消息队列学习-RabbitMQ与RocketMQ对照选型">
+                  消息队列学习-RabbitMQ与RocketMQ对照选型 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="API 网关职责、限流算法认名、配额与多租户、与鉴权&#x2F;熔断&#x2F;429 契约对齐。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网关限流学习-入口保护与流量治理">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/10/04/%E7%BD%91%E5%85%B3%E9%99%90%E6%B5%81%E5%AD%A6%E4%B9%A0-%E5%85%A5%E5%8F%A3%E4%BF%9D%E6%8A%A4%E4%B8%8E%E6%B5%81%E9%87%8F%E6%B2%BB%E7%90%86/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="API 网关职责、限流算法认名、配额与多租户、与鉴权&#x2F;熔断&#x2F;429 契约对齐。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-07T07:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.668Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="后端">
+<meta property="article:tag" content="网关">
+<meta property="article:tag" content="限流">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/10/04/%E7%BD%91%E5%85%B3%E9%99%90%E6%B5%81%E5%AD%A6%E4%B9%A0-%E5%85%A5%E5%8F%A3%E4%BF%9D%E6%8A%A4%E4%B8%8E%E6%B5%81%E9%87%8F%E6%B2%BB%E7%90%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/10/04/%E7%BD%91%E5%85%B3%E9%99%90%E6%B5%81%E5%AD%A6%E4%B9%A0-%E5%85%A5%E5%8F%A3%E4%BF%9D%E6%8A%A4%E4%B8%8E%E6%B5%81%E9%87%8F%E6%B2%BB%E7%90%86/","path":"/2026/10/04/网关限流学习-入口保护与流量治理/","title":"网关限流学习-入口保护与流量治理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>网关限流学习-入口保护与流量治理 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E7%BD%91%E5%85%B3%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">2.</span> <span class="nav-text">1. 网关是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95%E8%AE%A4%E5%90%8D"><span class="nav-number">3.</span> <span class="nav-text">2. 限流算法认名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%85%8D%E9%A2%9D%E7%BB%B4%E5%BA%A6%E4%B8%8E%E5%86%B3%E7%AD%96%E8%A1%A8"><span class="nav-number">4.</span> <span class="nav-text">3. 配额维度与决策表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%8E%E7%86%94%E6%96%AD%E3%80%81%E9%87%8D%E8%AF%95%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">5.</span> <span class="nav-text">4. 与熔断、重试的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E8%A7%82%E6%B5%8B%E4%B8%8E%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">5. 观测与反模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%87%AA%E6%A3%80%EF%BC%88%E7%9F%AD%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. 自检（短）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%B8%8E%E6%BC%8F%E6%A1%B6%E5%B7%AE%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">7.1.</span> <span class="nav-text">S1. 令牌桶与漏桶差在哪？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E5%A4%9A%E7%A7%9F%E6%88%B7%E9%99%90%E6%B5%81%E6%9C%80%E5%B0%91%E5%87%A0%E5%B1%82%EF%BC%9F"><span class="nav-number">7.2.</span> <span class="nav-text">S2. 多租户限流最少几层？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%E8%A2%AB%E4%B8%80%E5%AE%B6%E7%A7%9F%E6%88%B7%E6%89%93%E6%BB%A1%EF%BC%8C%E5%A6%82%E4%BD%95%E6%94%B9%EF%BC%9F"><span class="nav-number">7.3.</span> <span class="nav-text">I1. 开放平台被一家租户打满，如何改？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/10/04/%E7%BD%91%E5%85%B3%E9%99%90%E6%B5%81%E5%AD%A6%E4%B9%A0-%E5%85%A5%E5%8F%A3%E4%BF%9D%E6%8A%A4%E4%B8%8E%E6%B5%81%E9%87%8F%E6%B2%BB%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="网关限流学习-入口保护与流量治理 | 我的记录小站">
+      <meta itemprop="description" content="API 网关职责、限流算法认名、配额与多租户、与鉴权&#x2F;熔断&#x2F;429 契约对齐。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          网关限流学习-入口保护与流量治理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-07 15:00:00" itemprop="dateCreated datePublished" datetime="2026-08-07T15:00:00+08:00">2026-08-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">API 网关职责、限流算法认名、配额与多租户、与鉴权/熔断/429 契约对齐。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/30/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-API%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/">后端 API 契约</a> 中的 429。本篇收 <strong>入口保护</strong>：网关做什么、限流怎么定、与鉴权&#x2F;熔断如何叠层。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>网关职责、限流算法认名、配额维度</td>
+<td>某一云厂商控制台逐步截图</td>
+</tr>
+<tr>
+<td>与 429 契约、多租户、熔断对齐</td>
+<td>WAF 规则全家桶、服务网格全功能</td>
+</tr>
+<tr>
+<td>决策表与反模式</td>
+<td>自研网关源码</td>
+</tr>
+</tbody></table>
+<p><strong>回链：</strong> <a href="/2026/09/30/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-API%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/">API 超时重试</a> · <a href="/2026/10/01/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%AE%A4%E8%AF%81%E9%89%B4%E6%9D%83%E4%B8%8E%E5%A4%9A%E7%A7%9F%E6%88%B7/">鉴权</a> · <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">Agent 熔断</a> · <a href="/2026/09/22/Redis%E5%AD%A6%E4%B9%A0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6/">Redis 限流认名</a></p>
+<hr>
+<h2 id="1-网关是什么"><a href="#1-网关是什么" class="headerlink" title="1. 网关是什么"></a>1. 网关是什么</h2><p><strong>是什么：</strong> 南北向流量的统一入口：TLS 终结、路由、鉴权校验、限流、可观测、协议转换（可选）。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Client → Gateway（TLS / Auth / RateLimit / Route）</span><br><span class="line">       → Service A / B</span><br><span class="line">       → （可选）再经服务间熔断</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>放网关</th>
+<th>放服务内</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全局&#x2F;租户&#x2F;IP 配额</td>
+<td>业务级细粒度配额</td>
+</tr>
+<tr>
+<td>统一鉴权验签</td>
+<td>对象级 RBAC &#x2F; IDOR</td>
+</tr>
+<tr>
+<td>路由与金丝雀流量切分</td>
+<td>领域逻辑</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 网关鉴权通过 ≠ 业务鉴权完成；限流通过 ≠ 下游扛得住。</p>
+<hr>
+<h2 id="2-限流算法认名"><a href="#2-限流算法认名" class="headerlink" title="2. 限流算法认名"></a>2. 限流算法认名</h2><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>机制</th>
+<th>观感</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>固定窗口</strong></td>
+<td>每 N 秒计数清零</td>
+<td>窗口边界可能双倍突发</td>
+</tr>
+<tr>
+<td><strong>滑动窗口</strong></td>
+<td>近似平滑计数</td>
+<td>实现稍复杂</td>
+</tr>
+<tr>
+<td><strong>漏桶</strong></td>
+<td>恒定流出</td>
+<td>平滑，突发被削</td>
+</tr>
+<tr>
+<td><strong>令牌桶</strong></td>
+<td>桶内令牌、允许有限突发</td>
+<td>生产常见</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">令牌桶：每秒放入 r 个令牌，桶容量 b</span><br><span class="line">  请求耗 1 令牌；无令牌 → 429</span><br></pre></td></tr></table></figure>
+
+<p>实现常落在网关插件或 Redis（INCR&#x2F;Lua）——计数器细节见 Redis 篇，本篇定 <strong>策略与位置</strong>。</p>
+<hr>
+<h2 id="3-配额维度与决策表"><a href="#3-配额维度与决策表" class="headerlink" title="3. 配额维度与决策表"></a>3. 配额维度与决策表</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>示例</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IP &#x2F; 设备</strong></td>
+<td>防爬、防爆破</td>
+<td>匿名入口</td>
+</tr>
+<tr>
+<td><strong>用户 &#x2F; API Key</strong></td>
+<td>按身份公平</td>
+<td>登录后 API</td>
+</tr>
+<tr>
+<td><strong>租户</strong></td>
+<td>多租户 SaaS</td>
+<td>防一家打爆全集群</td>
+</tr>
+<tr>
+<td><strong>路由</strong></td>
+<td>写接口更严</td>
+<td>保护下单&#x2F;支付</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">推荐叠层（由外到内）：</span><br><span class="line">  IP 粗限 → 鉴权 → 租户/用户限 → 路由限（写更严）→ 服务</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>登录接口</td>
+<td>IP + 用户双限；失败计数联动锁定</td>
+</tr>
+<tr>
+<td>开放 API</td>
+<td>API Key 配额 + 租户日顶</td>
+</tr>
+<tr>
+<td>Agent 回调&#x2F;Webhook</td>
+<td>独立配额，防重放风暴</td>
+</tr>
+</tbody></table>
+<p>返回 <strong>429</strong> + 可选 <code>Retry-After</code>；错误体带稳定 <code>code</code>——对齐 <a href="/2026/09/30/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-API%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/">API 篇</a>。</p>
+<hr>
+<h2 id="4-与熔断、重试的关系"><a href="#4-与熔断、重试的关系" class="headerlink" title="4. 与熔断、重试的关系"></a>4. 与熔断、重试的关系</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">限流：保护自己不被打爆（入站）</span><br><span class="line">熔断：保护下游/保护自己不被坏依赖拖死（出站）</span><br><span class="line">重试：放大流量 —— 必须有退避 + 幂等，且尊重 429</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> 网关后服务无超时 → 堆积；客户端无视 Retry-After 硬重试 → 雪崩；只限网关不限租户内某超级用户。</p>
+<hr>
+<h2 id="5-观测与反模式"><a href="#5-观测与反模式" class="headerlink" title="5. 观测与反模式"></a>5. 观测与反模式</h2><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>429 率</td>
+<td>配额是否过紧&#x2F;被打</td>
+</tr>
+<tr>
+<td>按租户 QPS</td>
+<td>吵闹邻居</td>
+</tr>
+<tr>
+<td>限流丢弃 vs 排队时延</td>
+<td>策略是否合理</td>
+</tr>
+</tbody></table>
+<p><strong>反模式：</strong></p>
+<ol>
+<li>全站一个全局 QPS，大客户挤死小客户  </li>
+<li>限流键用可变 User-Agent  </li>
+<li>429 当 500，客户端乱重试  </li>
+<li>网关限流后业务仍无熔断，依赖故障拖垮线程池</li>
+</ol>
+<hr>
+<h2 id="6-自检（短）"><a href="#6-自检（短）" class="headerlink" title="6. 自检（短）"></a>6. 自检（短）</h2><h3 id="S1-令牌桶与漏桶差在哪？"><a href="#S1-令牌桶与漏桶差在哪？" class="headerlink" title="S1. 令牌桶与漏桶差在哪？"></a>S1. 令牌桶与漏桶差在哪？</h3><p><strong>推荐回答：</strong> 令牌桶允许有限突发；漏桶更强调恒定流出。生产常选令牌桶兼顾体验与保护。</p>
+<h3 id="S2-多租户限流最少几层？"><a href="#S2-多租户限流最少几层？" class="headerlink" title="S2. 多租户限流最少几层？"></a>S2. 多租户限流最少几层？</h3><p><strong>推荐回答：</strong> 入口粗限 + 鉴权后租户&#x2F;用户限 + 写路由更严；429 契约稳定。</p>
+<h3 id="I1-开放平台被一家租户打满，如何改？"><a href="#I1-开放平台被一家租户打满，如何改？" class="headerlink" title="I1. 开放平台被一家租户打满，如何改？"></a>I1. 开放平台被一家租户打满，如何改？</h3><p><strong>推荐回答：</strong> 按 API Key&#x2F;tenant 独立配额；超额 429；观测分租户 QPS；必要时隔离集群或降级只读。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>网关管入口统一策略；限流按身份与路由分层；与鉴权、熔断、幂等重试同设计。</strong></p>
+<p><strong>上一篇：</strong> <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">后端自检</a> · <strong>下一篇：</strong> <a href="/2026/10/05/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E5%AD%A6%E4%B9%A0-%E6%96%87%E4%BB%B6%E4%B8%8E%E5%A4%A7%E6%9D%90%E6%96%99%E5%B7%A5%E7%A8%8B/">对象存储</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%90%8E%E7%AB%AF/" rel="tag"># 后端</a>
+              <a href="/tags/%E7%BD%91%E5%85%B3/" rel="tag"># 网关</a>
+              <a href="/tags/%E9%99%90%E6%B5%81/" rel="tag"># 限流</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/" rel="prev" title="后端服务工程学习-自检面试与对照">
+                  <i class="fa fa-angle-left"></i> 后端服务工程学习-自检面试与对照
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/10/05/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E5%AD%A6%E4%B9%A0-%E6%96%87%E4%BB%B6%E4%B8%8E%E5%A4%A7%E6%9D%90%E6%96%99%E5%B7%A5%E7%A8%8B/" rel="next" title="对象存储学习-文件与大材料工程">
+                  对象存储学习-文件与大材料工程 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

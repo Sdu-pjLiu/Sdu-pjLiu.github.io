@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="消息队列阶段自检与面试导向问答；覆盖丢&#x2F;重&#x2F;乱&#x2F;积压、Kafka 与三大选型，含 checklist 与面经参考。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="消息队列学习-自检面试与对照">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/28/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="消息队列阶段自检与面试导向问答；覆盖丢&#x2F;重&#x2F;乱&#x2F;积压、Kafka 与三大选型，含 checklist 与面经参考。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-06T05:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.668Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="消息队列">
+<meta property="article:tag" content="Kafka">
+<meta property="article:tag" content="RabbitMQ">
+<meta property="article:tag" content="RocketMQ">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/28/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/28/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/","path":"/2026/09/28/消息队列学习-自检面试与对照/","title":"消息队列学习-自检面试与对照"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>消息队列学习-自检面试与对照 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">0. 使用说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AD%A6%E4%B9%A0%E8%87%AA%E6%A3%80"><span class="nav-number">2.</span> <span class="nav-text">1. 学习自检</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E9%80%9A%E7%94%A8%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 通用模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%EF%BC%9F%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%B8%8D%E8%AF%A5%E7%94%A8%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">S1. 为什么要用消息队列？什么时候不该用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E8%87%B3%E5%B0%91%E4%B8%80%E6%AC%A1%E4%B8%8E%E6%81%B0%E5%A5%BD%E4%B8%80%E6%AC%A1%E5%9C%A8%E5%B7%A5%E7%A8%8B%E4%B8%8A%E6%80%8E%E4%B9%88%E8%90%BD%EF%BC%9F"><span class="nav-number">2.3.</span> <span class="nav-text">S2. 至少一次与恰好一次在工程上怎么落？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S3-%E4%B8%A2%E6%B6%88%E6%81%AF%E5%8F%AF%E8%83%BD%E5%8F%91%E7%94%9F%E5%9C%A8%E5%93%AA%E4%B8%89%E6%AE%B5%EF%BC%9F%E5%90%84%E6%80%8E%E4%B9%88%E9%98%B2%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">S3. 丢消息可能发生在哪三段？各怎么防？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S4-%E4%B8%BA%E4%BD%95%E8%AF%B4%E3%80%8C%E5%85%88%E5%B9%82%E7%AD%89%EF%BC%8C%E5%86%8D%E8%B0%83-MQ-%E5%8F%82%E6%95%B0%E3%80%8D%EF%BC%9F"><span class="nav-number">2.5.</span> <span class="nav-text">S4. 为何说「先幂等，再调 MQ 参数」？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S5-%E5%85%A8%E5%B1%80%E6%9C%89%E5%BA%8F%E5%92%8C%E5%88%86%E5%8C%BA%E5%86%85%E6%9C%89%E5%BA%8F%E5%B7%AE%E5%88%AB%EF%BC%9F%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E5%90%8C%E8%AE%A2%E5%8D%95%E6%9C%89%E5%BA%8F%EF%BC%9F"><span class="nav-number">2.6.</span> <span class="nav-text">S5. 全局有序和分区内有序差别？如何保证同订单有序？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S6-%E6%B6%88%E6%81%AF%E7%A7%AF%E5%8E%8B%E6%80%8E%E4%B9%88%E5%8F%91%E7%8E%B0%E5%92%8C%E5%A4%84%E7%90%86%EF%BC%9F%E4%B8%B4%E6%97%B6%E5%88%86%E6%B5%81%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.7.</span> <span class="nav-text">S6. 消息积压怎么发现和处理？临时分流是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S7-%E9%87%8D%E8%AF%95%E9%A3%8E%E6%9A%B4%E6%9C%89%E4%BB%80%E4%B9%88%E5%8D%B1%E5%AE%B3%EF%BC%9F%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="nav-number">2.8.</span> <span class="nav-text">S7. 重试风暴有什么危害？死信队列作用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S8-%E6%9C%AC%E5%9C%B0%E6%B6%88%E6%81%AF%E8%A1%A8-Outbox-%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.9.</span> <span class="nav-text">S8. 本地消息表 &#x2F; Outbox 解决什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Kafka"><span class="nav-number">2.10.</span> <span class="nav-text">1.2 Kafka</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S9-Topic%E3%80%81Partition%E3%80%81Consumer-Group-%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">2.11.</span> <span class="nav-text">S9. Topic、Partition、Consumer Group 关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S10-Kafka-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%AB%EF%BC%9F%E4%B8%BE%E4%B8%89%E7%82%B9%E3%80%82"><span class="nav-number">2.12.</span> <span class="nav-text">S10. Kafka 为什么快？举三点。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S11-acks-0-1-all-%E4%B8%8E%E4%B8%A2%E6%B6%88%E6%81%AF%E5%85%B3%E7%B3%BB%EF%BC%9F%E4%B8%BA%E4%BD%95%E8%BF%98%E8%A6%81-min-insync-replicas%EF%BC%9F"><span class="nav-number">2.13.</span> <span class="nav-text">S11. acks&#x3D;0&#x2F;1&#x2F;all 与丢消息关系？为何还要 min.insync.replicas？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S12-%E8%87%AA%E5%8A%A8%E6%8F%90%E4%BA%A4-offset-%E6%9C%89%E4%BB%80%E4%B9%88%E9%A3%8E%E9%99%A9%EF%BC%9F%E6%8E%A8%E8%8D%90%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F"><span class="nav-number">2.14.</span> <span class="nav-text">S12. 自动提交 offset 有什么风险？推荐怎么做？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S13-Rebalance-%E4%BC%9A%E5%B8%A6%E6%9D%A5%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A6%82%E4%BD%95%E5%87%8F%E8%BD%BB%EF%BC%9F"><span class="nav-number">2.15.</span> <span class="nav-text">S13. Rebalance 会带来什么？如何减轻？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S14-%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81-Kafka-%E5%88%86%E5%8C%BA%E5%86%85%E9%A1%BA%E5%BA%8F%EF%BC%9F%E7%83%AD%E7%82%B9%E5%88%86%E5%8C%BA%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="nav-number">2.16.</span> <span class="nav-text">S14. 如何保证 Kafka 分区内顺序？热点分区怎么办？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S15-Kafka-%E7%A7%AF%E5%8E%8B%E6%97%B6%E5%8F%AA%E5%8A%A0%E6%B6%88%E8%B4%B9%E8%80%85%E4%B8%8D%E5%A4%9F%E7%94%A8%E6%98%AF%E4%B8%BA%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.17.</span> <span class="nav-text">S15. Kafka 积压时只加消费者不够用是为什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-Rabbit-Rocket-%E9%80%89%E5%9E%8B"><span class="nav-number">2.18.</span> <span class="nav-text">1.3 Rabbit &#x2F; Rocket &#x2F; 选型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S16-RabbitMQ-Exchange-%E5%9B%9B%E7%A7%8D%E7%B1%BB%E5%9E%8B%E4%B8%80%E5%8F%A5%E8%AF%9D%EF%BC%9F"><span class="nav-number">2.19.</span> <span class="nav-text">S16. RabbitMQ Exchange 四种类型一句话？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S17-Rabbit-%E5%A6%82%E4%BD%95%E5%81%9A%E7%94%9F%E4%BA%A7%E4%B8%8E%E6%B6%88%E8%B4%B9%E7%A1%AE%E8%AE%A4%EF%BC%9F%E6%AD%BB%E4%BF%A1%E9%93%BE%E8%B7%AF%EF%BC%9F"><span class="nav-number">2.20.</span> <span class="nav-text">S17. Rabbit 如何做生产与消费确认？死信链路？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S18-RocketMQ-CommitLog-%E4%B8%8E-ConsumeQueue%EF%BC%9F%E4%BA%8B%E5%8A%A1%E5%8D%8A%E6%B6%88%E6%81%AF%E6%AD%A5%E9%AA%A4%EF%BC%9F"><span class="nav-number">2.21.</span> <span class="nav-text">S18. RocketMQ CommitLog 与 ConsumeQueue？事务半消息步骤？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S19-%E6%97%A5%E5%BF%97%E9%87%87%E9%9B%86%E3%80%81%E8%AE%A2%E5%8D%95%E4%BA%A4%E6%98%93%E3%80%81%E5%A4%8D%E6%9D%82%E8%B7%AF%E7%94%B1%E5%90%84%E5%80%BE%E5%90%91%E5%93%AA%E4%B8%AA-MQ%EF%BC%9F"><span class="nav-number">2.22.</span> <span class="nav-text">S19. 日志采集、订单交易、复杂路由各倾向哪个 MQ？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S20-%E5%8F%A3%E8%BF%B0%E9%80%89%E5%9E%8B%E5%86%B3%E7%AD%96%E6%A0%91%E4%B8%80%E5%8F%A5%E7%89%88%E3%80%82"><span class="nav-number">2.23.</span> <span class="nav-text">S20. 口述选型决策树一句版。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S21-Redis-List-Stream-%E4%B8%8E%E4%B8%93%E4%B8%9A-MQ-%E8%BE%B9%E7%95%8C%EF%BC%9F"><span class="nav-number">2.24.</span> <span class="nav-text">S21. Redis List&#x2F;Stream 与专业 MQ 边界？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S22-%E7%94%9F%E4%BA%A7%E4%B8%8A%E7%BA%BF-MQ-%E5%89%8D%E4%BD%A0%E4%BC%9A%E6%A3%80%E6%9F%A5%E5%93%AA%E4%BA%94%E4%BB%B6%E4%BA%8B%EF%BC%9F"><span class="nav-number">2.25.</span> <span class="nav-text">S22. 生产上线 MQ 前你会检查哪五件事？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S23-Rabbit-prefetch-%E4%B8%8E-Kafka-%E5%88%86%E5%8C%BA%E6%95%B0%E5%9C%A8%E3%80%8C%E6%B6%88%E8%B4%B9%E5%B9%B6%E8%A1%8C%E3%80%8D%E4%B8%8A%E5%90%84%E7%AE%A1%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.26.</span> <span class="nav-text">S23. Rabbit prefetch 与 Kafka 分区数在「消费并行」上各管什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S24-Kafka-%E4%BF%9D%E7%95%99%E6%97%B6%E9%97%B4%E5%B0%86%E5%B0%BD%E8%80%8C-lag-%E4%BB%8D%E5%BE%88%E9%AB%98%E6%84%8F%E5%91%B3%E7%9D%80%E4%BB%80%E4%B9%88%EF%BC%9FRocket-Tag-%E8%BF%87%E6%BB%A4%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.27.</span> <span class="nav-text">S24. Kafka 保留时间将尽而 lag 仍很高意味着什么？Rocket Tag 过滤要注意什么？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%9D%A2%E8%AF%95%E7%9C%9F%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">2. 面试真题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%B3%BB%E7%BB%9F%E9%87%8C%E8%A6%81%E5%BC%95%E5%85%A5%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%EF%BC%9F%E6%9C%89%E4%BB%80%E4%B9%88%E7%BC%BA%E7%82%B9%EF%BC%9F"><span class="nav-number">3.1.</span> <span class="nav-text">I1. 为什么系统里要引入消息队列？有什么缺点？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I2-%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E4%B8%8D%E4%B8%A2%E5%A4%B1%EF%BC%9F"><span class="nav-number">3.2.</span> <span class="nav-text">I2. 如何保证消息不丢失？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I3-%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E4%B8%8D%E8%A2%AB%E9%87%8D%E5%A4%8D%E6%B6%88%E8%B4%B9%EF%BC%9F"><span class="nav-number">3.3.</span> <span class="nav-text">I3. 如何保证消息不被重复消费？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I4-%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E9%A1%BA%E5%BA%8F%EF%BC%9F"><span class="nav-number">3.4.</span> <span class="nav-text">I4. 如何保证消息顺序？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I5-%E6%B6%88%E6%81%AF%E7%A7%AF%E5%8E%8B%E4%BA%86%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="nav-number">3.5.</span> <span class="nav-text">I5. 消息积压了怎么办？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I6-Kafka-%E6%9E%B6%E6%9E%84%E6%80%8E%E4%B9%88%E8%AE%B2%EF%BC%9FISR-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.6.</span> <span class="nav-text">I6. Kafka 架构怎么讲？ISR 是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I7-Kafka-Consumer-Group-%E4%B8%8E-Rebalance%EF%BC%9F"><span class="nav-number">3.7.</span> <span class="nav-text">I7. Kafka Consumer Group 与 Rebalance？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I8-Kafka-%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E9%AB%98%E5%90%9E%E5%90%90%EF%BC%9F"><span class="nav-number">3.8.</span> <span class="nav-text">I8. Kafka 如何实现高吞吐？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I9-RabbitMQ-%E4%B8%8E-Kafka-%E6%80%8E%E4%B9%88%E5%AF%B9%E6%AF%94%E9%80%89%E5%9E%8B%EF%BC%9F"><span class="nav-number">3.9.</span> <span class="nav-text">I9. RabbitMQ 与 Kafka 怎么对比选型？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I10-RocketMQ-%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%E7%9A%84%EF%BC%9F"><span class="nav-number">3.10.</span> <span class="nav-text">I10. RocketMQ 事务消息怎么实现的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I11-RocketMQ-%E5%92%8C-Kafka-%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B%E5%B7%AE%E5%BC%82%EF%BC%9F"><span class="nav-number">3.11.</span> <span class="nav-text">I11. RocketMQ 和 Kafka 存储模型差异？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I12-%E5%BB%B6%E6%97%B6%E6%B6%88%E6%81%AF%E5%90%84%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F"><span class="nav-number">3.12.</span> <span class="nav-text">I12. 延时消息各怎么做？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I13-%E5%A6%82%E6%9E%9C%E8%AE%A9%E4%BD%A0%E8%AE%BE%E8%AE%A1%E3%80%8C%E8%AE%A2%E5%8D%95%E5%88%9B%E5%BB%BA%E5%90%8E%E9%80%9A%E7%9F%A5%E5%A4%9A%E4%B8%AA%E4%B8%8B%E6%B8%B8%E3%80%8D%EF%BC%8C%E6%80%8E%E4%B9%88%E7%94%A8-MQ%EF%BC%9F"><span class="nav-number">3.13.</span> <span class="nav-text">I13. 如果让你设计「订单创建后通知多个下游」，怎么用 MQ？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I14-%E8%87%AA%E5%8A%A8%E6%8F%90%E4%BA%A4-offset-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%B1%E9%99%A9%EF%BC%9F"><span class="nav-number">3.14.</span> <span class="nav-text">I14. 自动提交 offset 为什么危险？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I15-%E4%B8%89%E5%A4%A7-MQ-%E5%A6%82%E4%BD%95%E4%B8%80%E5%88%86%E9%92%9F%E9%80%89%E5%9E%8B%EF%BC%9F"><span class="nav-number">3.15.</span> <span class="nav-text">I15. 三大 MQ 如何一分钟选型？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I16-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E4%BC%9A%E5%B8%A6%E6%9D%A5%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E9%97%AE%E9%A2%98%E5%90%97%EF%BC%9F%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">3.16.</span> <span class="nav-text">I16. 消息队列会带来分布式事务问题吗？怎么处理？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I17-%E8%AE%A2%E5%8D%95%E6%94%AF%E4%BB%98%E6%88%90%E5%8A%9F%E5%90%8E%E8%A6%81%E9%80%9A%E7%9F%A5%E5%BA%93%E5%AD%98%E3%80%81%E7%A7%AF%E5%88%86%E3%80%81%E6%90%9C%E7%B4%A2%EF%BC%8C%E4%BD%A0%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1%EF%BC%9F"><span class="nav-number">3.17.</span> <span class="nav-text">I17. 订单支付成功后要通知库存、积分、搜索，你怎么设计？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I18-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%9F%E4%BA%A7%E5%B8%B8%E5%85%B3%E9%97%AD-unclean-leader-election%EF%BC%9FSchema-%E5%A5%91%E7%BA%A6%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.18.</span> <span class="nav-text">I18. 为什么生产常关闭 unclean leader election？Schema 契约解决什么？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%9D%A2%E7%BB%8F%E4%B8%8E%E9%A2%98%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">参考面经与题库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%AF%B9%E7%85%A7%E4%B8%8E%E5%AE%9E%E8%B7%B5%E6%B8%85%E5%8D%95"><span class="nav-number">5.</span> <span class="nav-text">3. 对照与实践清单</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%9B%9B%E9%97%AE%E9%A2%98%E5%AF%B9%E7%85%A7"><span class="nav-number">5.1.</span> <span class="nav-text">3.1 四问题对照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E9%80%89%E5%9E%8B%E9%80%9F%E6%9F%A5"><span class="nav-number">5.2.</span> <span class="nav-text">3.2 选型速查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%AE%9E%E8%B7%B5-checklist"><span class="nav-number">5.3.</span> <span class="nav-text">3.3 实践 checklist</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%B3%BB%E5%88%97%E5%AF%BC%E8%88%AA"><span class="nav-number">6.</span> <span class="nav-text">4. 系列导航</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/28/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="消息队列学习-自检面试与对照 | 我的记录小站">
+      <meta itemprop="description" content="消息队列阶段自检与面试导向问答；覆盖丢&#x2F;重&#x2F;乱&#x2F;积压、Kafka 与三大选型，含 checklist 与面经参考。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          消息队列学习-自检面试与对照
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-06 13:00:00" itemprop="dateCreated datePublished" datetime="2026-08-06T13:00:00+08:00">2026-08-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">消息队列阶段自检与面试导向问答；覆盖丢/重/乱/积压、Kafka 与三大选型，含 checklist 与面经参考。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>完成 <a href="/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">基础模型</a>、<a href="/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">Kafka</a> 与 <a href="/2026/09/27/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-RabbitMQ%E4%B8%8ERocketMQ%E5%AF%B9%E7%85%A7%E9%80%89%E5%9E%8B/">对照选型</a> 后，重点能讲清为何用 MQ、四问题怎么解、Kafka 参数与三大选型。本篇用自检验收，再用公开面经高频点训练表达。</p>
+<span id="more"></span>
+<h2 id="0-使用说明"><a href="#0-使用说明" class="headerlink" title="0. 使用说明"></a>0. 使用说明</h2><p>建议先遮住「推荐回答」，在 60～120 秒内口述：</p>
+<ol>
+<li>先给结论（要不要 MQ、选哪个、语义目标）。</li>
+<li>讲机制（分区&#x2F;ISR、Confirm、半消息）。</li>
+<li>点风险（自动提交丢消息、无幂等、积压重试风暴）。</li>
+<li>落到工程措施（手动 ACK、唯一键、lag 告警、决策树）。</li>
+</ol>
+<hr>
+<h2 id="1-学习自检"><a href="#1-学习自检" class="headerlink" title="1. 学习自检"></a>1. 学习自检</h2><h3 id="1-1-通用模型"><a href="#1-1-通用模型" class="headerlink" title="1.1 通用模型"></a>1.1 通用模型</h3><h3 id="S1-为什么要用消息队列？什么时候不该用？"><a href="#S1-为什么要用消息队列？什么时候不该用？" class="headerlink" title="S1. 为什么要用消息队列？什么时候不该用？"></a>S1. 为什么要用消息队列？什么时候不该用？</h3><p><strong>推荐回答：</strong> 解耦、异步、削峰、最终一致。强同步强一致主路径、流量极小、或把 MQ 当 DB 查历史时不该硬上。</p>
+<h3 id="S2-至少一次与恰好一次在工程上怎么落？"><a href="#S2-至少一次与恰好一次在工程上怎么落？" class="headerlink" title="S2. 至少一次与恰好一次在工程上怎么落？"></a>S2. 至少一次与恰好一次在工程上怎么落？</h3><p><strong>推荐回答：</strong> 默认追求至少一次（生产确认+副本+先处理再 ACK）。恰好一次需产品事务&#x2F;幂等链路且成本高；<strong>业务幂等仍不可省</strong>。</p>
+<h3 id="S3-丢消息可能发生在哪三段？各怎么防？"><a href="#S3-丢消息可能发生在哪三段？各怎么防？" class="headerlink" title="S3. 丢消息可能发生在哪三段？各怎么防？"></a>S3. 丢消息可能发生在哪三段？各怎么防？</h3><p><strong>推荐回答：</strong> 生产未等确认；Broker 无耐久&#x2F;副本不足；消费先 ACK 后处理失败。对策：Confirm&#x2F;acks、持久化与 ISR、手动提交且成功后 ACK。</p>
+<h3 id="S4-为何说「先幂等，再调-MQ-参数」？"><a href="#S4-为何说「先幂等，再调-MQ-参数」？" class="headerlink" title="S4. 为何说「先幂等，再调 MQ 参数」？"></a>S4. 为何说「先幂等，再调 MQ 参数」？</h3><p><strong>推荐回答：</strong> 至少一次必然可能重复；参数只降概率。用唯一键、状态机、去重表消灭重复危害。</p>
+<h3 id="S5-全局有序和分区内有序差别？如何保证同订单有序？"><a href="#S5-全局有序和分区内有序差别？如何保证同订单有序？" class="headerlink" title="S5. 全局有序和分区内有序差别？如何保证同订单有序？"></a>S5. 全局有序和分区内有序差别？如何保证同订单有序？</h3><p><strong>推荐回答：</strong> 全局有序吞吐差。同业务 key 进同一分区&#x2F;队列且串行消费。跨分区不保证。</p>
+<h3 id="S6-消息积压怎么发现和处理？临时分流是什么？"><a href="#S6-消息积压怎么发现和处理？临时分流是什么？" class="headerlink" title="S6. 消息积压怎么发现和处理？临时分流是什么？"></a>S6. 消息积压怎么发现和处理？临时分流是什么？</h3><p><strong>推荐回答：</strong> 看 lag&#x2F;队列深度。扩消费者（匹配分区）、优化逻辑、扩分区、降级丢弃+补偿。临时分流：新 Topic&#x2F;新消费者救急止血。</p>
+<h3 id="S7-重试风暴有什么危害？死信队列作用？"><a href="#S7-重试风暴有什么危害？死信队列作用？" class="headerlink" title="S7. 重试风暴有什么危害？死信队列作用？"></a>S7. 重试风暴有什么危害？死信队列作用？</h3><p><strong>推荐回答：</strong> 下游故障时疯狂重试会打得更死；要退避熔断。死信承接超次失败供人工&#x2F;补偿，需有处理剧本。</p>
+<h3 id="S8-本地消息表-Outbox-解决什么？"><a href="#S8-本地消息表-Outbox-解决什么？" class="headerlink" title="S8. 本地消息表 &#x2F; Outbox 解决什么？"></a>S8. 本地消息表 &#x2F; Outbox 解决什么？</h3><p><strong>推荐回答：</strong> 业务事务与发消息尽量同成败：同事务写 Outbox，异步 relay 发 MQ；下游仍幂等。</p>
+<h3 id="1-2-Kafka"><a href="#1-2-Kafka" class="headerlink" title="1.2 Kafka"></a>1.2 Kafka</h3><h3 id="S9-Topic、Partition、Consumer-Group-关系？"><a href="#S9-Topic、Partition、Consumer-Group-关系？" class="headerlink" title="S9. Topic、Partition、Consumer Group 关系？"></a>S9. Topic、Partition、Consumer Group 关系？</h3><p><strong>推荐回答：</strong> Topic 分多分区并行；同 Group 分摊分区且一分区至多一活跃消费者；不同 Group 独立进度，实现多下游。</p>
+<h3 id="S10-Kafka-为什么快？举三点。"><a href="#S10-Kafka-为什么快？举三点。" class="headerlink" title="S10. Kafka 为什么快？举三点。"></a>S10. Kafka 为什么快？举三点。</h3><p><strong>推荐回答：</strong> 顺序写、批量、分区并行；零拷贝&#x2F;页缓存等认名。</p>
+<h3 id="S11-acks-0-1-all-与丢消息关系？为何还要-min-insync-replicas？"><a href="#S11-acks-0-1-all-与丢消息关系？为何还要-min-insync-replicas？" class="headerlink" title="S11. acks=0/1/all 与丢消息关系？为何还要 min.insync.replicas？"></a>S11. <code>acks=0/1/all</code> 与丢消息关系？为何还要 <code>min.insync.replicas</code>？</h3><p><strong>推荐回答：</strong> 0 最易丢；1 Leader 挂可能丢；all 等 ISR。min.insync 防止 ISR 过少时假成功。</p>
+<h3 id="S12-自动提交-offset-有什么风险？推荐怎么做？"><a href="#S12-自动提交-offset-有什么风险？推荐怎么做？" class="headerlink" title="S12. 自动提交 offset 有什么风险？推荐怎么做？"></a>S12. 自动提交 offset 有什么风险？推荐怎么做？</h3><p><strong>推荐回答：</strong> 可能未处理完已提交→丢。手动：业务成功（幂等写）后再 commit。</p>
+<h3 id="S13-Rebalance-会带来什么？如何减轻？"><a href="#S13-Rebalance-会带来什么？如何减轻？" class="headerlink" title="S13. Rebalance 会带来什么？如何减轻？"></a>S13. Rebalance 会带来什么？如何减轻？</h3><p><strong>推荐回答：</strong> 停消费、易重复。合理超时心跳、避免频繁扩缩、处理勿过长；业务幂等。</p>
+<h3 id="S14-如何保证-Kafka-分区内顺序？热点分区怎么办？"><a href="#S14-如何保证-Kafka-分区内顺序？热点分区怎么办？" class="headerlink" title="S14. 如何保证 Kafka 分区内顺序？热点分区怎么办？"></a>S14. 如何保证 Kafka 分区内顺序？热点分区怎么办？</h3><p><strong>推荐回答：</strong> 固定业务 key 分区；同分区串行消费。热点则打散 key 或拆分业务。</p>
+<h3 id="S15-Kafka-积压时只加消费者不够用是为什么？"><a href="#S15-Kafka-积压时只加消费者不够用是为什么？" class="headerlink" title="S15. Kafka 积压时只加消费者不够用是为什么？"></a>S15. Kafka 积压时只加消费者不够用是为什么？</h3><p><strong>推荐回答：</strong> 并行度受分区数限制；需先扩分区再扩消费者（有序主题慎扩）。</p>
+<h3 id="1-3-Rabbit-Rocket-选型"><a href="#1-3-Rabbit-Rocket-选型" class="headerlink" title="1.3 Rabbit &#x2F; Rocket &#x2F; 选型"></a>1.3 Rabbit &#x2F; Rocket &#x2F; 选型</h3><h3 id="S16-RabbitMQ-Exchange-四种类型一句话？"><a href="#S16-RabbitMQ-Exchange-四种类型一句话？" class="headerlink" title="S16. RabbitMQ Exchange 四种类型一句话？"></a>S16. RabbitMQ Exchange 四种类型一句话？</h3><p><strong>推荐回答：</strong> direct 精确；topic 模式；fanout 广播；headers 按头。</p>
+<h3 id="S17-Rabbit-如何做生产与消费确认？死信链路？"><a href="#S17-Rabbit-如何做生产与消费确认？死信链路？" class="headerlink" title="S17. Rabbit 如何做生产与消费确认？死信链路？"></a>S17. Rabbit 如何做生产与消费确认？死信链路？</h3><p><strong>推荐回答：</strong> Publisher Confirm；手动 ACK。拒绝&#x2F;过期等进 DLX 再到死信队列。</p>
+<h3 id="S18-RocketMQ-CommitLog-与-ConsumeQueue？事务半消息步骤？"><a href="#S18-RocketMQ-CommitLog-与-ConsumeQueue？事务半消息步骤？" class="headerlink" title="S18. RocketMQ CommitLog 与 ConsumeQueue？事务半消息步骤？"></a>S18. RocketMQ CommitLog 与 ConsumeQueue？事务半消息步骤？</h3><p><strong>推荐回答：</strong> CommitLog 顺序存全量消息；ConsumeQueue 索引。半消息→本地事务→Commit&#x2F;Rollback，超时回查。</p>
+<h3 id="S19-日志采集、订单交易、复杂路由各倾向哪个-MQ？"><a href="#S19-日志采集、订单交易、复杂路由各倾向哪个-MQ？" class="headerlink" title="S19. 日志采集、订单交易、复杂路由各倾向哪个 MQ？"></a>S19. 日志采集、订单交易、复杂路由各倾向哪个 MQ？</h3><p><strong>推荐回答：</strong> 日志&#x2F;流→Kafka；交易事务延时海量 Topic→RocketMQ；复杂路由轻量→RabbitMQ。可组合。</p>
+<h3 id="S20-口述选型决策树一句版。"><a href="#S20-口述选型决策树一句版。" class="headerlink" title="S20. 口述选型决策树一句版。"></a>S20. 口述选型决策树一句版。</h3><p><strong>推荐回答：</strong> 吞吐流生态选 Kafka；业务事务&#x2F;延时选 Rocket；灵活路由选 Rabbit；都要则可能多个 MQ。见对照篇 §5。</p>
+<h3 id="S21-Redis-List-Stream-与专业-MQ-边界？"><a href="#S21-Redis-List-Stream-与专业-MQ-边界？" class="headerlink" title="S21. Redis List&#x2F;Stream 与专业 MQ 边界？"></a>S21. Redis List&#x2F;Stream 与专业 MQ 边界？</h3><p><strong>推荐回答：</strong> Redis 可简易队列&#x2F;流，缺完整可靠投递与积压运维产品力；可靠异步以本系列 MQ 为主。回链 Redis 篇。</p>
+<h3 id="S22-生产上线-MQ-前你会检查哪五件事？"><a href="#S22-生产上线-MQ-前你会检查哪五件事？" class="headerlink" title="S22. 生产上线 MQ 前你会检查哪五件事？"></a>S22. 生产上线 MQ 前你会检查哪五件事？</h3><p><strong>推荐回答：</strong> 语义与幂等；生产确认&#x2F;耐久；消费 ACK 时机；lag&#x2F;死信告警与剧本；鉴权隔离与选型理由。见对照篇 §6。</p>
+<h3 id="S23-Rabbit-prefetch-与-Kafka-分区数在「消费并行」上各管什么？"><a href="#S23-Rabbit-prefetch-与-Kafka-分区数在「消费并行」上各管什么？" class="headerlink" title="S23. Rabbit prefetch 与 Kafka 分区数在「消费并行」上各管什么？"></a>S23. Rabbit prefetch 与 Kafka 分区数在「消费并行」上各管什么？</h3><p><strong>推荐回答：</strong> Rabbit prefetch 限制未 ACK 在途条数，防单消费者被冲垮。Kafka 同 Group 有效并行度受 <strong>分区数</strong> 限制，再配合 <code>max.poll.records</code>。Rocket 看队列数与消费线程。见对照篇 §4.4。</p>
+<h3 id="S24-Kafka-保留时间将尽而-lag-仍很高意味着什么？Rocket-Tag-过滤要注意什么？"><a href="#S24-Kafka-保留时间将尽而-lag-仍很高意味着什么？Rocket-Tag-过滤要注意什么？" class="headerlink" title="S24. Kafka 保留时间将尽而 lag 仍很高意味着什么？Rocket Tag 过滤要注意什么？"></a>S24. Kafka 保留时间将尽而 lag 仍很高意味着什么？Rocket Tag 过滤要注意什么？</h3><p><strong>推荐回答：</strong> 旧段可能被删，业务视角「像丢」，要 lag+保留一起告警。Tag&#x2F;SQL 过滤过窄会导致下游收不到；要监控消费量与死信。5.x 另有 Proxy 接入认名。</p>
+<hr>
+<h2 id="2-面试真题"><a href="#2-面试真题" class="headerlink" title="2. 面试真题"></a>2. 面试真题</h2><blockquote>
+<p>以下题目按主题归纳、改写自公开面经与题库，用于训练表达，并非逐题对应某一场真实面试；综合参考来源见文末「参考面经与题库」。</p>
+</blockquote>
+<h3 id="I1-为什么系统里要引入消息队列？有什么缺点？"><a href="#I1-为什么系统里要引入消息队列？有什么缺点？" class="headerlink" title="I1. 为什么系统里要引入消息队列？有什么缺点？"></a>I1. 为什么系统里要引入消息队列？有什么缺点？</h3><p><strong>推荐回答：</strong> 解耦异步削峰。缺点：排障链路变长、一致性变最终、运维与重复消费问题。要评估值不值得。</p>
+<h3 id="I2-如何保证消息不丢失？"><a href="#I2-如何保证消息不丢失？" class="headerlink" title="I2. 如何保证消息不丢失？"></a>I2. 如何保证消息不丢失？</h3><p><strong>推荐回答：</strong> 按生产&#x2F;Broker&#x2F;消费三段答，并落到 Kafka acks 或 Rabbit Confirm 或 Rocket 同步发送之一作例子。</p>
+<h3 id="I3-如何保证消息不被重复消费？"><a href="#I3-如何保证消息不被重复消费？" class="headerlink" title="I3. 如何保证消息不被重复消费？"></a>I3. 如何保证消息不被重复消费？</h3><p><strong>推荐回答：</strong> 承认至少一次；业务幂等（唯一键&#x2F;状态机）；再提 Kafka 幂等 Producer 等辅助。</p>
+<h3 id="I4-如何保证消息顺序？"><a href="#I4-如何保证消息顺序？" class="headerlink" title="I4. 如何保证消息顺序？"></a>I4. 如何保证消息顺序？</h3><p><strong>推荐回答：</strong> 同 key 同分区&#x2F;队列 + 单线程消费；不追求全局有序。</p>
+<h3 id="I5-消息积压了怎么办？"><a href="#I5-消息积压了怎么办？" class="headerlink" title="I5. 消息积压了怎么办？"></a>I5. 消息积压了怎么办？</h3><p><strong>推荐回答：</strong> 先看 lag 与原因；扩容匹配分区、优化消费、临时分流、降级补偿；忌重试风暴。</p>
+<h3 id="I6-Kafka-架构怎么讲？ISR-是什么？"><a href="#I6-Kafka-架构怎么讲？ISR-是什么？" class="headerlink" title="I6. Kafka 架构怎么讲？ISR 是什么？"></a>I6. Kafka 架构怎么讲？ISR 是什么？</h3><p><strong>推荐回答：</strong> Topic 分区副本，Leader 读写，Follower 同步；ISR 为同步副本集；与 acks&#x3D;all 相关。</p>
+<h3 id="I7-Kafka-Consumer-Group-与-Rebalance？"><a href="#I7-Kafka-Consumer-Group-与-Rebalance？" class="headerlink" title="I7. Kafka Consumer Group 与 Rebalance？"></a>I7. Kafka Consumer Group 与 Rebalance？</h3><p><strong>推荐回答：</strong> 组分摊分区；成员变化触发再均衡；期间停消费且易重复，需幂等与合理超时。</p>
+<h3 id="I8-Kafka-如何实现高吞吐？"><a href="#I8-Kafka-如何实现高吞吐？" class="headerlink" title="I8. Kafka 如何实现高吞吐？"></a>I8. Kafka 如何实现高吞吐？</h3><p><strong>推荐回答：</strong> 顺序写、批量、分区并行、零拷贝&#x2F;页缓存等。</p>
+<h3 id="I9-RabbitMQ-与-Kafka-怎么对比选型？"><a href="#I9-RabbitMQ-与-Kafka-怎么对比选型？" class="headerlink" title="I9. RabbitMQ 与 Kafka 怎么对比选型？"></a>I9. RabbitMQ 与 Kafka 怎么对比选型？</h3><p><strong>推荐回答：</strong> Rabbit 路由灵活、延迟好、吞吐较弱；Kafka 吞吐与流生态强、路由模型简单。场景决定。</p>
+<h3 id="I10-RocketMQ-事务消息怎么实现的？"><a href="#I10-RocketMQ-事务消息怎么实现的？" class="headerlink" title="I10. RocketMQ 事务消息怎么实现的？"></a>I10. RocketMQ 事务消息怎么实现的？</h3><p><strong>推荐回答：</strong> 半消息→本地事务→提交&#x2F;回滚；超时回查生产者。下游仍幂等。</p>
+<h3 id="I11-RocketMQ-和-Kafka-存储模型差异？"><a href="#I11-RocketMQ-和-Kafka-存储模型差异？" class="headerlink" title="I11. RocketMQ 和 Kafka 存储模型差异？"></a>I11. RocketMQ 和 Kafka 存储模型差异？</h3><p><strong>推荐回答：</strong> Kafka 按分区日志；Rocket CommitLog 集中顺序写 + ConsumeQueue 索引，利于海量 Topic。</p>
+<h3 id="I12-延时消息各怎么做？"><a href="#I12-延时消息各怎么做？" class="headerlink" title="I12. 延时消息各怎么做？"></a>I12. 延时消息各怎么做？</h3><p><strong>推荐回答：</strong> Rocket 原生友好；Rabbit TTL+DLX&#x2F;插件；Kafka 常业务延迟或外部调度。</p>
+<h3 id="I13-如果让你设计「订单创建后通知多个下游」，怎么用-MQ？"><a href="#I13-如果让你设计「订单创建后通知多个下游」，怎么用-MQ？" class="headerlink" title="I13. 如果让你设计「订单创建后通知多个下游」，怎么用 MQ？"></a>I13. 如果让你设计「订单创建后通知多个下游」，怎么用 MQ？</h3><p><strong>推荐回答：</strong> 发订单事件 Topic；多 Consumer Group（库存、积分、搜索）；生产耐久+消费幂等；关键可用 Outbox。</p>
+<h3 id="I14-自动提交-offset-为什么危险？"><a href="#I14-自动提交-offset-为什么危险？" class="headerlink" title="I14. 自动提交 offset 为什么危险？"></a>I14. 自动提交 offset 为什么危险？</h3><p><strong>推荐回答：</strong> 可能丢；应处理成功后手动提交，并接受重复+幂等。</p>
+<h3 id="I15-三大-MQ-如何一分钟选型？"><a href="#I15-三大-MQ-如何一分钟选型？" class="headerlink" title="I15. 三大 MQ 如何一分钟选型？"></a>I15. 三大 MQ 如何一分钟选型？</h3><p><strong>推荐回答：</strong> 按决策树：流&#x2F;日志 Kafka；交易事务 Rocket；复杂路由 Rabbit；表维度吞吐&#x2F;事务&#x2F;Topic 规模。</p>
+<h3 id="I16-消息队列会带来分布式事务问题吗？怎么处理？"><a href="#I16-消息队列会带来分布式事务问题吗？怎么处理？" class="headerlink" title="I16. 消息队列会带来分布式事务问题吗？怎么处理？"></a>I16. 消息队列会带来分布式事务问题吗？怎么处理？</h3><p><strong>推荐回答：</strong> 会变成最终一致。手段：本地消息表&#x2F;Outbox、Rocket 事务消息、下游幂等与对账补偿；避免处处 2PC。</p>
+<h3 id="I17-订单支付成功后要通知库存、积分、搜索，你怎么设计？"><a href="#I17-订单支付成功后要通知库存、积分、搜索，你怎么设计？" class="headerlink" title="I17. 订单支付成功后要通知库存、积分、搜索，你怎么设计？"></a>I17. 订单支付成功后要通知库存、积分、搜索，你怎么设计？</h3><p><strong>推荐回答：</strong> Outbox 发 <code>OrderPaid</code>（eventId+orderId）；Kafka 多 Consumer Group 各幂等处理；key&#x3D;orderId 保顺序；失败进死信可重放。见基础篇 §10。</p>
+<h3 id="I18-为什么生产常关闭-unclean-leader-election？Schema-契约解决什么？"><a href="#I18-为什么生产常关闭-unclean-leader-election？Schema-契约解决什么？" class="headerlink" title="I18. 为什么生产常关闭 unclean leader election？Schema 契约解决什么？"></a>I18. 为什么生产常关闭 unclean leader election？Schema 契约解决什么？</h3><p><strong>推荐回答：</strong> unclean 允许非 ISR 当 Leader，可能丢已确认数据；关掉则 ISR 不足时拒绝写。Schema&#x2F;版本字段解决多下游结构兼容，不替代业务幂等。见 Kafka 篇 §1&#x2F;§9.2。</p>
+<hr>
+<h2 id="参考面经与题库"><a href="#参考面经与题库" class="headerlink" title="参考面经与题库"></a>参考面经与题库</h2><p>本篇面试题按主题归纳、改写自以下公开资料，非逐题一一对应原文，请以各平台原文为准：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://xiaolincoding.com/interview/mq.html">小林coding · 消息队列面试题</a></li>
+<li><a target="_blank" rel="noopener" href="https://javaguide.cn/high-performance/message-queue/">JavaGuide · 消息队列专题</a></li>
+<li><a target="_blank" rel="noopener" href="https://javaguide.cn/high-performance/message-queue/kafka-questions-01.html">JavaGuide · Kafka 常见问题总结</a></li>
+<li><a target="_blank" rel="noopener" href="https://javaguide.cn/high-performance/message-queue/rocketmq-questions.html">JavaGuide · RocketMQ 常见问题总结</a></li>
+<li><a target="_blank" rel="noopener" href="https://kafka.apache.org/documentation/">Kafka 官方文档 · Documentation</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rabbitmq.com/docs/confirms">RabbitMQ 官方 · Publishers Confirms</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/1648237">阿里云开发者 · RocketMQ&#x2F;Kafka&#x2F;RabbitMQ 选型</a></li>
+</ul>
+<hr>
+<h2 id="3-对照与实践清单"><a href="#3-对照与实践清单" class="headerlink" title="3. 对照与实践清单"></a>3. 对照与实践清单</h2><h3 id="3-1-四问题对照"><a href="#3-1-四问题对照" class="headerlink" title="3.1 四问题对照"></a>3.1 四问题对照</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>通用抓手</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>丢</td>
+<td>三段确认</td>
+</tr>
+<tr>
+<td>重</td>
+<td>业务幂等</td>
+</tr>
+<tr>
+<td>乱</td>
+<td>同 key 同分区</td>
+</tr>
+<tr>
+<td>积压</td>
+<td>lag + 扩容&#x2F;优化&#x2F;分流</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-选型速查"><a href="#3-2-选型速查" class="headerlink" title="3.2 选型速查"></a>3.2 选型速查</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>倾向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>日志&#x2F;流</td>
+<td>Kafka</td>
+</tr>
+<tr>
+<td>交易&#x2F;事务&#x2F;延时</td>
+<td>RocketMQ</td>
+</tr>
+<tr>
+<td>复杂路由</td>
+<td>RabbitMQ</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-实践-checklist"><a href="#3-3-实践-checklist" class="headerlink" title="3.3 实践 checklist"></a>3.3 实践 checklist</h3><ul>
+<li><input disabled="" type="checkbox"> 能默写丢消息三段与至少一次时序  </li>
+<li><input disabled="" type="checkbox"> 能讲 Kafka acks + ISR + 手动提交  </li>
+<li><input disabled="" type="checkbox"> 能讲 Rabbit Confirm + ACK + 死信  </li>
+<li><input disabled="" type="checkbox"> 能讲 Rocket 半消息回查  </li>
+<li><input disabled="" type="checkbox"> 能用决策树做一次选型口述  </li>
+<li><input disabled="" type="checkbox"> 能口述订单支付多 Group 端到端（Outbox+幂等+死信）  </li>
+<li><input disabled="" type="checkbox"> 能说明 prefetch &#x2F; 分区数 &#x2F; 队列数如何控并行  </li>
+<li><input disabled="" type="checkbox"> 知 Kafka 保留将尽+高 lag「像丢」；Rocket 过滤与重试&#x2F;死信  </li>
+<li><input disabled="" type="checkbox"> 自检 S 过半（含 S23–S24）；I 至少练 6 题</li>
+</ul>
+<hr>
+<h2 id="4-系列导航"><a href="#4-系列导航" class="headerlink" title="4. 系列导航"></a>4. 系列导航</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">基础模型与通用工程问题</span><br><span class="line">  → Kafka核心与生产实践</span><br><span class="line">  → RabbitMQ与RocketMQ对照选型</span><br><span class="line">  → 自检面试与对照（本篇）</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><a href="/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">基础模型与通用工程问题</a></li>
+<li><a href="/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">Kafka核心与生产实践</a></li>
+<li><a href="/2026/09/27/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-RabbitMQ%E4%B8%8ERocketMQ%E5%AF%B9%E7%85%A7%E9%80%89%E5%9E%8B/">RabbitMQ与RocketMQ对照选型</a></li>
+<li><a href="/2026/09/28/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">自检面试与对照</a>（本篇）</li>
+</ul>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通用四问题是底盘；Kafka 是吞吐主路径；Rabbit&#x2F;Rocket 补路由与业务消息能力。加厚后的端到端案例、prefetch&#x2F;过滤&#x2F;保留风险能口述——清单勾完即本系列阶段性毕业。</p>
+<p><strong>前置：</strong> <a href="/2026/09/27/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-RabbitMQ%E4%B8%8ERocketMQ%E5%AF%B9%E7%85%A7%E9%80%89%E5%9E%8B/">对照选型</a> · <a href="/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">Kafka</a> · <a href="/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">基础模型</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" rel="tag"># 消息队列</a>
+              <a href="/tags/Kafka/" rel="tag"># Kafka</a>
+              <a href="/tags/RabbitMQ/" rel="tag"># RabbitMQ</a>
+              <a href="/tags/RocketMQ/" rel="tag"># RocketMQ</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/27/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-RabbitMQ%E4%B8%8ERocketMQ%E5%AF%B9%E7%85%A7%E9%80%89%E5%9E%8B/" rel="prev" title="消息队列学习-RabbitMQ与RocketMQ对照选型">
+                  <i class="fa fa-angle-left"></i> 消息队列学习-RabbitMQ与RocketMQ对照选型
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%AD%A6%E4%B9%A0-%E4%BA%8B%E5%8A%A1%E9%94%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%B6%88%E6%81%AF/" rel="next" title="分布式一致性学习-事务锁缓存与消息">
+                  分布式一致性学习-事务锁缓存与消息 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Kubernetes 一篇收齐：无状态主路径，以及有状态生产、流量策略、弹性与生产操作；本地以 kind 为例。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="容器编排学习-Kubernetes">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Kubernetes 一篇收齐：无状态主路径，以及有状态生产、流量策略、弹性与生产操作；本地以 kind 为例。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-04T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.667Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="容器">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/","path":"/2026/09/20/容器编排学习-Kubernetes/","title":"容器编排学习-Kubernetes"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>容器编排学习-Kubernetes | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%BA%E4%BD%95%E7%BC%96%E6%8E%92%EF%BC%9B%E8%B0%83%E8%B0%90%E5%BF%83%E6%99%BA"><span class="nav-number">2.</span> <span class="nav-text">1. 为何编排；调谐心智</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%A3%B0%E6%98%8E%E5%BC%8F%E4%B8%8E-kubectl"><span class="nav-number">3.</span> <span class="nav-text">2. 声明式与 kubectl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Pod-%E4%B8%8E%E6%8E%A2%E9%92%88%EF%BC%9Bcommand-args"><span class="nav-number">4.</span> <span class="nav-text">3. Pod 与探针；command&#x2F;args</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Workload"><span class="nav-number">5.</span> <span class="nav-text">4. Workload</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Deployment%EF%BC%88%E4%B8%BB%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 Deployment（主路径）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-StatefulSet%EF%BC%88%E6%9C%80%E5%B0%8F%E7%89%87%E6%AE%B5%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 StatefulSet（最小片段）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Job%EF%BC%88%E6%9C%80%E5%B0%8F%E7%89%87%E6%AE%B5%EF%BC%89"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 Job（最小片段）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-DaemonSet-CronJob%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">5.4.</span> <span class="nav-text">4.4 DaemonSet &#x2F; CronJob（认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-ConfigMap-Secret"><span class="nav-number">6.</span> <span class="nav-text">5. ConfigMap &#x2F; Secret</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Service-%E4%B8%8E-Ingress"><span class="nav-number">7.</span> <span class="nav-text">6. Service 与 Ingress</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AD%98%E5%82%A8%E8%AE%A4%E5%90%8D"><span class="nav-number">8.</span> <span class="nav-text">7. 存储认名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E8%B5%84%E6%BA%90%E4%B8%8E%E8%B0%83%E5%BA%A6"><span class="nav-number">9.</span> <span class="nav-text">8. 资源与调度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-Namespace%E3%80%81%E6%A0%87%E7%AD%BE%E3%80%81RBAC"><span class="nav-number">10.</span> <span class="nav-text">9. Namespace、标签、RBAC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E6%8E%92%E9%9A%9C%E4%B8%8E-Helm"><span class="nav-number">11.</span> <span class="nav-text">10. 排障与 Helm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E4%B8%8E-Docker-%E5%AF%B9%E7%85%A7"><span class="nav-number">12.</span> <span class="nav-text">11. 与 Docker 对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12-%E4%B8%BB%E8%B7%AF%E5%BE%84%E4%B8%B2%E8%81%94%EF%BC%9ADeployment-Service-ConfigMap"><span class="nav-number">13.</span> <span class="nav-text">12. 主路径串联：Deployment + Service + ConfigMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#13-%E6%9C%89%E7%8A%B6%E6%80%81%E7%94%9F%E4%BA%A7"><span class="nav-number">14.</span> <span class="nav-text">13. 有状态生产</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14-%E6%B5%81%E9%87%8F%E4%B8%8E%E7%BD%91%E7%BB%9C%E7%AD%96%E7%95%A5"><span class="nav-number">15.</span> <span class="nav-text">14. 流量与网络策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#14-1-Ingress-%E4%B8%8E-Controller"><span class="nav-number">15.1.</span> <span class="nav-text">14.1 Ingress 与 Controller</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-2-NetworkPolicy"><span class="nav-number">15.2.</span> <span class="nav-text">14.2 NetworkPolicy</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15-%E5%BC%B9%E6%80%A7%E4%B8%8E%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="nav-number">16.</span> <span class="nav-text">15. 弹性与稳定性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#15-1-HPA%EF%BC%88HorizontalPodAutoscaler%EF%BC%89"><span class="nav-number">16.1.</span> <span class="nav-text">15.1 HPA（HorizontalPodAutoscaler）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-2-PDB%EF%BC%88PodDisruptionBudget%EF%BC%89"><span class="nav-number">16.2.</span> <span class="nav-text">15.2 PDB（PodDisruptionBudget）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#16-%E7%94%9F%E4%BA%A7%E6%93%8D%E4%BD%9C%E4%B8%8E%E5%8F%98%E6%9B%B4"><span class="nav-number">17.</span> <span class="nav-text">16. 生产操作与变更</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#16-1-%E5%8F%98%E6%9B%B4%E4%B8%8E%E5%8F%91%E5%B8%83"><span class="nav-number">17.1.</span> <span class="nav-text">16.1 变更与发布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-2-%E8%8A%82%E7%82%B9%E4%B8%8E%E9%9B%86%E7%BE%A4%E7%BB%B4%E6%8A%A4"><span class="nav-number">17.2.</span> <span class="nav-text">16.2 节点与集群维护</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-3-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8E%E5%AE%89%E5%85%A8%EF%BC%88%E7%94%9F%E4%BA%A7%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">17.3.</span> <span class="nav-text">16.3 可观测与安全（生产认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">18.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="容器编排学习-Kubernetes | 我的记录小站">
+      <meta itemprop="description" content="Kubernetes 一篇收齐：无状态主路径，以及有状态生产、流量策略、弹性与生产操作；本地以 kind 为例。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          容器编排学习-Kubernetes
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-04 11:00:00" itemprop="dateCreated datePublished" datetime="2026-08-04T11:00:00+08:00">2026-08-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Kubernetes 一篇收齐：无状态主路径，以及有状态生产、流量策略、弹性与生产操作；本地以 kind 为例。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/">Docker</a>：单机容器不够时需要 <strong>编排</strong>——声明期望状态，由集群完成调度、自愈、滚动与服务发现。本篇以 <strong>kind</strong> 为本地集群口径；§1–§12 打通无状态，§13–§16 补生产向加深。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>核心对象与无状态主路径（§1–§12）</td>
+<td>Istio &#x2F; 服务网格深潜</td>
+</tr>
+<tr>
+<td>有状态生产要点、流量策略、HPA&#x2F;PDB</td>
+<td>多集群联邦 &#x2F; 某云控制台截图</td>
+</tr>
+<tr>
+<td>生产变更、节点维护、可观测认名</td>
+<td>CKA 题海战术、etcd 搭集群实操</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1–§2</td>
+<td>调谐心智、声明式与 kubectl</td>
+</tr>
+<tr>
+<td>§3–§4</td>
+<td>Pod&#x2F;探针、Workload</td>
+</tr>
+<tr>
+<td>§5–§9</td>
+<td>配置、Service&#x2F;Ingress、存储、资源、RBAC</td>
+</tr>
+<tr>
+<td>§10–§12</td>
+<td>排障、对照、无状态三件套串联</td>
+</tr>
+<tr>
+<td>§13</td>
+<td>有状态生产</td>
+</tr>
+<tr>
+<td>§14</td>
+<td>流量与网络策略</td>
+</tr>
+<tr>
+<td>§15</td>
+<td>弹性与稳定性</td>
+</tr>
+<tr>
+<td>§16</td>
+<td>生产操作与变更</td>
+</tr>
+</tbody></table>
+<p><strong>主路径验收：</strong> 能独立写出 <strong>Deployment + Service + ConfigMap</strong>（§12）。<br><strong>进阶验收：</strong> 能口述 STS+PVC 风险、Ingress≠Controller、HPA&#x2F;PDB 用途，以及 <code>dry-run</code>&#x2F;<code>drain</code>&#x2F;<code>rollout</code> 生产习惯（§13–§16）。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/21/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">自检面试与对照</a></p>
+<p>各节结构：<strong>是什么 → 机制 → 示例 → 注意点</strong>。</p>
+<hr>
+<h2 id="1-为何编排；调谐心智"><a href="#1-为何编排；调谐心智" class="headerlink" title="1. 为何编排；调谐心智"></a>1. 为何编排；调谐心智</h2><p><strong>是什么：</strong> Compose 擅长单机。多机还要副本、节点故障自愈、滚动更新、统一服务发现。K8s 让你写 <strong>期望状态</strong>，控制面不断 <strong>调谐</strong> 到接近期望。</p>
+<p><strong>机制要点：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">用户/CI apply 期望</span><br><span class="line">    ↓</span><br><span class="line">API Server ←→ etcd（持久化对象）</span><br><span class="line">    ↓</span><br><span class="line">Controller 比较 desired vs actual → 创建/删除/更新</span><br><span class="line">Scheduler 把新 Pod 绑到节点；kubelet 拉镜像跑容器</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>平面</th>
+<th>角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>控制面</td>
+<td>API、调度、控制器</td>
+</tr>
+<tr>
+<td>节点</td>
+<td>kubelet、运行时、代理数据面</td>
+</tr>
+</tbody></table>
+<p><strong>示例（观察调谐）：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pods -w</span><br><span class="line"><span class="comment"># 另开终端：kubectl scale deploy/web --replicas=3</span></span><br><span class="line"><span class="comment"># 观察 READY/RESTARTS 与新 Pod 出现</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>你几乎不 SSH 起进程；改的是 API 对象。  </li>
+<li>etcd&#x2F;控制面异常时，集群「失忆或失明」风险远高于单容器——生产要备份与高可用（点到）。  </li>
+<li>调谐是最终一致：短暂不一致（滚动中）是常态。</li>
+</ol>
+<hr>
+<h2 id="2-声明式与-kubectl"><a href="#2-声明式与-kubectl" class="headerlink" title="2. 声明式与 kubectl"></a>2. 声明式与 kubectl</h2><p><strong>是什么：</strong> 声明式 &#x3D; 描述「要什么」并反复 apply；命令式 &#x3D; 一条条命令改活对象。团队应统一声明式，便于 GitOps 与审查。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>风格</th>
+<th>例子</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>声明式</td>
+<td><code>kubectl apply -f</code></td>
+<td>幂等对齐；清单进仓库</td>
+</tr>
+<tr>
+<td>命令式</td>
+<td><code>kubectl run</code> &#x2F; <code>expose</code></td>
+<td>快，但难复现、易漂</td>
+</tr>
+</tbody></table>
+<p>对象四段：<code>apiVersion</code> &#x2F; <code>kind</code> &#x2F; <code>metadata</code> &#x2F; <code>spec</code>（状态常见于 <code>status</code>，由系统写）。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">kind create cluster --name learn</span><br><span class="line">kubectl apply -f app.yaml</span><br><span class="line">kubectl get pods -o wide</span><br><span class="line">kubectl describe pod &lt;name&gt;</span><br><span class="line">kubectl logs deploy/web -f</span><br><span class="line">kubectl rollout status deploy/web</span><br><span class="line">kubectl rollout undo deploy/web</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li><code>create</code> 与 <code>apply</code> 混用易触发字段管理冲突——统一 <strong>apply</strong>。  </li>
+<li>先 <code>diff</code>&#x2F;<code>dry-run=client|server</code> 再上生产变更。  </li>
+<li><code>delete -f</code> 按清单删；搞清级联删除对依赖对象的影响。  </li>
+<li>上下文（kubeconfig）指错集群是事故高发点——先 <code>kubectl config current-context</code>。</li>
+</ol>
+<hr>
+<h2 id="3-Pod-与探针；command-args"><a href="#3-Pod-与探针；command-args" class="headerlink" title="3. Pod 与探针；command&#x2F;args"></a>3. Pod 与探针；command&#x2F;args</h2><p><strong>是什么：</strong> Pod 是调度原子。可含多容器，共享网络命名空间与卷——适合主业务 + sidecar（代理、日志），不适合强行塞无关进程。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>探针</th>
+<th>失败后果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>readiness</strong></td>
+<td>从 Service Endpoints 摘掉，不接新流量</td>
+</tr>
+<tr>
+<td><strong>liveness</strong></td>
+<td>杀容器并重启</td>
+</tr>
+<tr>
+<td><strong>startup</strong></td>
+<td>成功前暂缓其它探针，护航慢启动</td>
+</tr>
+</tbody></table>
+<p>探针方式：HTTP &#x2F; TCP &#x2F; Exec。关键参数：<code>initialDelaySeconds</code>、<code>periodSeconds</code>、<code>timeoutSeconds</code>、<code>failureThreshold</code>。</p>
+<p>与 Docker 对应：</p>
+<table>
+<thead>
+<tr>
+<th>Docker</th>
+<th>Kubernetes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ENTRYPOINT</td>
+<td><code>command</code></td>
+</tr>
+<tr>
+<td>CMD</td>
+<td><code>args</code></td>
+</tr>
+</tbody></table>
+<p><strong>示例：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">demo</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">app</span></span><br><span class="line">      <span class="attr">image:</span> <span class="string">ghcr.io/example/myapp:1.0</span></span><br><span class="line">      <span class="attr">command:</span> [<span class="string">&quot;myapp&quot;</span>]          <span class="comment"># ≈ ENTRYPOINT</span></span><br><span class="line">      <span class="attr">args:</span> [<span class="string">&quot;--port=8080&quot;</span>]       <span class="comment"># ≈ CMD</span></span><br><span class="line">      <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">      <span class="attr">readinessProbe:</span></span><br><span class="line">        <span class="attr">httpGet:</span> &#123;<span class="attr">path:</span> <span class="string">/healthz</span>, <span class="attr">port:</span> <span class="number">8080</span>&#125;</span><br><span class="line">        <span class="attr">periodSeconds:</span> <span class="number">5</span></span><br><span class="line">      <span class="attr">livenessProbe:</span></span><br><span class="line">        <span class="attr">httpGet:</span> &#123;<span class="attr">path:</span> <span class="string">/livez</span>, <span class="attr">port:</span> <span class="number">8080</span>&#125;</span><br><span class="line">        <span class="attr">periodSeconds:</span> <span class="number">10</span></span><br><span class="line">      <span class="attr">startupProbe:</span></span><br><span class="line">        <span class="attr">httpGet:</span> &#123;<span class="attr">path:</span> <span class="string">/startup</span>, <span class="attr">port:</span> <span class="number">8080</span>&#125;</span><br><span class="line">        <span class="attr">failureThreshold:</span> <span class="number">30</span></span><br><span class="line">        <span class="attr">periodSeconds:</span> <span class="number">5</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>liveness 过严 + 启动慢 → <strong>CrashLoop</strong>；应上 startup 或调参，而非无限加大 delay 掩盖问题。  </li>
+<li>探针不要强依赖外部 DB&#x2F;下游——下游抖动会导致自重启风暴。  </li>
+<li>readiness 与「进程活着」不是一回事：活着但未就绪应摘流量。  </li>
+<li>生产少用裸长期 Pod；用 Deployment 管模板。</li>
+</ol>
+<hr>
+<h2 id="4-Workload"><a href="#4-Workload" class="headerlink" title="4. Workload"></a>4. Workload</h2><h3 id="4-1-Deployment（主路径）"><a href="#4-1-Deployment（主路径）" class="headerlink" title="4.1 Deployment（主路径）"></a>4.1 Deployment（主路径）</h3><p><strong>是什么：</strong> 声明无状态应用的副本与发布方式；底层通过 ReplicaSet 维持 Pod 数量，并支持滚动与回滚。</p>
+<p><strong>机制要点：</strong></p>
+<ul>
+<li><code>selector.matchLabels</code> 必须匹配 <code>template.metadata.labels</code>，且 <strong>创建后不要乱改 selector</strong>。  </li>
+<li>滚动：<code>maxUnavailable</code> &#x2F; <code>maxSurge</code> 控制不可用比例与浪涌。  </li>
+<li><code>imagePullPolicy</code>：<code>IfNotPresent</code> &#x2F; <code>Always</code>（<code>:latest</code> 时常 Always）影响是否重拉。</li>
+</ul>
+<p><strong>示例：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span> &#123;<span class="attr">app:</span> <span class="string">web</span>&#125;</span><br><span class="line">  <span class="attr">strategy:</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">RollingUpdate</span></span><br><span class="line">    <span class="attr">rollingUpdate:</span> &#123;<span class="attr">maxUnavailable:</span> <span class="number">1</span>, <span class="attr">maxSurge:</span> <span class="number">1</span>&#125;</span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span> &#123;<span class="attr">app:</span> <span class="string">web</span>&#125;</span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">ghcr.io/example/myapp:1.0</span></span><br><span class="line">          <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br><span class="line">          <span class="attr">ports:</span> [&#123;<span class="attr">containerPort:</span> <span class="number">8080</span>&#125;]</span><br><span class="line">          <span class="attr">resources:</span></span><br><span class="line">            <span class="attr">requests:</span> &#123;<span class="attr">cpu:</span> <span class="string">&quot;100m&quot;</span>, <span class="attr">memory:</span> <span class="string">&quot;128Mi&quot;</span>&#125;</span><br><span class="line">            <span class="attr">limits:</span> &#123;<span class="attr">cpu:</span> <span class="string">&quot;500m&quot;</span>, <span class="attr">memory:</span> <span class="string">&quot;256Mi&quot;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">set</span> image deploy/web web=ghcr.io/example/myapp:1.1</span><br><span class="line">kubectl rollout undo deploy/web</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>无 readiness 的滚动 &#x3D; 未就绪 Pod 可能已接流量。  </li>
+<li>Recreate 策略会先删后建，有短暂中断——默认滚动更常见。  </li>
+<li>改错 label 导致 Service 选不中 Pod → 全面 断流。</li>
+</ol>
+<h3 id="4-2-StatefulSet（最小片段）"><a href="#4-2-StatefulSet（最小片段）" class="headerlink" title="4.2 StatefulSet（最小片段）"></a>4.2 StatefulSet（最小片段）</h3><p><strong>是什么：</strong> 需要稳定网络标识、有序部署&#x2F;删除、稳定存储时用（有状态组件）。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StatefulSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">zk</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">serviceName:</span> <span class="string">zk-hs</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span> &#123;<span class="attr">app:</span> <span class="string">zk</span>&#125;</span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span> &#123;<span class="attr">app:</span> <span class="string">zk</span>&#125;</span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">zk</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">example/zk:3.8</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong> 通常配合 headless Service；PVC 模板与扩缩容语义更复杂。生产级注意点与备份&#x2F;Operator 选择见 <strong>§13</strong>。</p>
+<h3 id="4-3-Job（最小片段）"><a href="#4-3-Job（最小片段）" class="headerlink" title="4.3 Job（最小片段）"></a>4.3 Job（最小片段）</h3><p><strong>是什么：</strong> 跑完就结束的批任务；成功&#x2F;失败有明确结束态。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">batch/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Job</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">migrate</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">backoffLimit:</span> <span class="number">2</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">restartPolicy:</span> <span class="string">Never</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">migrate</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">ghcr.io/example/migrate:1.0</span></span><br><span class="line">          <span class="attr">command:</span> [<span class="string">&quot;migrate&quot;</span>, <span class="string">&quot;up&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong> <code>restartPolicy</code> 对 Job 只能 <code>Never</code>&#x2F;<code>OnFailure</code>；失败重试看 <code>backoffLimit</code>。</p>
+<h3 id="4-4-DaemonSet-CronJob（认名）"><a href="#4-4-DaemonSet-CronJob（认名）" class="headerlink" title="4.4 DaemonSet &#x2F; CronJob（认名）"></a>4.4 DaemonSet &#x2F; CronJob（认名）</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>何时用</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>DaemonSet</strong></td>
+<td>每节点（或选中节点）跑一个 Agent：日志、监控、网络插件</td>
+<td>不要用它跑普通无状态业务副本</td>
+</tr>
+<tr>
+<td><strong>CronJob</strong></td>
+<td>定时创建 Job（备份、报表）</td>
+<td>关注时区、并发策略 <code>concurrencyPolicy</code>、失败历史保留</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-ConfigMap-Secret"><a href="#5-ConfigMap-Secret" class="headerlink" title="5. ConfigMap &#x2F; Secret"></a>5. ConfigMap &#x2F; Secret</h2><p><strong>是什么：</strong> 把配置与敏感数据从镜像中拆出，经环境变量或卷注入。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>注入方式</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>环境变量</td>
+<td>启动时固定进进程；<strong>改 CM&#x2F;Secret 不会自动变进程内已有 env</strong></td>
+</tr>
+<tr>
+<td>卷挂载</td>
+<td>文件可热更新（应用需重读或重启）；适合配置文件</td>
+</tr>
+</tbody></table>
+<p>Secret 默认多为 base64，<strong>不是加密</strong>；靠 RBAC、静态加密与最小权限。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web-config</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  <span class="attr">APP_MODE:</span> <span class="string">&quot;prod&quot;</span></span><br><span class="line">  <span class="attr">app.yaml:</span> <span class="string">|</span></span><br><span class="line">    <span class="attr">listen:</span> <span class="string">&quot;:8080&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>注入方式（写在容器&#x2F;Pod 上，片段）：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 环境变量：整表注入（键名需合法 env 名；文件型键不适合 envFrom）</span></span><br><span class="line"><span class="attr">envFrom:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">configMapRef:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">web-config</span></span><br><span class="line"><span class="comment"># 或单键：</span></span><br><span class="line"><span class="comment"># env:</span></span><br><span class="line"><span class="comment">#   - name: APP_MODE</span></span><br><span class="line"><span class="comment">#     valueFrom:</span></span><br><span class="line"><span class="comment">#       configMapKeyRef:</span></span><br><span class="line"><span class="comment">#         name: web-config</span></span><br><span class="line"><span class="comment">#         key: APP_MODE</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 卷挂载：适合配置文件</span></span><br><span class="line"><span class="attr">volumeMounts:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cfg</span></span><br><span class="line">    <span class="attr">mountPath:</span> <span class="string">/etc/app</span></span><br><span class="line">    <span class="attr">readOnly:</span> <span class="literal">true</span></span><br><span class="line"><span class="comment"># 与 Pod.spec.volumes 成对：</span></span><br><span class="line"><span class="comment"># volumes:</span></span><br><span class="line"><span class="comment">#   - name: cfg</span></span><br><span class="line"><span class="comment">#     configMap:</span></span><br><span class="line"><span class="comment">#       name: web-config</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>改 ConfigMap 后期望生效 → 滚动重启 Pod 或用挂载+应用热加载。  </li>
+<li>大密钥&#x2F;证书优先挂载文件，避免超长 env。  </li>
+<li>仍勿把密钥打进镜像层（回链 <a href="/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/">Docker §9</a>）。</li>
+</ol>
+<hr>
+<h2 id="6-Service-与-Ingress"><a href="#6-Service-与-Ingress" class="headerlink" title="6. Service 与 Ingress"></a>6. Service 与 Ingress</h2><p><strong>是什么：</strong> 为动态 Pod IP 提供稳定虚服务（ClusterIP）与发现；Ingress 做 HTTP 路由（需 Controller）。</p>
+<p><strong>机制要点：</strong></p>
+<ul>
+<li>Service 用 <strong>label selector</strong> 选 Pod，后端是 Endpoints&#x2F;EndpointSlice。  </li>
+<li>仅 <strong>Ready</strong> 的 Pod 通常才进负载均衡（与 readiness 强相关）。  </li>
+<li>kube-proxy（iptables&#x2F;ipvs 等）在节点实现转发（实现细节点到）。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ClusterIP</td>
+<td>集群内默认</td>
+</tr>
+<tr>
+<td>NodePort</td>
+<td>节点端口临时暴露</td>
+</tr>
+<tr>
+<td>LoadBalancer</td>
+<td>云上外部 LB</td>
+</tr>
+</tbody></table>
+<p><strong>示例（ClusterIP）：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">ClusterIP</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">web</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>无 readiness → 启动中&#x2F;半死 Pod 仍可能吃流量。  </li>
+<li>Ingress 资源 <strong>不等于</strong> 已有入口：必须装 Ingress Controller。  </li>
+<li>selector 与 Deployment 标签不一致 → Service 无后端。  </li>
+<li>本地 kind 常用 <code>port-forward</code> 调试，不等于生产暴露模型。  </li>
+<li>Ingress &#x2F; NetworkPolicy &#x2F; Gateway API 生产要点见 <strong>§14</strong>。</li>
+</ol>
+<hr>
+<h2 id="7-存储认名"><a href="#7-存储认名" class="headerlink" title="7. 存储认名"></a>7. 存储认名</h2><p><strong>是什么：</strong> PVC 表达「我要一块盘」；PV&#x2F;StorageClass 由集群供给。无状态可用 emptyDir。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PVC</td>
+<td>声明需求（容量、访问模式）</td>
+</tr>
+<tr>
+<td>PV</td>
+<td>具体卷</td>
+</tr>
+<tr>
+<td>StorageClass</td>
+<td>动态供给类</td>
+</tr>
+<tr>
+<td>emptyDir</td>
+<td>随 Pod 生命周期；换节点即丢</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>删 PVC 是否删数据取决于 <code>reclaimPolicy</code> 与实现——删前确认。  </li>
+<li>AccessMode（RWO&#x2F;RWX）不匹配会 Pending。  </li>
+<li>emptyDir 不适合数据库持久。  </li>
+<li>有状态优先理解 StatefulSet + PVC 模板，再上生产库（展开见 §13）。</li>
+</ol>
+<hr>
+<h2 id="8-资源与调度"><a href="#8-资源与调度" class="headerlink" title="8. 资源与调度"></a>8. 资源与调度</h2><p><strong>是什么：</strong> requests 影响调度与保证；limits 是运行上限。</p>
+<p><strong>机制要点（QoS 认名）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>QoS</th>
+<th>典型条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Guaranteed</td>
+<td>所有容器 request&#x3D;limit 且都设置</td>
+</tr>
+<tr>
+<td>Burstable</td>
+<td>有 request 但未全部 Guaranteed</td>
+</tr>
+<tr>
+<td>BestEffort</td>
+<td>未设 request&#x2F;limit</td>
+</tr>
+</tbody></table>
+<p>Pending 常见：资源不够、污点、PVC 未绑、亲和不满足。</p>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>内存超 limit → OOMKill；CPU 超常被节流。  </li>
+<li>只设 limit 不设 request 或乱设，易导致调度与噪音邻居。  </li>
+<li>LimitRange &#x2F; ResourceQuota 可在 NS 级约束（认名）。  </li>
+<li>副本随负载伸缩见 <strong>§15 HPA</strong>；节点压力与 QoS 驱逐是另一条线（面试点到）。</li>
+</ol>
+<hr>
+<h2 id="9-Namespace、标签、RBAC"><a href="#9-Namespace、标签、RBAC" class="headerlink" title="9. Namespace、标签、RBAC"></a>9. Namespace、标签、RBAC</h2><p><strong>是什么：</strong> Namespace 做资源与配额边界；label 关联对象；RBAC 控谁能对 API 做什么。</p>
+<p><strong>机制要点：</strong> <code>Role</code>&#x2F;<code>RoleBinding</code> 限命名空间；<code>ClusterRole</code>&#x2F;<code>ClusterRoleBinding</code> 可集群范围；主体常为 User &#x2F; Group &#x2F; <strong>ServiceAccount</strong>。</p>
+<p><strong>示例（只读 Pod，认名级）：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web-sa</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">demo</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Role</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">pod-reader</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">demo</span></span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">apiGroups:</span> [<span class="string">&quot;&quot;</span>]</span><br><span class="line">    <span class="attr">resources:</span> [<span class="string">&quot;pods&quot;</span>]</span><br><span class="line">    <span class="attr">verbs:</span> [<span class="string">&quot;get&quot;</span>, <span class="string">&quot;list&quot;</span>, <span class="string">&quot;watch&quot;</span>]</span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">RoleBinding</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web-sa-read-pods</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">demo</span></span><br><span class="line"><span class="attr">subjects:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">web-sa</span></span><br><span class="line">    <span class="attr">namespace:</span> <span class="string">demo</span></span><br><span class="line"><span class="attr">roleRef:</span></span><br><span class="line">  <span class="attr">kind:</span> <span class="string">Role</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">pod-reader</span></span><br><span class="line">  <span class="attr">apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>Namespace <strong>不是</strong>强安全沙箱（网络策略等另配）；默认不挡同集群恶意横向。  </li>
+<li>默认 ServiceAccount 权限应收敛；CI 勿共用 cluster-admin。  </li>
+<li>业务 Pod 需要拉私有镜像时，用 <code>imagePullSecrets</code> 引用仓凭证 Secret，勿把仓密码写进镜像。</li>
+</ol>
+<hr>
+<h2 id="10-排障与-Helm"><a href="#10-排障与-Helm" class="headerlink" title="10. 排障与 Helm"></a>10. 排障与 Helm</h2><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>先查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pending</td>
+<td>describe：资源&#x2F;污点&#x2F;PVC</td>
+</tr>
+<tr>
+<td>CrashLoopBackOff</td>
+<td>logs、探针、OOM、命令</td>
+</tr>
+<tr>
+<td>ImagePullBackOff</td>
+<td>镜像名&#x2F;标签、仓库可达性、<strong>imagePullSecrets</strong>、SA 是否挂上凭证</td>
+</tr>
+<tr>
+<td>滚动卡住</td>
+<td>rollout status、readiness、配额</td>
+</tr>
+</tbody></table>
+<p><strong>Helm：</strong> Chart 包管理；复杂应用可 Helm&#x2F;Kustomize，先会原生 YAML 再上工具。</p>
+<hr>
+<h2 id="11-与-Docker-对照"><a href="#11-与-Docker-对照" class="headerlink" title="11. 与 Docker 对照"></a>11. 与 Docker 对照</h2><table>
+<thead>
+<tr>
+<th>Docker &#x2F; Compose</th>
+<th>Kubernetes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>docker run</code></td>
+<td>Pod 模板</td>
+</tr>
+<tr>
+<td>ENTRYPOINT &#x2F; CMD</td>
+<td>command &#x2F; args</td>
+</tr>
+<tr>
+<td>Compose healthcheck</td>
+<td>探针（语义更细）</td>
+</tr>
+<tr>
+<td>Compose 服务名</td>
+<td>Service DNS</td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td>Service &#x2F; Ingress</td>
+</tr>
+<tr>
+<td>env_file</td>
+<td>ConfigMap &#x2F; Secret</td>
+</tr>
+<tr>
+<td>单机 restart</td>
+<td>控制器调谐</td>
+</tr>
+</tbody></table>
+<p>口诀：<strong>Docker 管打包跑；K8s 管期望状态与集群运维。</strong></p>
+<hr>
+<h2 id="12-主路径串联：Deployment-Service-ConfigMap"><a href="#12-主路径串联：Deployment-Service-ConfigMap" class="headerlink" title="12. 主路径串联：Deployment + Service + ConfigMap"></a>12. 主路径串联：Deployment + Service + ConfigMap</h2><p>可直接拆文件或合一份 apply：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web-config</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  <span class="attr">APP_MODE:</span> <span class="string">&quot;prod&quot;</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">2</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span> &#123;<span class="attr">app:</span> <span class="string">web</span>&#125;</span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span> &#123;<span class="attr">app:</span> <span class="string">web</span>&#125;</span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">ghcr.io/example/myapp:1.0</span></span><br><span class="line">          <span class="attr">ports:</span> [&#123;<span class="attr">containerPort:</span> <span class="number">8080</span>&#125;]</span><br><span class="line">          <span class="attr">envFrom:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">configMapRef:</span> &#123;<span class="attr">name:</span> <span class="string">web-config</span>&#125;</span><br><span class="line">          <span class="attr">readinessProbe:</span></span><br><span class="line">            <span class="attr">httpGet:</span> &#123;<span class="attr">path:</span> <span class="string">/healthz</span>, <span class="attr">port:</span> <span class="number">8080</span>&#125;</span><br><span class="line">            <span class="attr">periodSeconds:</span> <span class="number">5</span></span><br><span class="line">          <span class="attr">resources:</span></span><br><span class="line">            <span class="attr">requests:</span> &#123;<span class="attr">cpu:</span> <span class="string">&quot;100m&quot;</span>, <span class="attr">memory:</span> <span class="string">&quot;128Mi&quot;</span>&#125;</span><br><span class="line">            <span class="attr">limits:</span> &#123;<span class="attr">cpu:</span> <span class="string">&quot;500m&quot;</span>, <span class="attr">memory:</span> <span class="string">&quot;256Mi&quot;</span>&#125;</span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span> &#123;<span class="attr">app:</span> <span class="string">web</span>&#125;</span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f app.yaml</span><br><span class="line">kubectl port-forward svc/web 8080:80</span><br></pre></td></tr></table></figure>
+
+<p>无状态主路径到此可跑通。以下 §13–§16 面向 <strong>生产加深</strong>（认名 + 可口述机制 + 最小示例），仍不做网格&#x2F;多集群。</p>
+<hr>
+<h2 id="13-有状态生产"><a href="#13-有状态生产" class="headerlink" title="13. 有状态生产"></a>13. 有状态生产</h2><p><strong>是什么：</strong> 数据库、消息队列、协调服务等需要 <strong>稳定身份 + 持久盘 + 有序变更</strong>。Deployment 适合无状态；有状态主用 <strong>StatefulSet</strong>，或交给 <strong>Operator &#x2F; 托管服务</strong>。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>稳定 DNS</td>
+<td><code>pod-0.服务名.ns.svc…</code>；常配 <strong>headless</strong> Service（<code>clusterIP: None</code>）</td>
+</tr>
+<tr>
+<td>有序部署&#x2F;删除</td>
+<td>默认按序号启动；缩容先删最大序号</td>
+</tr>
+<tr>
+<td>稳定存储</td>
+<td><code>volumeClaimTemplates</code> 为每个 ordinal 建独立 PVC</td>
+</tr>
+<tr>
+<td>更新策略</td>
+<td><code>RollingUpdate</code> &#x2F; <code>OnDelete</code>；可配 <code>partition</code> 做金丝雀式有状态滚动</td>
+</tr>
+</tbody></table>
+<p><strong>示例（headless + PVC 模板，示意）：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">pg-hs</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">clusterIP:</span> <span class="string">None</span></span><br><span class="line">  <span class="attr">selector:</span> &#123;<span class="attr">app:</span> <span class="string">pg</span>&#125;</span><br><span class="line">  <span class="attr">ports:</span> [&#123;<span class="attr">port:</span> <span class="number">5432</span>, <span class="attr">name:</span> <span class="string">pg</span>&#125;]</span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StatefulSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">pg</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">serviceName:</span> <span class="string">pg-hs</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span> &#123;<span class="attr">app:</span> <span class="string">pg</span>&#125;</span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span> &#123;<span class="attr">app:</span> <span class="string">pg</span>&#125;</span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">pg</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">postgres:16</span></span><br><span class="line">          <span class="attr">ports:</span> [&#123;<span class="attr">containerPort:</span> <span class="number">5432</span>&#125;]</span><br><span class="line">          <span class="attr">volumeMounts:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">              <span class="attr">mountPath:</span> <span class="string">/var/lib/postgresql/data</span></span><br><span class="line">          <span class="attr">resources:</span></span><br><span class="line">            <span class="attr">requests:</span> &#123;<span class="attr">cpu:</span> <span class="string">&quot;250m&quot;</span>, <span class="attr">memory:</span> <span class="string">&quot;512Mi&quot;</span>&#125;</span><br><span class="line">            <span class="attr">limits:</span> &#123;<span class="attr">cpu:</span> <span class="string">&quot;1&quot;</span>, <span class="attr">memory:</span> <span class="string">&quot;1Gi&quot;</span>&#125;</span><br><span class="line">  <span class="attr">volumeClaimTemplates:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">metadata:</span></span><br><span class="line">        <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">      <span class="attr">spec:</span></span><br><span class="line">        <span class="attr">accessModes:</span> [<span class="string">&quot;ReadWriteOnce&quot;</span>]</span><br><span class="line">        <span class="attr">storageClassName:</span> <span class="string">standard</span>   <span class="comment"># 按集群实际 SC</span></span><br><span class="line">        <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">requests:</span></span><br><span class="line">            <span class="attr">storage:</span> <span class="string">20Gi</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>生产决策（何时自建 STS）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>托管 DB &#x2F; 云 RDS</td>
+<td>优先：备份、多 AZ、补丁由平台负责</td>
+</tr>
+<tr>
+<td>Operator（如官方&#x2F;社区 DB Operator）</td>
+<td>需要集群内跑、要自动化 failover&#x2F;备份流水线</td>
+</tr>
+<tr>
+<td>手写 STS</td>
+<td>学习、简单单副本、或已有成熟运维剧本；多副本主从勿「只加 replicas」以为高可用</td>
+</tr>
+</tbody></table>
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li><strong>缩容不删 PVC</strong>：<code>replicas</code> 从 3→1 后，<code>data-pg-1</code>&#x2F;<code>data-pg-2</code> 通常仍在——占盘且含数据；扩回去会复用旧盘，未必是你想要的「干净实例」。  </li>
+<li><strong>删 STS 默认不级联删 PVC</strong>——防误删数据；真要清数据须显式删 PVC，并确认 <code>reclaimPolicy</code>。  </li>
+<li>RWO 卷常绑单节点：Pod 漂移到它节点可能 Pending（卷未释放&#x2F;未多挂载）。  </li>
+<li>有状态滚动要懂应用语义（主从选举、成员列表）；盲目 <code>kubectl delete pod</code> 可能脑裂或丢写。  </li>
+<li><strong>备份是一等公民</strong>：PVC 快照 &#x2F; 逻辑 dump &#x2F; 对象存储；定期恢复演练，而不是「有盘&#x3D;已备份」。  </li>
+<li>密钥、连接串走 Secret；初始化 Job（建库&#x2F;迁移）与 STS 生命周期分开（见 §4.3）。</li>
+</ol>
+<hr>
+<h2 id="14-流量与网络策略"><a href="#14-流量与网络策略" class="headerlink" title="14. 流量与网络策略"></a>14. 流量与网络策略</h2><p><strong>是什么：</strong> Service 解决集群内稳定入口；<strong>Ingress</strong>（或 Gateway API）做 L7 HTTP 路由；<strong>NetworkPolicy</strong> 做 Pod 间「谁可以连谁」的白名单。</p>
+<h3 id="14-1-Ingress-与-Controller"><a href="#14-1-Ingress-与-Controller" class="headerlink" title="14.1 Ingress 与 Controller"></a>14.1 Ingress 与 Controller</h3><p><strong>机制要点：</strong> Ingress 只是 API 对象；真正转发靠集群里的 <strong>Ingress Controller</strong>（nginx、traefik、云厂商等）。无 Controller → Ingress 一直「写了没用」。</p>
+<p><strong>示例（HTTP 路由示意）：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">networking.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Ingress</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line">  <span class="attr">annotations:</span></span><br><span class="line">    <span class="comment"># 视 Controller 而定，例如限流/证书；勿照抄未知注解</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">ingressClassName:</span> <span class="string">nginx</span></span><br><span class="line">  <span class="attr">rules:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">host:</span> <span class="string">app.example.com</span></span><br><span class="line">      <span class="attr">http:</span></span><br><span class="line">        <span class="attr">paths:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">            <span class="attr">pathType:</span> <span class="string">Prefix</span></span><br><span class="line">            <span class="attr">backend:</span></span><br><span class="line">              <span class="attr">service:</span></span><br><span class="line">                <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line">                <span class="attr">port:</span> &#123;<span class="attr">number:</span> <span class="number">80</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>TLS 常由 Controller + Secret（证书）或证书管理器（cert-manager 认名）完成。  </li>
+<li>路径&#x2F;Host 配错 → 404 或打到错误后端；先确认 Service Endpoints 非空。  </li>
+<li><strong>Gateway API</strong> 是更新一代流量 API（Gateway&#x2F;HTTPRoute 等）——面试认名即可，本篇仍以 Ingress 为主路径。  </li>
+<li>生产对外：LB → Controller → Service → Pod；本地 kind 调试仍可用 <code>port-forward</code>，勿混为一谈。</li>
+</ol>
+<h3 id="14-2-NetworkPolicy"><a href="#14-2-NetworkPolicy" class="headerlink" title="14.2 NetworkPolicy"></a>14.2 NetworkPolicy</h3><p><strong>是什么：</strong> 在支持策略的 CNI 上，按标签限制入站&#x2F;出站。默认（无策略）往往 <strong>全通</strong>；有策略后同 NS 也可能变「默认拒绝 + 显式允许」。</p>
+<p><strong>示例（只允许同 app 标签访问 web:8080）：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">networking.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">NetworkPolicy</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web-allow-frontend</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">podSelector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span> &#123;<span class="attr">app:</span> <span class="string">web</span>&#125;</span><br><span class="line">  <span class="attr">policyTypes:</span> [<span class="string">&quot;Ingress&quot;</span>]</span><br><span class="line">  <span class="attr">ingress:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">from:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">podSelector:</span></span><br><span class="line">            <span class="attr">matchLabels:</span> &#123;<span class="attr">tier:</span> <span class="string">frontend</span>&#125;</span><br><span class="line">      <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">protocol:</span> <span class="string">TCP</span></span><br><span class="line">          <span class="attr">port:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>策略是否生效取决于 CNI（部分环境需显式开启）。  </li>
+<li>DNS、监控、Ingress Controller 所在 NS 常需额外放行，否则「策略一加全挂」。  </li>
+<li>Namespace <strong>不是</strong>网络隔离；要隔离靠 NetworkPolicy（或网格，本篇不做）。</li>
+</ol>
+<hr>
+<h2 id="15-弹性与稳定性"><a href="#15-弹性与稳定性" class="headerlink" title="15. 弹性与稳定性"></a>15. 弹性与稳定性</h2><p><strong>是什么：</strong> 副本数随负载变化（HPA）；驱逐&#x2F;发布时保证最少可服务副本（PDB）；与 readiness、资源请求一起构成稳定性三角。</p>
+<h3 id="15-1-HPA（HorizontalPodAutoscaler）"><a href="#15-1-HPA（HorizontalPodAutoscaler）" class="headerlink" title="15.1 HPA（HorizontalPodAutoscaler）"></a>15.1 HPA（HorizontalPodAutoscaler）</h3><p><strong>机制要点：</strong> 按 CPU&#x2F;内存利用率或自定义指标，调节 Deployment&#x2F;STS 等的 <code>replicas</code>。依赖 <strong>metrics-server</strong>（或其它指标管道）；没有指标 → HPA 无法工作。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">autoscaling/v2</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">HorizontalPodAutoscaler</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">scaleTargetRef:</span></span><br><span class="line">    <span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line">    <span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">web</span></span><br><span class="line">  <span class="attr">minReplicas:</span> <span class="number">2</span></span><br><span class="line">  <span class="attr">maxReplicas:</span> <span class="number">10</span></span><br><span class="line">  <span class="attr">metrics:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">type:</span> <span class="string">Resource</span></span><br><span class="line">      <span class="attr">resource:</span></span><br><span class="line">        <span class="attr">name:</span> <span class="string">cpu</span></span><br><span class="line">        <span class="attr">target:</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">Utilization</span></span><br><span class="line">          <span class="attr">averageUtilization:</span> <span class="number">70</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>必须设合理 <strong>requests</strong>，否则利用率分子分母失真。  </li>
+<li>扩得快、缩得慢是常见稳态；抖动指标会导致震荡——可调稳定窗口（实现细节点到）。  </li>
+<li>VPA（垂直扩资源）与 HPA 叠加需策略，面试认名即可，生产慎同时乱配。</li>
+</ol>
+<h3 id="15-2-PDB（PodDisruptionBudget）"><a href="#15-2-PDB（PodDisruptionBudget）" class="headerlink" title="15.2 PDB（PodDisruptionBudget）"></a>15.2 PDB（PodDisruptionBudget）</h3><p><strong>是什么：</strong> 限制 <strong>自愿中断</strong>（drain、滚动升级部分场景）时最多不可用的 Pod 数，避免一次抽干。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">policy/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">PodDisruptionBudget</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">web-pdb</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">minAvailable:</span> <span class="number">2</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span> &#123;<span class="attr">app:</span> <span class="string">web</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li>PDB 挡不住节点突然宕机（非自愿中断）——仍需多副本 + 跨故障域。  </li>
+<li><code>minAvailable</code> &#x2F; <code>maxUnavailable</code> 与副本数矛盾时，<code>drain</code> 会卡住——改 PDB 或先扩容。  </li>
+<li>单副本业务设 <code>minAvailable: 1</code> 时，自愿驱逐几乎无法进行——要接受中断或改多副本。</li>
+</ol>
+<hr>
+<h2 id="16-生产操作与变更"><a href="#16-生产操作与变更" class="headerlink" title="16. 生产操作与变更"></a>16. 生产操作与变更</h2><p><strong>是什么：</strong> 生产不是「会写 YAML」，而是 <strong>可回放、可回滚、可观察、可维护节点</strong> 的操作习惯。</p>
+<h3 id="16-1-变更与发布"><a href="#16-1-变更与发布" class="headerlink" title="16.1 变更与发布"></a>16.1 变更与发布</h3><table>
+<thead>
+<tr>
+<th>习惯</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>声明式</td>
+<td>Git 存清单；<code>kubectl apply</code> &#x2F; GitOps（Argo CD、Flux 认名）</td>
+</tr>
+<tr>
+<td>先看差</td>
+<td><code>kubectl diff -f</code> 或 <code>apply --server-side --dry-run=server</code></td>
+</tr>
+<tr>
+<td>镜像不可变</td>
+<td>用 tag+digest 或仅 digest；禁依赖漂浮 <code>latest</code></td>
+</tr>
+<tr>
+<td>观察发布</td>
+<td><code>rollout status</code>；看 readiness、错误率、饱和度</td>
+</tr>
+<tr>
+<td>回滚</td>
+<td><code>rollout undo</code>；有状态变更另按应用剧本（备份→迁移→切换）</td>
+</tr>
+<tr>
+<td>配额</td>
+<td>ResourceQuota &#x2F; LimitRange 防单 NS 打爆集群</td>
+</tr>
+</tbody></table>
+<p><strong>发布检查清单（口述级）：</strong></p>
+<ol>
+<li>镜像可拉、配置&#x2F;密钥已更新且知否需滚动。  </li>
+<li>readiness 正确；HPA 上下限合理；PDB 不挡本次滚动。  </li>
+<li>迁移 Job（若有）先于或编排进发布流水线。  </li>
+<li>回滚路径演练过；有状态先备份。</li>
+</ol>
+<h3 id="16-2-节点与集群维护"><a href="#16-2-节点与集群维护" class="headerlink" title="16.2 节点与集群维护"></a>16.2 节点与集群维护</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl cordon &lt;node&gt;           <span class="comment"># 停止调度到该节点</span></span><br><span class="line">kubectl drain &lt;node&gt; --ignore-daemonsets --delete-emptydir-data</span><br><span class="line"><span class="comment"># 维护完成后</span></span><br><span class="line">kubectl uncordon &lt;node&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong></p>
+<ol>
+<li><code>drain</code> 会驱逐 Pod；遵守 PDB；DaemonSet 通常保留。  </li>
+<li>emptyDir 数据在 drain 时可能丢（按参数）——勿把重要状态放 emptyDir。  </li>
+<li>控制面 &#x2F; etcd：<strong>生产要备份与高可用</strong>（云托管或自建剧本）；本篇不展开搭集群，但面试需能说出「etcd 丢 ≈ 集群失忆」。  </li>
+<li>污点&#x2F;容忍（taint&#x2F;toleration）、亲和性：把负载放到合适节点；系统组件常容忍控制面污点。</li>
+</ol>
+<h3 id="16-3-可观测与安全（生产认名）"><a href="#16-3-可观测与安全（生产认名）" class="headerlink" title="16.3 可观测与安全（生产认名）"></a>16.3 可观测与安全（生产认名）</h3><table>
+<thead>
+<tr>
+<th>层面</th>
+<th>认名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>日志</td>
+<td>标准输出 → 节点采集 &#x2F; 旁路 Agent（DaemonSet）→ 集中检索</td>
+</tr>
+<tr>
+<td>指标</td>
+<td>metrics-server；Prometheus + 告警（认名）</td>
+</tr>
+<tr>
+<td>追踪</td>
+<td>OpenTelemetry 等（点到）</td>
+</tr>
+<tr>
+<td>运行时</td>
+<td>非 root、readOnlyRootFilesystem、drop capabilities、seccomp（回链 Docker §9）</td>
+</tr>
+<tr>
+<td>供应</td>
+<td>镜像签名&#x2F;扫描、最小 RBAC、Secret 静态加密、NetworkPolicy</td>
+</tr>
+</tbody></table>
+<p><strong>生产排障顺序（扩展 §10）：</strong><br><code>get/describe</code> Events → <code>logs</code>（含 <code>-p</code> 看上次崩溃）→ 探针与资源 → Endpoints&#x2F;NetworkPolicy → 节点 <code>cordon</code>&#x2F;磁盘&#x2F;运行时。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>先抓住调谐与声明式，跑通 <strong>Deployment + Service + ConfigMap + 探针</strong>；再生产向补齐：有状态身份与盘、Ingress&#x2F;NetworkPolicy、HPA&#x2F;PDB，以及 diff&#x2F;drain&#x2F;不可变镜像与备份演练。下一篇自检与面经收口。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/21/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">自检面试与对照</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/">Docker</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AE%B9%E5%99%A8/" rel="tag"># 容器</a>
+              <a href="/tags/Kubernetes/" rel="tag"># Kubernetes</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/" rel="prev" title="容器编排学习-Docker">
+                  <i class="fa fa-angle-left"></i> 容器编排学习-Docker
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/21/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/" rel="next" title="容器编排学习-自检面试与对照">
+                  容器编排学习-自检面试与对照 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

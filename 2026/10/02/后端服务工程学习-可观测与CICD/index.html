@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="业务服务日志&#x2F;Metrics&#x2F;Trace（链 OTel，区分 Agent Run）；CI：build→test→image→K8s；配置与密钥。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="后端服务工程学习-可观测与CICD">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="业务服务日志&#x2F;Metrics&#x2F;Trace（链 OTel，区分 Agent Run）；CI：build→test→image→K8s；配置与密钥。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-07T05:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.668Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="后端">
+<meta property="article:tag" content="可观测">
+<meta property="article:tag" content="CI&#x2F;CD">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/","path":"/2026/10/02/后端服务工程学习-可观测与CICD/","title":"后端服务工程学习-可观测与CICD"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>后端服务工程学习-可观测与CICD | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%97%A5%E5%BF%97"><span class="nav-number">2.</span> <span class="nav-text">1. 日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Metrics"><span class="nav-number">3.</span> <span class="nav-text">2. Metrics</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-SLO-%E4%B8%8E%E5%91%8A%E8%AD%A6%E5%86%B3%E7%AD%96"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 SLO 与告警决策</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Trace-%E4%B8%8E-OpenTelemetry"><span class="nav-number">4.</span> <span class="nav-text">3. Trace 与 OpenTelemetry</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-CI-CD-%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="nav-number">5.</span> <span class="nav-text">4. CI&#x2F;CD 流水线</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%8F%91%E5%B8%83%E3%80%81%E9%87%91%E4%B8%9D%E9%9B%80%E4%B8%8E%E5%9B%9E%E6%BB%9A"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 发布、金丝雀与回滚</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-DB-%E8%BF%81%E7%A7%BB%E4%B8%8E%E5%8F%91%E5%B8%83%E9%A1%BA%E5%BA%8F"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 DB 迁移与发布顺序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E9%85%8D%E7%BD%AE%E4%B8%8E%E5%AF%86%E9%92%A5"><span class="nav-number">6.</span> <span class="nav-text">5. 配置与密钥</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E4%B8%80%E6%9D%A1%E6%8E%92%E9%9A%9C%E8%B7%AF%E5%BE%84%EF%BC%88%E7%A4%BA%E4%BE%8B%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. 一条排障路径（示例）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="后端服务工程学习-可观测与CICD | 我的记录小站">
+      <meta itemprop="description" content="业务服务日志&#x2F;Metrics&#x2F;Trace（链 OTel，区分 Agent Run）；CI：build→test→image→K8s；配置与密钥。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          后端服务工程学习-可观测与CICD
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-07 13:00:00" itemprop="dateCreated datePublished" datetime="2026-08-07T13:00:00+08:00">2026-08-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">业务服务日志/Metrics/Trace（链 OTel，区分 Agent Run）；CI：build→test→image→K8s；配置与密钥。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/10/01/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%AE%A4%E8%AF%81%E9%89%B4%E6%9D%83%E4%B8%8E%E5%A4%9A%E7%A7%9F%E6%88%B7/">认证鉴权</a>。本篇收 <strong>业务 HTTP 服务怎么看见、怎么安全发布</strong>；容器怎么跑见 Docker&#x2F;K8s，Agent 轨迹见工程化（二）。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>日志 &#x2F; Metrics &#x2F; Trace 三联；OTel 认名</td>
+<td>某一 APM 厂商独家向导</td>
+</tr>
+<tr>
+<td>CI：build→test→image→部署门禁</td>
+<td>云控制台逐步截图</td>
+</tr>
+<tr>
+<td>配置与密钥分层</td>
+<td>服务网格全功能</td>
+</tr>
+</tbody></table>
+<p><strong>口径钉死：</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>本篇</strong></th>
+<th><strong>已有</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>观测对象</td>
+<td>HTTP&#x2F;业务服务、作业</td>
+<td><a href="/2026/09/05/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%BA%8C/">Agent 工程化（二）</a> &#x3D; <strong>Agent Run</strong> Trace&#x2F;成本</td>
+</tr>
+<tr>
+<td>运行</td>
+<td>—</td>
+<td><a href="/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/">Docker</a> · <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">K8s</a></td>
+</tr>
+<tr>
+<td>发布</td>
+<td>流水线与门禁</td>
+<td>K8s &#x3D; 编排与探针；本篇 &#x3D; 谁在何时允许上线</td>
+</tr>
+</tbody></table>
+<p>关联：<code>request_id</code> &#x2F; <code>trace_id</code> 可与 Agent <code>run_id</code> 并列出现在同一请求链路。</p>
+<p>机器与内核视角的排查路径见 <a href="/2026/10/07/Linux%E6%80%A7%E8%83%BD%E5%AD%A6%E4%B9%A0-%E8%A7%82%E6%B5%8B%E6%8E%92%E6%9F%A5%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%B0%83%E4%BC%98/">Linux 性能</a>。</p>
+<hr>
+<h2 id="1-日志"><a href="#1-日志" class="headerlink" title="1. 日志"></a>1. 日志</h2><p><strong>是什么：</strong> 结构化事件流，供检索与审计，不是 <code>print</code> 堆栈聊天。</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>timestamp</code> &#x2F; <code>level</code></td>
+<td>排序与过滤</td>
+</tr>
+<tr>
+<td><code>request_id</code> &#x2F; <code>trace_id</code></td>
+<td>与 Trace 关联</td>
+</tr>
+<tr>
+<td><code>tenant_id</code> &#x2F; <code>user_id</code>（可哈希）</td>
+<td>多租户排障</td>
+</tr>
+<tr>
+<td><code>msg</code> + 业务键</td>
+<td>人读与聚合</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 禁止落密钥、Token、完整身份证号；采样高基数路径防打爆存储。</p>
+<hr>
+<h2 id="2-Metrics"><a href="#2-Metrics" class="headerlink" title="2. Metrics"></a>2. Metrics</h2><p>最小 RED&#x2F;USE 意识：</p>
+<table>
+<thead>
+<tr>
+<th>类</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>流量</strong></td>
+<td>QPS、并发</td>
+</tr>
+<tr>
+<td><strong>错误</strong></td>
+<td>5xx 率、业务错误码率</td>
+</tr>
+<tr>
+<td><strong>延迟</strong></td>
+<td>P50&#x2F;P95&#x2F;P99</td>
+</tr>
+<tr>
+<td><strong>饱和</strong></td>
+<td>队列深度、连接池、CPU</td>
+</tr>
+</tbody></table>
+<p>告警挂在：错误率突增、P95 破 SLO、依赖 5xx、饱和——与 <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">Agent 熔断</a> 同类思维，对象换业务依赖。</p>
+<h3 id="2-1-SLO-与告警决策"><a href="#2-1-SLO-与告警决策" class="headerlink" title="2.1 SLO 与告警决策"></a>2.1 SLO 与告警决策</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>示例口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SLI</strong></td>
+<td>成功请求占比；P95 延迟</td>
+</tr>
+<tr>
+<td><strong>SLO</strong></td>
+<td>月成功 ≥ 99.9%；核心写接口 P95 &lt; 300ms</td>
+</tr>
+<tr>
+<td><strong>告警</strong></td>
+<td>燃烧过快（短窗错误率）+ 慢燃（长窗 SLO 危险）</td>
+</tr>
+<tr>
+<td><strong>降噪</strong></td>
+<td>依赖已知故障时抑制下游告警；分页&#x2F;on-call</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 只告 CPU 不告业务错误码 → 假平静；无请求_id 维度 → 无法下钻。</p>
+<hr>
+<h2 id="3-Trace-与-OpenTelemetry"><a href="#3-Trace-与-OpenTelemetry" class="headerlink" title="3. Trace 与 OpenTelemetry"></a>3. Trace 与 OpenTelemetry</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">入口 Span（HTTP）</span><br><span class="line">  → 子 Span（DB / Redis / 下游 HTTP）</span><br><span class="line">  → 若触发 Agent：子 Span 或链路上挂 run_id</span><br><span class="line">导出 → OTel Collector → 后端 APM</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OTel</strong></td>
+<td>跨语言 Trace&#x2F;Metrics&#x2F;Log 信号标准</td>
+</tr>
+<tr>
+<td><strong>与 Agent</strong></td>
+<td>LangSmith 等看 Run 内部；OTel 看服务间；用 ID 关联，不互相替代</td>
+</tr>
+<tr>
+<td><strong>采样</strong></td>
+<td>生产常头部采样；错误强制保留</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-CI-CD-流水线"><a href="#4-CI-CD-流水线" class="headerlink" title="4. CI&#x2F;CD 流水线"></a>4. CI&#x2F;CD 流水线</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">commit → build → unit/integration test → 安全扫描（认名）</span><br><span class="line">      → build image → push registry</span><br><span class="line">      → deploy staging → 冒烟 / 契约测试</span><br><span class="line">      → 门禁通过 → deploy prod（滚动/金丝雀）</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>门禁</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>测试失败</strong></td>
+<td>禁止出包</td>
+</tr>
+<tr>
+<td><strong>镜像不可变 tag</strong></td>
+<td>可回滚到摘要</td>
+</tr>
+<tr>
+<td><strong>配置与代码分离</strong></td>
+<td>见 §5</td>
+</tr>
+<tr>
+<td><strong>迁移</strong></td>
+<td>DB migrate 顺序与回滚策略写清</td>
+</tr>
+</tbody></table>
+<p>与 K8s：流水线产出的是 <strong>可部署制品 + 清单</strong>；探针与 PDB 见 <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">K8s 篇</a>。</p>
+<h3 id="4-1-发布、金丝雀与回滚"><a href="#4-1-发布、金丝雀与回滚" class="headerlink" title="4.1 发布、金丝雀与回滚"></a>4.1 发布、金丝雀与回滚</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">制品 tag（不可变 digest）→ staging 冒烟</span><br><span class="line">  → prod 金丝雀（如 5% 流量）→ 盯错误率/P95</span><br><span class="line">     恶化 → 立刻回滚上一 digest</span><br><span class="line">     平稳 → 扩至 100%</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>决策</th>
+<th>条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>继续放量</strong></td>
+<td>金丝雀窗口内错误率&#x2F;延迟不劣于基线</td>
+</tr>
+<tr>
+<td><strong>回滚</strong></td>
+<td>5xx 或业务错误码突增；关键路径 P95 破 SLO</td>
+</tr>
+<tr>
+<td><strong>冻结发布</strong></td>
+<td>依赖故障、变更窗口外</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-DB-迁移与发布顺序"><a href="#4-2-DB-迁移与发布顺序" class="headerlink" title="4.2 DB 迁移与发布顺序"></a>4.2 DB 迁移与发布顺序</h3><table>
+<thead>
+<tr>
+<th>变更类型</th>
+<th>顺序</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>兼容加列 &#x2F; 新索引</strong></td>
+<td>migrate 先于或同发读新列的代码</td>
+</tr>
+<tr>
+<td><strong>删列 &#x2F; 改义</strong></td>
+<td>先发不再读写旧列的代码 → 再 migrate 删除</td>
+</tr>
+<tr>
+<td><strong>危险锁表</strong></td>
+<td>低峰、在线 DDL 策略、可回滚脚本</td>
+</tr>
+</tbody></table>
+<p><strong>反模式：</strong> 先删列再发仍读该列的旧 Pod；migrate 与代码绑死无法单独回滚。</p>
+<hr>
+<h2 id="5-配置与密钥"><a href="#5-配置与密钥" class="headerlink" title="5. 配置与密钥"></a>5. 配置与密钥</h2><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>放哪</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>密钥 &#x2F; DB URL &#x2F; 第三方 Token</strong></td>
+<td>密钥管理 &#x2F; K8s Secret &#x2F; 环境注入；<strong>不进 Git</strong></td>
+</tr>
+<tr>
+<td><strong>非敏感默认</strong></td>
+<td>代码常量（超时、重试次数）</td>
+</tr>
+<tr>
+<td><strong>环境差异</strong></td>
+<td>配置中心或 per-env values</td>
+</tr>
+</tbody></table>
+<p>轮换：双密钥过渡窗口；Agent&#x2F;MCP Client 配置同步更新——见 <a href="/2026/08/26/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-MCP-%E5%9B%9B/">MCP（四）</a>。</p>
+<hr>
+<h2 id="6-一条排障路径（示例）"><a href="#6-一条排障路径（示例）" class="headerlink" title="6. 一条排障路径（示例）"></a>6. 一条排障路径（示例）</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">用户报 5xx → 用 request_id 查日志</span><br><span class="line">  → 打开 Trace 看慢在 DB 还是下游</span><br><span class="line">  → Metrics 确认是否集群级</span><br><span class="line">  → 若含 Agent：用 run_id 进 LangSmith</span><br><span class="line">  → 回滚看 CI 制品 tag</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>业务服务：日志可关联、指标可告警、链路可下钻；CI 门禁决定能不能上；密钥不进仓。</strong></p>
+<p><strong>系列导航：</strong> <a href="/2026/09/30/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-API%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/">API</a> · <a href="/2026/10/01/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%AE%A4%E8%AF%81%E9%89%B4%E6%9D%83%E4%B8%8E%E5%A4%9A%E7%A7%9F%E6%88%B7/">鉴权</a> · <strong>本篇</strong> · <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">自检</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%90%8E%E7%AB%AF/" rel="tag"># 后端</a>
+              <a href="/tags/%E5%8F%AF%E8%A7%82%E6%B5%8B/" rel="tag"># 可观测</a>
+              <a href="/tags/CI-CD/" rel="tag"># CI/CD</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/10/01/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%AE%A4%E8%AF%81%E9%89%B4%E6%9D%83%E4%B8%8E%E5%A4%9A%E7%A7%9F%E6%88%B7/" rel="prev" title="后端服务工程学习-认证鉴权与多租户">
+                  <i class="fa fa-angle-left"></i> 后端服务工程学习-认证鉴权与多租户
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/" rel="next" title="后端服务工程学习-自检面试与对照">
+                  后端服务工程学习-自检面试与对照 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

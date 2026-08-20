@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Linux 性能观测路径：CPU&#x2F;内存&#x2F;IO&#x2F;网络机制、工具阶梯、运维命令详解、容器叠层、案例与自检。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux性能学习-观测排查与基础调优">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/10/07/Linux%E6%80%A7%E8%83%BD%E5%AD%A6%E4%B9%A0-%E8%A7%82%E6%B5%8B%E6%8E%92%E6%9F%A5%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%B0%83%E4%BC%98/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Linux 性能观测路径：CPU&#x2F;内存&#x2F;IO&#x2F;网络机制、工具阶梯、运维命令详解、容器叠层、案例与自检。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-07T10:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.669Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="可观测">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="性能">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/10/07/Linux%E6%80%A7%E8%83%BD%E5%AD%A6%E4%B9%A0-%E8%A7%82%E6%B5%8B%E6%8E%92%E6%9F%A5%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%B0%83%E4%BC%98/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/10/07/Linux%E6%80%A7%E8%83%BD%E5%AD%A6%E4%B9%A0-%E8%A7%82%E6%B5%8B%E6%8E%92%E6%9F%A5%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%B0%83%E4%BC%98/","path":"/2026/10/07/Linux性能学习-观测排查与基础调优/","title":"Linux性能学习-观测排查与基础调优"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux性能学习-观测排查与基础调优 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%85%88%E5%AE%9A%E9%97%AE%E9%A2%98%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">1. 先定问题类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-CPU"><span class="nav-number">3.</span> <span class="nav-text">2. CPU</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%9C%BA%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E7%A4%BA%E4%BE%8B%E8%AF%BB%E6%95%B0"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 示例读数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-number">3.4.</span> <span class="nav-text">2.4 注意点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%86%85%E5%AD%98"><span class="nav-number">4.</span> <span class="nav-text">3. 内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%9C%BA%E5%88%B6"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E7%A4%BA%E4%BE%8B%E8%AF%BB%E6%95%B0"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 示例读数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-number">4.4.</span> <span class="nav-text">3.4 注意点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%A3%81%E7%9B%98-IO"><span class="nav-number">5.</span> <span class="nav-text">4. 磁盘 IO</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E6%9C%BA%E5%88%B6"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E7%A4%BA%E4%BE%8B%E8%AF%BB%E6%95%B0"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 示例读数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-number">5.4.</span> <span class="nav-text">4.4 注意点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%BD%91%E7%BB%9C"><span class="nav-number">6.</span> <span class="nav-text">5. 网络</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E6%9C%BA%E5%88%B6"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E7%A4%BA%E4%BE%8B%E8%AF%BB%E6%95%B0"><span class="nav-number">6.3.</span> <span class="nav-text">5.3 示例读数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-number">6.4.</span> <span class="nav-text">5.4 注意点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%B7%A5%E5%85%B7%E9%98%B6%E6%A2%AF%E4%B8%8E%E8%AF%BB%E6%95%B0%E8%A6%81%E7%82%B9"><span class="nav-number">7.</span> <span class="nav-text">6. 工具阶梯与读数要点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E8%BF%90%E7%BB%B4%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3%EF%BC%88%E5%8A%9F%E8%83%BD%E4%B8%8E%E4%BD%9C%E7%94%A8%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">7. 运维命令详解（功能与作用）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E6%80%BB%E8%A7%88%E4%B8%8E%E4%B8%BB%E6%9C%BA%E4%BF%A1%E6%81%AF"><span class="nav-number">8.1.</span> <span class="nav-text">7.1 总览与主机信息</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#uptime"><span class="nav-number">8.1.1.</span> <span class="nav-text">uptime</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#w-who"><span class="nav-number">8.1.2.</span> <span class="nav-text">w &#x2F; who</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#uname-a-hostnamectl"><span class="nav-number">8.1.3.</span> <span class="nav-text">uname -a &#x2F; hostnamectl</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#date-timedatectl"><span class="nav-number">8.1.4.</span> <span class="nav-text">date &#x2F; timedatectl</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#top-htop"><span class="nav-number">8.1.5.</span> <span class="nav-text">top &#x2F; htop</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#vmstat-%E9%97%B4%E9%9A%94-%E6%AC%A1%E6%95%B0"><span class="nav-number">8.1.6.</span> <span class="nav-text">vmstat 间隔 [次数]</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-CPU-%E7%9B%B8%E5%85%B3"><span class="nav-number">8.2.</span> <span class="nav-text">7.2 CPU 相关</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#nproc-lscpu"><span class="nav-number">8.2.1.</span> <span class="nav-text">nproc &#x2F; lscpu</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mpstat-P-ALL-%E9%97%B4%E9%9A%94"><span class="nav-number">8.2.2.</span> <span class="nav-text">mpstat -P ALL 间隔</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pidstat-u-%E9%97%B4%E9%9A%94-pidstat-t"><span class="nav-number">8.2.3.</span> <span class="nav-text">pidstat -u 间隔 &#x2F; pidstat -t</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sar-u-%E9%97%B4%E9%9A%94-%E6%AC%A1%E6%95%B0-sar-q"><span class="nav-number">8.2.4.</span> <span class="nav-text">sar -u 间隔 次数 &#x2F; sar -q</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#perf-top-perf-record-perf-report%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">8.2.5.</span> <span class="nav-text">perf top &#x2F; perf record + perf report（认名）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-%E5%86%85%E5%AD%98%E7%9B%B8%E5%85%B3"><span class="nav-number">8.3.</span> <span class="nav-text">7.3 内存相关</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#free-h"><span class="nav-number">8.3.1.</span> <span class="nav-text">free -h</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cat-proc-meminfo"><span class="nav-number">8.3.2.</span> <span class="nav-text">cat &#x2F;proc&#x2F;meminfo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ps%EF%BC%88%E5%86%85%E5%AD%98%E8%A7%86%E8%A7%92%EF%BC%89"><span class="nav-number">8.3.3.</span> <span class="nav-text">ps（内存视角）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#smem%EF%BC%88%E8%8B%A5%E5%B7%B2%E5%AE%89%E8%A3%85%EF%BC%89"><span class="nav-number">8.3.4.</span> <span class="nav-text">smem（若已安装）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#swapon-show-cat-proc-swaps"><span class="nav-number">8.3.5.</span> <span class="nav-text">swapon --show &#x2F; cat &#x2F;proc&#x2F;swaps</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dmesg-T-journalctl-k"><span class="nav-number">8.3.6.</span> <span class="nav-text">dmesg -T &#x2F; journalctl -k</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-4-%E7%A3%81%E7%9B%98%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">8.4.</span> <span class="nav-text">7.4 磁盘与文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#df-h-df-i"><span class="nav-number">8.4.1.</span> <span class="nav-text">df -h &#x2F; df -i</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#du-h-max-depth-1-du-sh"><span class="nav-number">8.4.2.</span> <span class="nav-text">du -h --max-depth&#x3D;1 &#x2F; du -sh *</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#lsblk-mount-findmnt"><span class="nav-number">8.4.3.</span> <span class="nav-text">lsblk &#x2F; mount &#x2F; findmnt</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#iostat-xz-%E9%97%B4%E9%9A%94"><span class="nav-number">8.4.4.</span> <span class="nav-text">iostat -xz 间隔</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#iotop-iotop-o"><span class="nav-number">8.4.5.</span> <span class="nav-text">iotop &#x2F; iotop -o</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#lsof-lsof-D-%E7%9B%AE%E5%BD%95%EF%BC%88%E6%85%8E%EF%BC%89"><span class="nav-number">8.4.6.</span> <span class="nav-text">lsof &#x2F; lsof +D 目录（慎）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fuser-m-%E6%8C%82%E8%BD%BD%E7%82%B9"><span class="nav-number">8.4.7.</span> <span class="nav-text">fuser -m 挂载点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-5-%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3"><span class="nav-number">8.5.</span> <span class="nav-text">7.5 网络相关</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ss"><span class="nav-number">8.5.1.</span> <span class="nav-text">ss</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ip%EF%BC%88ip-addr-ip-route-ip-neigh%EF%BC%89"><span class="nav-number">8.5.2.</span> <span class="nav-text">ip（ip addr &#x2F; ip route &#x2F; ip neigh）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ping-mtr-traceroute"><span class="nav-number">8.5.3.</span> <span class="nav-text">ping &#x2F; mtr &#x2F; traceroute</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dig-nslookup"><span class="nav-number">8.5.4.</span> <span class="nav-text">dig &#x2F; nslookup</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#curl-w-curl-o-dev-null-s-w"><span class="nav-number">8.5.5.</span> <span class="nav-text">curl -w &#x2F; curl -o &#x2F;dev&#x2F;null -s -w</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sar-n-DEV-TCP-ETCP-%E9%97%B4%E9%9A%94-nstat"><span class="nav-number">8.5.6.</span> <span class="nav-text">sar -n DEV|TCP|ETCP 间隔 &#x2F; nstat</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ethtool-ethtool-S"><span class="nav-number">8.5.7.</span> <span class="nav-text">ethtool &lt;网卡&gt; &#x2F; ethtool -S &lt;网卡&gt;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tcpdump%EF%BC%88%E6%85%8E%E7%94%A8%EF%BC%89"><span class="nav-number">8.5.8.</span> <span class="nav-text">tcpdump（慎用）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-6-%E8%BF%9B%E7%A8%8B%E3%80%81%E6%96%87%E4%BB%B6%E4%B8%8E%E9%99%90%E5%88%B6"><span class="nav-number">8.6.</span> <span class="nav-text">7.6 进程、文件与限制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pstree-p"><span class="nav-number">8.6.1.</span> <span class="nav-text">pstree -p</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kill-kill-9-kill-15"><span class="nav-number">8.6.2.</span> <span class="nav-text">kill &#x2F; kill -9 &#x2F; kill -15</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#nice-renice"><span class="nav-number">8.6.3.</span> <span class="nav-text">nice &#x2F; renice</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ulimit-a-ulimit-n"><span class="nav-number">8.6.4.</span> <span class="nav-text">ulimit -a &#x2F; ulimit -n</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ls-l-proc-fd-wc-l"><span class="nav-number">8.6.5.</span> <span class="nav-text">ls -l &#x2F;proc&#x2F;&lt;PID&gt;&#x2F;fd | wc -l</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#strace-p-PID%EF%BC%88%E6%85%8E%E7%94%A8%EF%BC%89"><span class="nav-number">8.6.6.</span> <span class="nav-text">strace -p PID（慎用）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-7-%E6%97%A5%E5%BF%97%E4%B8%8E%E5%86%85%E6%A0%B8%E7%BA%BF%E7%B4%A2"><span class="nav-number">8.7.</span> <span class="nav-text">7.7 日志与内核线索</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#journalctl"><span class="nav-number">8.7.1.</span> <span class="nav-text">journalctl</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tail-f-less-%E5%BA%94%E7%94%A8%E6%97%A5%E5%BF%97"><span class="nav-number">8.7.2.</span> <span class="nav-text">tail -f &#x2F; less + 应用日志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sysctl-%EF%BC%88%E5%8F%AA%E8%AF%BB%E6%8E%92%E6%9F%A5%EF%BC%89"><span class="nav-number">8.7.3.</span> <span class="nav-text">sysctl &lt;名&gt;（只读排查）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-8-%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="nav-number">8.8.</span> <span class="nav-text">7.8 命令速查表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E4%B8%8E%E5%AE%B9%E5%99%A8%E3%80%81%E5%BA%94%E7%94%A8%E5%8F%A0%E5%B1%82"><span class="nav-number">9.</span> <span class="nav-text">8. 与容器、应用叠层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E6%A1%88%E4%BE%8B%E5%86%B3%E7%AD%96%E8%A1%A8%E4%B8%8E%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">10.</span> <span class="nav-text">9. 案例决策表与反模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#9-1-%E6%A1%88%E4%BE%8B"><span class="nav-number">10.1.</span> <span class="nav-text">9.1 案例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-2-%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">10.2.</span> <span class="nav-text">9.2 反模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">11.</span> <span class="nav-text">10. 自检与面试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-iowait-%E9%AB%98%E8%AF%B4%E6%98%8E-CPU-%E4%B8%8D%E5%A4%9F%E7%94%A8%E5%90%97%EF%BC%9F"><span class="nav-number">11.1.</span> <span class="nav-text">S1. iowait 高说明 CPU 不够用吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E6%9C%BA%E5%99%A8%E5%BE%88%E7%A9%BA%E4%BD%86%E6%8E%A5%E5%8F%A3%E5%BE%88%E6%85%A2%EF%BC%8C%E5%85%88%E7%9C%8B%E5%93%AA%EF%BC%9F"><span class="nav-number">11.2.</span> <span class="nav-text">S2. 机器很空但接口很慢，先看哪？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S3-load-%E5%BE%88%E9%AB%98%E4%BD%86-CPU-idle-%E4%B9%9F%E9%AB%98%EF%BC%8C%E5%8F%AF%E8%83%BD%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">11.3.</span> <span class="nav-text">S3. load 很高但 CPU idle 也高，可能是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S4-free-%E9%87%8C-Cache-%E5%BE%88%E5%A4%A7%E8%A6%81%E4%B8%8D%E8%A6%81%E7%B4%A7%EF%BC%9F"><span class="nav-number">11.4.</span> <span class="nav-text">S4. free 里 Cache 很大要不要紧？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S5-%E6%80%A5%E6%95%91%E5%8C%85-60-%E7%A7%92%E5%85%88%E8%B7%91%E5%93%AA%E4%BA%9B%E5%91%BD%E4%BB%A4%EF%BC%9F"><span class="nav-number">11.5.</span> <span class="nav-text">S5. 急救包 60 秒先跑哪些命令？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S6-ss-%E4%B8%8E-iostat-%E5%90%84%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">11.6.</span> <span class="nav-text">S6. ss 与 iostat 各解决什么问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S7-%E4%B8%BA%E4%BD%95%E7%94%9F%E4%BA%A7%E6%85%8E%E7%94%A8-strace-tcpdump%EF%BC%9F"><span class="nav-number">11.7.</span> <span class="nav-text">S7. 为何生产慎用 strace&#x2F;tcpdump？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-K8s-%E4%B8%8A-MySQL-%E5%BB%B6%E8%BF%9F%E5%8D%87%E9%AB%98%EF%BC%8C%E5%A6%82%E4%BD%95%E5%88%86%E5%B1%82%E6%8E%92%EF%BC%9F"><span class="nav-number">11.8.</span> <span class="nav-text">I1. K8s 上 MySQL 延迟升高，如何分层排？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I2-%E5%A6%82%E4%BD%95%E5%90%91%E8%AF%84%E5%AE%A1%E8%AF%B4%E6%98%8E%E3%80%8C%E6%80%A7%E8%83%BD%E6%8E%92%E6%9F%A5%E8%BE%BE%E6%A0%87%E3%80%8D%EF%BC%9F"><span class="nav-number">11.9.</span> <span class="nav-text">I2. 如何向评审说明「性能排查达标」？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/10/07/Linux%E6%80%A7%E8%83%BD%E5%AD%A6%E4%B9%A0-%E8%A7%82%E6%B5%8B%E6%8E%92%E6%9F%A5%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%B0%83%E4%BC%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Linux性能学习-观测排查与基础调优 | 我的记录小站">
+      <meta itemprop="description" content="Linux 性能观测路径：CPU&#x2F;内存&#x2F;IO&#x2F;网络机制、工具阶梯、运维命令详解、容器叠层、案例与自检。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux性能学习-观测排查与基础调优
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-07 18:00:00" itemprop="dateCreated datePublished" datetime="2026-08-07T18:00:00+08:00">2026-08-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Linux 性能观测路径：CPU/内存/IO/网络机制、工具阶梯、运维命令详解、容器叠层、案例与自检。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>有 MySQL&#x2F;Redis&#x2F;K8s&#x2F;业务 Metrics 之后，排障常落到 <strong>机器与内核视角</strong>。本篇给 <strong>可复述的观测与排查路径</strong>：先分清「算不过来」还是「在等」，再落到进程&#x2F;设备；不写成发行版手册或 sysctl 百科。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPU&#x2F;内存&#x2F;IO&#x2F;网络瓶颈机制与读数</td>
+<td>内核源码、每条 sysctl 精读</td>
+</tr>
+<tr>
+<td>工具阶梯与决策顺序</td>
+<td>某云主机控制台逐步截图</td>
+</tr>
+<tr>
+<td>与容器、应用 Metrics 对照</td>
+<td>汇编级优化、调优参数「万能表」</td>
+</tr>
+</tbody></table>
+<p><strong>回链：</strong> <a href="/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/">可观测与 CI&#x2F;CD</a> · <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">K8s</a> · <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%BA%94/">MySQL 监控</a> · <a href="/2026/09/23/Redis%E5%AD%A6%E4%B9%A0-%E6%8C%81%E4%B9%85%E5%8C%96%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E7%BC%93%E5%AD%98%E5%B7%A5%E7%A8%8B/">Redis 运维</a> · <a href="/2026/10/04/%E7%BD%91%E5%85%B3%E9%99%90%E6%B5%81%E5%AD%A6%E4%B9%A0-%E5%85%A5%E5%8F%A3%E4%BF%9D%E6%8A%A4%E4%B8%8E%E6%B5%81%E9%87%8F%E6%B2%BB%E7%90%86/">网关限流</a></p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1</td>
+<td>问题分层与 USE 心智</td>
+</tr>
+<tr>
+<td>§2–§5</td>
+<td>CPU &#x2F; 内存 &#x2F; 磁盘 IO &#x2F; 网络</td>
+</tr>
+<tr>
+<td>§6</td>
+<td>工具阶梯</td>
+</tr>
+<tr>
+<td>§7</td>
+<td>运维命令详解（功能与作用）</td>
+</tr>
+<tr>
+<td>§8</td>
+<td>容器与应用叠层</td>
+</tr>
+<tr>
+<td>§9</td>
+<td>案例决策表与反模式</td>
+</tr>
+<tr>
+<td>§10</td>
+<td>自检与面试</td>
+</tr>
+</tbody></table>
+<p>各节结构：<strong>是什么 → 机制 → 示例&#x2F;读数 → 注意点</strong>。命令详解见 §7。</p>
+<hr>
+<h2 id="1-先定问题类型"><a href="#1-先定问题类型" class="headerlink" title="1. 先定问题类型"></a>1. 先定问题类型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">慢 / 超时 / 错误率高</span><br><span class="line">  → ① 应用 Trace：慢在哪一段？（可观测篇）</span><br><span class="line">  → ② 仍不清：看资源饱和（本篇 §2–§5）</span><br><span class="line">  → ③ 对照容器限额 vs 节点真实压力（§8 · K8s）</span><br><span class="line">  → ④ 有基线再谈调优；无基线先别改内核参数</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>表象</th>
+<th>先怀疑</th>
+<th>勿先做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPU 高、延迟升</td>
+<td>计算忙、自旋、正则&#x2F;压缩&#x2F;序列化</td>
+<td>盲目加机器却不看火焰图</td>
+</tr>
+<tr>
+<td>CPU 低但延迟高</td>
+<td>等锁、等 IO、等网络、线程&#x2F;连接池不够</td>
+<td>加 CPU 核</td>
+</tr>
+<tr>
+<td>内存持续涨</td>
+<td>泄漏、缓存过大、堆&#x2F;缓冲设置</td>
+<td>只看 <code>free</code> 的 available 当「没事」</td>
+</tr>
+<tr>
+<td>磁盘 util 高</td>
+<td>随机写、刷脏、日志、缺索引扫盘</td>
+<td>只扩盘不查谁在写</td>
+</tr>
+<tr>
+<td>网络重传&#x2F;带宽满</td>
+<td>跨 AZ、大包、连接泄漏、限流误伤</td>
+<td>先改 TCP 参数碰运气</td>
+</tr>
+</tbody></table>
+<p><strong>USE 心智（资源侧，认名）：</strong> 对每类资源问 <strong>Utilization（利用率）</strong>、<strong>Saturation（饱和&#x2F;排队）</strong>、<strong>Errors（错误）</strong>。业务侧仍用 RED（可观测篇）；本篇补机器侧。</p>
+<hr>
+<h2 id="2-CPU"><a href="#2-CPU" class="headerlink" title="2. CPU"></a>2. CPU</h2><h3 id="2-1-是什么"><a href="#2-1-是什么" class="headerlink" title="2.1 是什么"></a>2.1 是什么</h3><p>CPU 时间花在：<strong>用户态算</strong>、<strong>内核态（系统调用&#x2F;驱动）</strong>、<strong>软中断</strong>、<strong>硬中断</strong>、<strong>iowait（空等 IO）</strong>、<strong>idle</strong>。</p>
+<h3 id="2-2-机制"><a href="#2-2-机制" class="headerlink" title="2.2 机制"></a>2.2 机制</h3><table>
+<thead>
+<tr>
+<th>读数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>us（user）</strong></td>
+<td>应用代码在算</td>
+</tr>
+<tr>
+<td><strong>sy（system）</strong></td>
+<td>内核路径重（过多 syscall、拷贝、网络栈）</td>
+</tr>
+<tr>
+<td><strong>wa（iowait）</strong></td>
+<td>有可运行任务在等 IO → <strong>不是算力不够</strong></td>
+</tr>
+<tr>
+<td><strong>si &#x2F; hi</strong></td>
+<td>软&#x2F;硬中断；网络 PPS 高时常抬升 softirq</td>
+</tr>
+<tr>
+<td><strong>load average</strong></td>
+<td>可运行+不可中断睡眠队列长度；<strong>不等于</strong> CPU 利用率</td>
+</tr>
+<tr>
+<td><strong>上下文切换</strong></td>
+<td>过高 → 线程过多、锁竞争、IO 碎</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">「慢」分流：</span><br><span class="line">  us 高 → 优化算法/减少序列化/扩容算力或限流入站</span><br><span class="line">  wa 高 → 转查磁盘/网络 IO（§4§5）</span><br><span class="line">  sy 高 → 查 syscall 密度、小包网络、过度日志 fsync</span><br><span class="line">  load 高但 %idle 高 → 常在等 IO（D 状态），不是纯算力</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-示例读数"><a href="#2-3-示例读数" class="headerlink" title="2.3 示例读数"></a>2.3 示例读数</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">uptime</span>                    <span class="comment"># load</span></span><br><span class="line">mpstat -P ALL 1           <span class="comment"># 每核 us/sy/wa/si</span></span><br><span class="line">pidstat -u 1              <span class="comment"># 哪个进程吃 CPU</span></span><br><span class="line"><span class="comment"># 认名：perf top / 应用侧 pprof —— 确认「谁在 us」</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-注意点"><a href="#2-4-注意点" class="headerlink" title="2.4 注意点"></a>2.4 注意点</h3><ol>
+<li>单核打满、其它核空闲 → 看是否单线程瓶颈，不是「机器还有余量」。  </li>
+<li>容器里 <code>%CPU</code> 相对 <strong>cgroup 配额</strong>；节点 idle 高也可能被 throttle。  </li>
+<li>负载与核数对比：load ≈ 核数尚可；长期 ≫ 核数要查排队。</li>
+</ol>
+<hr>
+<h2 id="3-内存"><a href="#3-内存" class="headerlink" title="3. 内存"></a>3. 内存</h2><h3 id="3-1-是什么"><a href="#3-1-是什么" class="headerlink" title="3.1 是什么"></a>3.1 是什么</h3><p>物理内存被：<strong>应用匿名页（堆&#x2F;栈）</strong>、<strong>文件页缓存（Cache）</strong>、<strong>Buffers</strong>、<strong>内核</strong>、可选 <strong>Swap</strong> 瓜分。Linux 倾向把空闲内存用作 Cache——<strong>Cache 高往往正常</strong>。</p>
+<h3 id="3-2-机制"><a href="#3-2-机制" class="headerlink" title="3.2 机制"></a>3.2 机制</h3><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RSS</strong></td>
+<td>进程常驻物理内存</td>
+</tr>
+<tr>
+<td><strong>可用内存</strong></td>
+<td><code>available</code>（含可回收 Cache）比裸 <code>free</code> 更有用</td>
+</tr>
+<tr>
+<td><strong>回收</strong></td>
+<td>内存紧时回收页缓存；再紧可能换页&#x2F;OOM</td>
+</tr>
+<tr>
+<td><strong>OOM Killer</strong></td>
+<td>节点或 <strong>cgroup</strong> 内存顶时杀进程</td>
+</tr>
+<tr>
+<td><strong>Swap</strong></td>
+<td>换出换入 → 延迟毛刺；生产常尽量避免依赖 Swap 顶业务</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">内存「涨」分流：</span><br><span class="line">  Cache 涨、业务 RSS 稳 → 常可忽略或调应用读盘模式</span><br><span class="line">  某进程 RSS 单调涨 → 泄漏或无界缓存（连接池/本地 cache）</span><br><span class="line">  突然 OOM → 看 dmesg/cgroup 事件 + 部署 limit</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-示例读数"><a href="#3-3-示例读数" class="headerlink" title="3.3 示例读数"></a>3.3 示例读数</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">free -h</span><br><span class="line"><span class="built_in">cat</span> /proc/meminfo | <span class="built_in">head</span>   <span class="comment"># MemAvailable, Cached, Swap*</span></span><br><span class="line">ps aux --<span class="built_in">sort</span>=-rss | <span class="built_in">head</span></span><br><span class="line"><span class="comment"># OOM：dmesg / journalctl -k | grep -i oom</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-注意点"><a href="#3-4-注意点" class="headerlink" title="3.4 注意点"></a>3.4 注意点</h3><ol>
+<li>把 Cache 当「内存泄漏」去清缓存，常是自伤（下次读盘更慢）。  </li>
+<li>JVM&#x2F;Go 堆上限 + 容器 limit：堆过大 → cgroup OOM，节点 <code>free</code> 仍可能好看。  </li>
+<li>对齐业务 Metrics：连接池、队列深度、本地缓存大小。</li>
+</ol>
+<hr>
+<h2 id="4-磁盘-IO"><a href="#4-磁盘-IO" class="headerlink" title="4. 磁盘 IO"></a>4. 磁盘 IO</h2><h3 id="4-1-是什么"><a href="#4-1-是什么" class="headerlink" title="4.1 是什么"></a>4.1 是什么</h3><p>瓶颈在 <strong>IOPS</strong>（小随机）或 <strong>吞吐 MB&#x2F;s</strong>（大顺序），或在 <strong>排队等待（await）</strong>。数据库 WAL、刷脏页、容器日志、本地盘上的对象落地都是常见源。</p>
+<h3 id="4-2-机制"><a href="#4-2-机制" class="headerlink" title="4.2 机制"></a>4.2 机制</h3><table>
+<thead>
+<tr>
+<th>读数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>%util</strong></td>
+<td>设备忙的时间比例（近似；多队列盘解读宜谨慎）</td>
+</tr>
+<tr>
+<td><strong>await &#x2F; await 读写</strong></td>
+<td>平均等待；升高 ≈ 排队或介质慢</td>
+</tr>
+<tr>
+<td><strong>r&#x2F;s w&#x2F;s</strong></td>
+<td>IOPS</td>
+</tr>
+<tr>
+<td><strong>rkB&#x2F;s wkB&#x2F;s</strong></td>
+<td>吞吐</td>
+</tr>
+<tr>
+<td><strong>队列长度</strong></td>
+<td>饱和信号（与 await 一起看）</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">写放大常见路径：</span><br><span class="line">  应用 fsync / DB commit → WAL</span><br><span class="line">  页缓存脏页 → 写回</span><br><span class="line">  日志框架同步刷盘、容器 json-file 日志</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-示例读数"><a href="#4-3-示例读数" class="headerlink" title="4.3 示例读数"></a>4.3 示例读数</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">iostat -xz 1              <span class="comment"># util, await, r/s, w/s</span></span><br><span class="line">iotop -o                  <span class="comment"># 谁在读写（需权限）</span></span><br><span class="line"><span class="comment"># 应用侧：慢查询、binlog/redo、Redis AOF —— 回链 MySQL/Redis 篇</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-注意点"><a href="#4-4-注意点" class="headerlink" title="4.4 注意点"></a>4.4 注意点</h3><ol>
+<li>util≈100% 且 await 高 → 真饱和；util 低但应用慢 → 可能在等锁&#x2F;网络，不是盘。  </li>
+<li>云盘有 <strong>突发积分</strong>；积分耗尽后延迟陡增——要认名，勿只怪 SQL。  </li>
+<li>深分页、全表扫、缺索引 → 表现为 IO 与 CPU 双高。  </li>
+<li>对象存储走网络，慢在 <strong>网</strong> 不在本地盘——见 <a href="/2026/10/05/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E5%AD%A6%E4%B9%A0-%E6%96%87%E4%BB%B6%E4%B8%8E%E5%A4%A7%E6%9D%90%E6%96%99%E5%B7%A5%E7%A8%8B/">对象存储</a>。</li>
+</ol>
+<hr>
+<h2 id="5-网络"><a href="#5-网络" class="headerlink" title="5. 网络"></a>5. 网络</h2><h3 id="5-1-是什么"><a href="#5-1-是什么" class="headerlink" title="5.1 是什么"></a>5.1 是什么</h3><p>延迟与吞吐受：<strong>带宽、PPS、重传、连接状态机、文件描述符、conntrack、跨 AZ&#x2F;网格跳数</strong> 影响。</p>
+<h3 id="5-2-机制"><a href="#5-2-机制" class="headerlink" title="5.2 机制"></a>5.2 机制</h3><table>
+<thead>
+<tr>
+<th>信号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>带宽打满</strong></td>
+<td>大包、备份、误扫全量</td>
+</tr>
+<tr>
+<td><strong>重传升高</strong></td>
+<td>丢包、拥塞、路径质量差</td>
+</tr>
+<tr>
+<td><strong>TIME_WAIT 多</strong></td>
+<td>短连接爆发；未必致命，但占端口</td>
+</tr>
+<tr>
+<td><strong>FD 耗尽</strong></td>
+<td><code>ulimit</code>&#x2F;进程打开过多连接或文件</td>
+</tr>
+<tr>
+<td><strong>accept 队列满</strong></td>
+<td>监听 backlog；表现为连接失败&#x2F;超时</td>
+</tr>
+<tr>
+<td><strong>conntrack 满</strong></td>
+<td>NAT&#x2F;防火墙连接跟踪表溢出</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">服务端「连不上 / 偶发超时」：</span><br><span class="line">  ss -s / ss -ltnp → 看监听与队列</span><br><span class="line">  重传与网卡错误计数</span><br><span class="line">  下游超时是否短于上游（API 篇超时层层收紧）</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-示例读数"><a href="#5-3-示例读数" class="headerlink" title="5.3 示例读数"></a>5.3 示例读数</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ss -s</span><br><span class="line">ss -ltnp | <span class="built_in">head</span></span><br><span class="line"><span class="comment"># 重传等：sar -n TCP,ETCP 1  或  nstat / 网卡 ethtool -S（认名）</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-注意点"><a href="#5-4-注意点" class="headerlink" title="5.4 注意点"></a>5.4 注意点</h3><ol>
+<li>服务网格、跨可用区使 P99 叠加——先 Trace 再怪内核。  </li>
+<li>限流 429 与连接耗尽表象不同：见 <a href="/2026/10/04/%E7%BD%91%E5%85%B3%E9%99%90%E6%B5%81%E5%AD%A6%E4%B9%A0-%E5%85%A5%E5%8F%A3%E4%BF%9D%E6%8A%A4%E4%B8%8E%E6%B5%81%E9%87%8F%E6%B2%BB%E7%90%86/">网关限流</a>。  </li>
+<li>生产慎用 <code>tcp_tw_recycle</code> 一类「江湖参数」；优先减短连接、连池、扩 backlog 与 FD。</li>
+</ol>
+<hr>
+<h2 id="6-工具阶梯与读数要点"><a href="#6-工具阶梯与读数要点" class="headerlink" title="6. 工具阶梯与读数要点"></a>6. 工具阶梯与读数要点</h2><p><strong>原则：先宽后窄</strong>——总览确认哪类资源红 → 进程&#x2F;设备 → 应用 profiling；禁止一上来 <code>strace</code> 打满生产。各命令的功能与参数见 <strong>§7</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>阶</th>
+<th>目的</th>
+<th>工具</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L0 总览</strong></td>
+<td>哪类资源红</td>
+<td><code>uptime</code>、<code>top</code>&#x2F;<code>htop</code>、<code>vmstat 1</code>、<code>free -h</code>、<code>w</code></td>
+</tr>
+<tr>
+<td><strong>L1 CPU</strong></td>
+<td>谁在算、us&#x2F;sy&#x2F;wa</td>
+<td><code>mpstat -P ALL 1</code>、<code>pidstat -u 1</code>、<code>sar -u</code></td>
+</tr>
+<tr>
+<td><strong>L1 内存</strong></td>
+<td>RSS 谁大、OOM</td>
+<td><code>ps</code>、<code>smem</code>、<code>dmesg</code>&#x2F;<code>journalctl</code>、cgroup</td>
+</tr>
+<tr>
+<td><strong>L1 IO</strong></td>
+<td>哪块盘、谁写、空间</td>
+<td><code>iostat -xz 1</code>、<code>iotop</code>、<code>df</code>&#x2F;<code>du</code>、<code>lsblk</code></td>
+</tr>
+<tr>
+<td><strong>L1 网络</strong></td>
+<td>连接与队列</td>
+<td><code>ss</code>、<code>ip</code>、<code>sar -n</code>、<code>nstat</code>、<code>mtr</code>（认名）</td>
+</tr>
+<tr>
+<td><strong>L2 追踪</strong></td>
+<td>系统调用&#x2F;热点</td>
+<td><code>perf</code>、<code>lsof</code>、应用 pprof；<code>strace</code>&#x2F;<code>tcpdump</code> <strong>慎生产</strong></td>
+</tr>
+<tr>
+<td><strong>L2 eBPF</strong></td>
+<td>低开销观测</td>
+<td>bcc&#x2F;bpftrace（认名）</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">推荐 60 秒急救包（节点登录后）：</span><br><span class="line">  uptime &amp;&amp; free -h &amp;&amp; mpstat 1 3 &amp;&amp; iostat -xz 1 3 &amp;&amp; ss -s</span><br><span class="line">  → 对照 §1 表选下一跳 → 需要时查 §7 对应命令</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> 采样间隔太短易噪声；变更窗口前后要有 <strong>基线</strong>（同命令、同负载时段）。</p>
+<hr>
+<h2 id="7-运维命令详解（功能与作用）"><a href="#7-运维命令详解（功能与作用）" class="headerlink" title="7. 运维命令详解（功能与作用）"></a>7. 运维命令详解（功能与作用）</h2><p>本节按场景收录排障常用命令：<strong>做什么、关键参数、看哪些列、注意点</strong>。包名因发行版而异（如 <code>sysstat</code> 提供 <code>iostat</code>&#x2F;<code>mpstat</code>&#x2F;<code>pidstat</code>&#x2F;<code>sar</code>）；容器内可能缺权限或看不到宿主机设备。</p>
+<h3 id="7-1-总览与主机信息"><a href="#7-1-总览与主机信息" class="headerlink" title="7.1 总览与主机信息"></a>7.1 总览与主机信息</h3><h4 id="uptime"><a href="#uptime" class="headerlink" title="uptime"></a><code>uptime</code></h4><p><strong>功能：</strong> 显示系统已运行时长、当前登录用户数、<strong>1&#x2F;5&#x2F;15 分钟 load average</strong>。</p>
+<p><strong>作用：</strong> 30 秒判断「是否整体过载」；load 相对 CPU 核数偏高时进入 CPU&#x2F;IO 分流。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">uptime</span></span><br><span class="line"><span class="comment"># 例：load average: 8.20, 5.10, 3.00  → 近期压力在爬升</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="w-who"><a href="#w-who" class="headerlink" title="w &#x2F; who"></a><code>w</code> &#x2F; <code>who</code></h4><p><strong>功能：</strong> <code>w</code> 列出谁登录、来自哪、空闲多久、当前在跑什么；<code>who</code> 更精简的登录列表。</p>
+<p><strong>作用：</strong> 排查「是否有人在节点上跑重任务&#x2F;手工操作」；多人运维时确认变更责任人。</p>
+<h4 id="uname-a-hostnamectl"><a href="#uname-a-hostnamectl" class="headerlink" title="uname -a &#x2F; hostnamectl"></a><code>uname -a</code> &#x2F; <code>hostnamectl</code></h4><p><strong>功能：</strong> <code>uname</code> 输出内核版本、架构等；<code>hostnamectl</code>（systemd）看主机名、OS、虚拟化类型。</p>
+<p><strong>作用：</strong> 确认内核&#x2F;OS 版本是否与文档一致；区分物理机&#x2F;KVM&#x2F;云主机，避免用错排障假设。</p>
+<h4 id="date-timedatectl"><a href="#date-timedatectl" class="headerlink" title="date &#x2F; timedatectl"></a><code>date</code> &#x2F; <code>timedatectl</code></h4><p><strong>功能：</strong> 查看&#x2F;核对系统时间与时区；<code>timedatectl</code> 可看 NTP 同步状态（视权限）。</p>
+<p><strong>作用：</strong> 日志与 Trace 对不上时间时先查时钟；分布式排障时钟漂移会导致「假先后」。</p>
+<h4 id="top-htop"><a href="#top-htop" class="headerlink" title="top &#x2F; htop"></a><code>top</code> &#x2F; <code>htop</code></h4><p><strong>功能：</strong> 交互式进程监视器。默认按 CPU 排序，展示整体 us&#x2F;sy&#x2F;wa&#x2F;mem 与各进程 <code>%CPU</code>&#x2F;<code>%MEM</code>&#x2F;<code>TIME+</code>。</p>
+<p><strong>作用：</strong> 现场找「谁最忙」；<code>htop</code> 更易读（树状、着色），能力同族。</p>
+<table>
+<thead>
+<tr>
+<th>常用交互（<code>top</code>）</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>P</code> &#x2F; <code>M</code></td>
+<td>按 CPU &#x2F; 内存排序</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>展开每核 CPU</td>
+</tr>
+<tr>
+<td><code>H</code></td>
+<td>按线程显示（看线程暴增）</td>
+</tr>
+<tr>
+<td><code>c</code></td>
+<td>显示完整命令行</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 瞬时采样有噪声；容器内 <code>%CPU</code> 相对可见配额，需结合 §8。</p>
+<h4 id="vmstat-间隔-次数"><a href="#vmstat-间隔-次数" class="headerlink" title="vmstat 间隔 [次数]"></a><code>vmstat 间隔 [次数]</code></h4><p><strong>功能：</strong> 报告进程队列、内存、swap、IO、CPU 的汇总快照（可连续刷新）。</p>
+<p><strong>作用：</strong> 一张表同时看 <strong>r（可运行队列）</strong>、<strong>b（不可中断睡眠，常等 IO）</strong>、<strong>si&#x2F;so（换入换出）</strong>、<strong>wa</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vmstat 1 5</span><br><span class="line"><span class="comment"># r 长期 &gt; 核数 → CPU 饱和排队</span></span><br><span class="line"><span class="comment"># b 高 + wa 高 → 偏向 IO 等待</span></span><br><span class="line"><span class="comment"># so 持续非 0 → 在用 Swap，延迟易毛刺</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="7-2-CPU-相关"><a href="#7-2-CPU-相关" class="headerlink" title="7.2 CPU 相关"></a>7.2 CPU 相关</h3><h4 id="nproc-lscpu"><a href="#nproc-lscpu" class="headerlink" title="nproc &#x2F; lscpu"></a><code>nproc</code> &#x2F; <code>lscpu</code></h4><p><strong>功能：</strong> <code>nproc</code> 打印可用 CPU 个数；<code>lscpu</code> 详述型号、核、线程、NUMA 等。</p>
+<p><strong>作用：</strong> 解释 load（相对核数）、判断是否单核瓶颈、是否 NUMA 相关（进阶认名）。</p>
+<h4 id="mpstat-P-ALL-间隔"><a href="#mpstat-P-ALL-间隔" class="headerlink" title="mpstat -P ALL 间隔"></a><code>mpstat -P ALL 间隔</code></h4><p><strong>功能：</strong>（<code>sysstat</code>）按 <strong>每个逻辑 CPU</strong> 输出 <code>%usr/%sys/%iowait/%irq/%soft/%idle</code> 等。</p>
+<p><strong>作用：</strong> 发现「一核打满、其它空闲」或 softirq（<code>%soft</code>）过高；比 <code>top</code> 汇总更适合看均衡性。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpstat -P ALL 1</span><br></pre></td></tr></table></figure>
+
+<h4 id="pidstat-u-间隔-pidstat-t"><a href="#pidstat-u-间隔-pidstat-t" class="headerlink" title="pidstat -u 间隔 &#x2F; pidstat -t"></a><code>pidstat -u 间隔</code> &#x2F; <code>pidstat -t</code></h4><p><strong>功能：</strong>（<code>sysstat</code>）按进程（或 <code>-t</code> 按线程）输出 CPU 占用，可带进程名。</p>
+<p><strong>作用：</strong> 比 <code>top</code> 更适合脚本化采样与对齐 PID；定位吃 CPU 的具体进程&#x2F;线程。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pidstat -u 1</span><br><span class="line">pidstat -t -p &lt;PID&gt; 1    <span class="comment"># 该进程内哪条线程在烧</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="sar-u-间隔-次数-sar-q"><a href="#sar-u-间隔-次数-sar-q" class="headerlink" title="sar -u 间隔 次数 &#x2F; sar -q"></a><code>sar -u 间隔 次数</code> &#x2F; <code>sar -q</code></h4><p><strong>功能：</strong>（<code>sysstat</code>）系统活动报告；<code>-u</code> 为 CPU，<code>-q</code> 为队列与 load；还可读历史（若启用了 <code>sadc</code> 采集）。</p>
+<p><strong>作用：</strong> <strong>事后复盘</strong>「昨天 15:00 CPU 怎样」；现场也可用。是值班回看基线的主力之一。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sar -u 1 3</span><br><span class="line">sar -q 1 3</span><br></pre></td></tr></table></figure>
+
+<h4 id="perf-top-perf-record-perf-report（认名）"><a href="#perf-top-perf-record-perf-report（认名）" class="headerlink" title="perf top &#x2F; perf record + perf report（认名）"></a><code>perf top</code> &#x2F; <code>perf record</code> + <code>perf report</code>（认名）</h4><p><strong>功能：</strong> 基于性能计数器的采样剖析，看热点函数&#x2F;符号（需符号表与权限）。</p>
+<p><strong>作用：</strong> 确认 us 高时「代码哪段在烧」；与应用自带 pprof&#x2F;异步剖析互补。生产采集要评估开销与权限。</p>
+<hr>
+<h3 id="7-3-内存相关"><a href="#7-3-内存相关" class="headerlink" title="7.3 内存相关"></a>7.3 内存相关</h3><h4 id="free-h"><a href="#free-h" class="headerlink" title="free -h"></a><code>free -h</code></h4><p><strong>功能：</strong> 汇总物理内存与 Swap 的 total&#x2F;used&#x2F;free&#x2F;<strong>available</strong>、buffers&#x2F;cache。</p>
+<p><strong>作用：</strong> 快速判断是否内存吃紧；优先看 <strong>available</strong>，不要把 Cache 当成泄漏。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">free -h</span><br></pre></td></tr></table></figure>
+
+<h4 id="cat-proc-meminfo"><a href="#cat-proc-meminfo" class="headerlink" title="cat /proc/meminfo"></a><code>cat /proc/meminfo</code></h4><p><strong>功能：</strong> 内核导出的细粒度内存计数（MemAvailable、Cached、Dirty、SReclaimable 等）。</p>
+<p><strong>作用：</strong> <code>free</code> 不够细时下钻（脏页过多、回收困难等进阶线索）。</p>
+<h4 id="ps（内存视角）"><a href="#ps（内存视角）" class="headerlink" title="ps（内存视角）"></a><code>ps</code>（内存视角）</h4><p><strong>功能：</strong> 报告进程状态、CPU、内存、命令行等。</p>
+<p><strong>作用：</strong> 找出 RSS 最大的进程；配合排序做 Top-N。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ps aux --<span class="built_in">sort</span>=-rss | <span class="built_in">head</span> -n 15</span><br><span class="line">ps -eo pid,user,rss,vsz,<span class="built_in">stat</span>,cmd --<span class="built_in">sort</span>=-rss | <span class="built_in">head</span></span><br><span class="line"><span class="comment"># STAT 含 D → 不可中断睡眠（常等盘）；Z → 僵尸（父进程未 wait）</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="smem（若已安装）"><a href="#smem（若已安装）" class="headerlink" title="smem（若已安装）"></a><code>smem</code>（若已安装）</h4><p><strong>功能：</strong> 按进程报告 USS&#x2F;PSS&#x2F;RSS，比 RSS 更能反映「真实独占」与共享库分摊。</p>
+<p><strong>作用：</strong> 多进程共库时避免把 RSS 简单相加高估内存；查真泄漏更靠谱。</p>
+<h4 id="swapon-show-cat-proc-swaps"><a href="#swapon-show-cat-proc-swaps" class="headerlink" title="swapon --show &#x2F; cat /proc/swaps"></a><code>swapon --show</code> &#x2F; <code>cat /proc/swaps</code></h4><p><strong>功能：</strong> 列出 Swap 设备与使用量。</p>
+<p><strong>作用：</strong> 确认是否启用 Swap、用了多少；与 <code>vmstat</code> 的 si&#x2F;so 对照。</p>
+<h4 id="dmesg-T-journalctl-k"><a href="#dmesg-T-journalctl-k" class="headerlink" title="dmesg -T &#x2F; journalctl -k"></a><code>dmesg -T</code> &#x2F; <code>journalctl -k</code></h4><p><strong>功能：</strong> 读内核环形缓冲区 &#x2F; systemd 内核日志。</p>
+<p><strong>作用：</strong> 查 <strong>OOM Killer</strong> 杀了谁、硬件&#x2F;驱动报错、软锁等；OOM 后第一现场。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dmesg -T | grep -iE <span class="string">&#x27;oom|killed process&#x27;</span></span><br><span class="line">journalctl -k -b | grep -i oom</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="7-4-磁盘与文件系统"><a href="#7-4-磁盘与文件系统" class="headerlink" title="7.4 磁盘与文件系统"></a>7.4 磁盘与文件系统</h3><h4 id="df-h-df-i"><a href="#df-h-df-i" class="headerlink" title="df -h &#x2F; df -i"></a><code>df -h</code> &#x2F; <code>df -i</code></h4><p><strong>功能：</strong> 按挂载点显示磁盘空间（<code>-h</code>）或 <strong>inode</strong>（<code>-i</code>）使用率。</p>
+<p><strong>作用：</strong> 空间满会导致写失败、日志停、DB 崩溃；inode 满（大量小文件）时 <code>df -h</code> 仍可能显示有空间。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">df</span> -h</span><br><span class="line"><span class="built_in">df</span> -i</span><br></pre></td></tr></table></figure>
+
+<h4 id="du-h-max-depth-1-du-sh"><a href="#du-h-max-depth-1-du-sh" class="headerlink" title="du -h --max-depth=1 &#x2F; du -sh *"></a><code>du -h --max-depth=1</code> &#x2F; <code>du -sh *</code></h4><p><strong>功能：</strong> 统计目录实际占用。</p>
+<p><strong>作用：</strong> 在已满或暴增的挂载点上找「哪个目录吃空间」（日志、容器层、备份、核心转储）。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /var &amp;&amp; <span class="built_in">du</span> -h --max-depth=1 | <span class="built_in">sort</span> -h</span><br></pre></td></tr></table></figure>
+
+<h4 id="lsblk-mount-findmnt"><a href="#lsblk-mount-findmnt" class="headerlink" title="lsblk &#x2F; mount &#x2F; findmnt"></a><code>lsblk</code> &#x2F; <code>mount</code> &#x2F; <code>findmnt</code></h4><p><strong>功能：</strong> <code>lsblk</code> 列块设备树；<code>mount</code>&#x2F;<code>findmnt</code> 看挂载选项与类型。</p>
+<p><strong>作用：</strong> 确认数据盘是否挂上、是否只读、是否用了网络盘&#x2F;本地盘；PVC 落在哪块设备。</p>
+<h4 id="iostat-xz-间隔"><a href="#iostat-xz-间隔" class="headerlink" title="iostat -xz 间隔"></a><code>iostat -xz 间隔</code></h4><p><strong>功能：</strong>（<code>sysstat</code>）按设备输出 IOPS、吞吐、<strong>%util</strong>、<strong>await</strong>、队列等（<code>-x</code> 扩展，<code>-z</code> 省略空闲设备）。</p>
+<p><strong>作用：</strong> 判断盘是否饱和、延迟是否升高；性能篇 §4 的主读数来源。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iostat -xz 1</span><br></pre></td></tr></table></figure>
+
+<h4 id="iotop-iotop-o"><a href="#iotop-iotop-o" class="headerlink" title="iotop &#x2F; iotop -o"></a><code>iotop</code> &#x2F; <code>iotop -o</code></h4><p><strong>功能：</strong> 类似 top 的 <strong>IO 版</strong>，按进程显示读写带宽（通常需 root；<code>-o</code> 只显示有 IO 的进程）。</p>
+<p><strong>作用：</strong> 回答「util 高时到底是谁在写盘」。</p>
+<h4 id="lsof-lsof-D-目录（慎）"><a href="#lsof-lsof-D-目录（慎）" class="headerlink" title="lsof &#x2F; lsof +D 目录（慎）"></a><code>lsof</code> &#x2F; <code>lsof +D 目录</code>（慎）</h4><p><strong>功能：</strong> List Open Files——谁打开了哪些文件&#x2F;套接字。</p>
+<p><strong>作用：</strong> 找删了但未关闭导致空间不释放的日志；查进程打开的端口与文件过多。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lsof -p &lt;PID&gt; | <span class="built_in">head</span></span><br><span class="line">lsof -i :8080                 <span class="comment"># 谁占用端口</span></span><br><span class="line"><span class="comment"># 已删但仍占空间：lsof | grep deleted</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> <code>lsof +D</code> 递归大目录极慢，生产慎用。</p>
+<h4 id="fuser-m-挂载点"><a href="#fuser-m-挂载点" class="headerlink" title="fuser -m 挂载点"></a><code>fuser -m 挂载点</code></h4><p><strong>功能：</strong> 显示占用某文件系统的进程。</p>
+<p><strong>作用：</strong> umount 失败时找「谁还占着盘」。</p>
+<hr>
+<h3 id="7-5-网络相关"><a href="#7-5-网络相关" class="headerlink" title="7.5 网络相关"></a>7.5 网络相关</h3><h4 id="ss"><a href="#ss" class="headerlink" title="ss"></a><code>ss</code></h4><p><strong>功能：</strong> 现代套接字统计（替代多数 <code>netstat</code> 场景），可列监听、连接、状态、队列。</p>
+<p><strong>作用：</strong> 看监听端口、连接数、<code>Recv-Q</code>&#x2F;<code>Send-Q</code> 是否堆积、TIME_WAIT 规模。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ss -s                     <span class="comment"># 汇总</span></span><br><span class="line">ss -ltnp                  <span class="comment"># 监听 TCP + 进程</span></span><br><span class="line">ss -ant | awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span> | <span class="built_in">sort</span> | <span class="built_in">uniq</span> -c | <span class="built_in">sort</span> -rn   <span class="comment"># 按状态计数</span></span><br><span class="line">ss -tp dst &lt;IP&gt;           <span class="comment"># 到某对端的连接</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-l</code></td>
+<td>仅监听</td>
+</tr>
+<tr>
+<td><code>-t</code> &#x2F; <code>-u</code></td>
+<td>TCP &#x2F; UDP</td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>不反解域名（更快）</td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td>显示进程（常需权限）</td>
+</tr>
+<tr>
+<td><code>-a</code></td>
+<td>所有连接</td>
+</tr>
+</tbody></table>
+<h4 id="ip（ip-addr-ip-route-ip-neigh）"><a href="#ip（ip-addr-ip-route-ip-neigh）" class="headerlink" title="ip（ip addr &#x2F; ip route &#x2F; ip neigh）"></a><code>ip</code>（<code>ip addr</code> &#x2F; <code>ip route</code> &#x2F; <code>ip neigh</code>）</h4><p><strong>功能：</strong> 现代网络配置查看（替代多数 <code>ifconfig</code>&#x2F;<code>route</code>）。</p>
+<p><strong>作用：</strong> 确认网卡 IP、路由是否指向预期网关、邻居表是否异常——「机器是否根本出不去」。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip -br addr</span><br><span class="line">ip route</span><br></pre></td></tr></table></figure>
+
+<h4 id="ping-mtr-traceroute"><a href="#ping-mtr-traceroute" class="headerlink" title="ping &#x2F; mtr &#x2F; traceroute"></a><code>ping</code> &#x2F; <code>mtr</code> &#x2F; <code>traceroute</code></h4><p><strong>功能：</strong> <code>ping</code> 测连通与 RTT；<code>traceroute</code> 看路径跳点；<code>mtr</code> 结合二者持续统计（认名）。</p>
+<p><strong>作用：</strong> 区分「应用超时」与「网络路径差&#x2F;丢包」；跨 AZ 延迟基线。</p>
+<h4 id="dig-nslookup"><a href="#dig-nslookup" class="headerlink" title="dig &#x2F; nslookup"></a><code>dig</code> &#x2F; <code>nslookup</code></h4><p><strong>功能：</strong> 查询 DNS 解析结果与耗时（<code>dig</code> 更适合脚本）。</p>
+<p><strong>作用：</strong> 排除「偶发慢」其实是 DNS 卡住或解析到错误 IP。</p>
+<h4 id="curl-w-curl-o-dev-null-s-w"><a href="#curl-w-curl-o-dev-null-s-w" class="headerlink" title="curl -w &#x2F; curl -o /dev/null -s -w"></a><code>curl -w</code> &#x2F; <code>curl -o /dev/null -s -w</code></h4><p><strong>功能：</strong> HTTP(S) 客户端；<code>-w</code> 可打印各阶段耗时。</p>
+<p><strong>作用：</strong> 从节点测依赖连通与 TLS&#x2F;首字节时间，辅助对照 Trace。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -o /dev/null -s -w <span class="string">&#x27;dns:%&#123;time_namelookup&#125; connect:%&#123;time_connect&#125; tls:%&#123;time_appconnect&#125; ttfb:%&#123;time_starttransfer&#125; total:%&#123;time_total&#125;\n&#x27;</span> https://example.com/</span><br></pre></td></tr></table></figure>
+
+<h4 id="sar-n-DEV-TCP-ETCP-间隔-nstat"><a href="#sar-n-DEV-TCP-ETCP-间隔-nstat" class="headerlink" title="sar -n DEV|TCP|ETCP 间隔 &#x2F; nstat"></a><code>sar -n DEV|TCP|ETCP 间隔</code> &#x2F; <code>nstat</code></h4><p><strong>功能：</strong> <code>sar -n</code> 报网卡吞吐与部分 TCP 统计；<code>nstat</code> 打印内核网络计数器（重传等）。</p>
+<p><strong>作用：</strong> 看带宽是否打满、重传是否升高（与 §5 对照）。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sar -n DEV 1 3</span><br><span class="line">nstat | grep -i retrans</span><br></pre></td></tr></table></figure>
+
+<h4 id="ethtool-ethtool-S"><a href="#ethtool-ethtool-S" class="headerlink" title="ethtool &lt;网卡&gt; &#x2F; ethtool -S &lt;网卡&gt;"></a><code>ethtool &lt;网卡&gt;</code> &#x2F; <code>ethtool -S &lt;网卡&gt;</code></h4><p><strong>功能：</strong> 查询网卡速率&#x2F;双工；<code>-S</code> 驱动级统计（丢包、错误，字段因驱动而异）。</p>
+<p><strong>作用：</strong> 排除协商成百兆、硬件&#x2F;驱动丢包；云主机上权限与可见性可能受限。</p>
+<h4 id="tcpdump（慎用）"><a href="#tcpdump（慎用）" class="headerlink" title="tcpdump（慎用）"></a><code>tcpdump</code>（慎用）</h4><p><strong>功能：</strong> 抓取网卡数据包。</p>
+<p><strong>作用：</strong> 确认是否真收到请求、重传、错误 Reset；<strong>生产必须限 BPF 过滤、短时、小包量</strong>，避免打满盘与 CPU。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 示例：只抓某端口短时（需权限）</span></span><br><span class="line">tcpdump -i any -nn port 8080 -c 100</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="7-6-进程、文件与限制"><a href="#7-6-进程、文件与限制" class="headerlink" title="7.6 进程、文件与限制"></a>7.6 进程、文件与限制</h3><h4 id="pstree-p"><a href="#pstree-p" class="headerlink" title="pstree -p"></a><code>pstree -p</code></h4><p><strong>功能：</strong> 以树形显示进程父子关系。</p>
+<p><strong>作用：</strong> 看清主进程与 worker&#x2F;子进程结构（如 Nginx master&#x2F;worker、多进程模型）。</p>
+<h4 id="kill-kill-9-kill-15"><a href="#kill-kill-9-kill-15" class="headerlink" title="kill &#x2F; kill -9 &#x2F; kill -15"></a><code>kill</code> &#x2F; <code>kill -9</code> &#x2F; <code>kill -15</code></h4><p><strong>功能：</strong> 向进程发信号；默认多为 TERM(15)；<code>KILL(9)</code> 强制、不可被应用清理。</p>
+<p><strong>作用：</strong> 停掉失控进程；<strong>优先 15 给优雅退出</strong>，9 仅作最后手段（可能留下残留锁&#x2F;临时文件）。</p>
+<h4 id="nice-renice"><a href="#nice-renice" class="headerlink" title="nice &#x2F; renice"></a><code>nice</code> &#x2F; <code>renice</code></h4><p><strong>功能：</strong> 调整进程调度优先级（nice 值）。</p>
+<p><strong>作用：</strong> 让批处理少抢在线流量 CPU；非根因修复，只是权宜。</p>
+<h4 id="ulimit-a-ulimit-n"><a href="#ulimit-a-ulimit-n" class="headerlink" title="ulimit -a &#x2F; ulimit -n"></a><code>ulimit -a</code> &#x2F; <code>ulimit -n</code></h4><p><strong>功能：</strong> 显示（及在当前 shell 设置）资源限制；<code>-n</code> 为最大打开文件数。</p>
+<p><strong>作用：</strong> 「Too many open files」、连接上不去时查 FD 上限；真正持久改法在 systemd&#x2F;unit 或镜像配置。</p>
+<h4 id="ls-l-proc-fd-wc-l"><a href="#ls-l-proc-fd-wc-l" class="headerlink" title="ls -l /proc/&lt;PID&gt;/fd | wc -l"></a><code>ls -l /proc/&lt;PID&gt;/fd | wc -l</code></h4><p><strong>功能：</strong> 统计某进程打开的 FD 数量。</p>
+<p><strong>作用：</strong> 对照 <code>ulimit -n</code>，验证是否逼近上限。</p>
+<h4 id="strace-p-PID（慎用）"><a href="#strace-p-PID（慎用）" class="headerlink" title="strace -p PID（慎用）"></a><code>strace -p PID</code>（慎用）</h4><p><strong>功能：</strong> 跟踪进程的系统调用与信号。</p>
+<p><strong>作用：</strong> 看进程卡在 <code>read</code>&#x2F;<code>futex</code>&#x2F;<code>poll</code> 还是疯狂 <code>write</code>；<strong>生产短时、单 PID、可加 <code>-e</code> 过滤</strong>，避免全量跟踪拖垮服务。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">strace -p &lt;PID&gt; -c -e trace=network,file   <span class="comment"># 短时统计后 Ctrl+C</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="7-7-日志与内核线索"><a href="#7-7-日志与内核线索" class="headerlink" title="7.7 日志与内核线索"></a>7.7 日志与内核线索</h3><h4 id="journalctl"><a href="#journalctl" class="headerlink" title="journalctl"></a><code>journalctl</code></h4><p><strong>功能：</strong> systemd 日志查询。</p>
+<p><strong>作用：</strong> 查服务崩溃、OOM、单元重启原因；可按 unit、boot、优先级过滤。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u &lt;service&gt; -n 100 --no-pager</span><br><span class="line">journalctl -p err -b          <span class="comment"># 本启动以来错误级</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="tail-f-less-应用日志"><a href="#tail-f-less-应用日志" class="headerlink" title="tail -f &#x2F; less + 应用日志"></a><code>tail -f</code> &#x2F; <code>less</code> + 应用日志</h4><p><strong>功能：</strong> 跟踪或翻阅文本日志。</p>
+<p><strong>作用：</strong> 与 <code>request_id</code> &#x2F; Trace 对齐的最后一公里；轮转后注意 <code>journald</code> vs 文件路径。</p>
+<h4 id="sysctl-（只读排查）"><a href="#sysctl-（只读排查）" class="headerlink" title="sysctl &lt;名&gt;（只读排查）"></a><code>sysctl &lt;名&gt;</code>（只读排查）</h4><p><strong>功能：</strong> 读内核参数当前值（如 <code>net.core.somaxconn</code>）。</p>
+<p><strong>作用：</strong> 对照文档确认 backlog 等是否过小；<strong>本篇不鼓励无基线乱改</strong>；改动需变更流程与回滚。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sysctl net.ipv4.tcp_tw_reuse</span><br><span class="line">sysctl fs.file-max</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="7-8-命令速查表"><a href="#7-8-命令速查表" class="headerlink" title="7.8 命令速查表"></a>7.8 命令速查表</h3><table>
+<thead>
+<tr>
+<th>你想知道</th>
+<th>优先命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>整机是否过载</td>
+<td><code>uptime</code>、<code>vmstat 1</code>、<code>top</code></td>
+</tr>
+<tr>
+<td>哪颗核&#x2F;谁在吃 CPU</td>
+<td><code>mpstat -P ALL 1</code>、<code>pidstat -u 1</code></td>
+</tr>
+<tr>
+<td>内存紧不紧、谁最大</td>
+<td><code>free -h</code>、<code>ps --sort=-rss</code>、<code>dmesg</code> OOM</td>
+</tr>
+<tr>
+<td>盘满不满、谁写盘</td>
+<td><code>df -h</code>&#x2F;<code>-i</code>、<code>du</code>、<code>iostat -xz 1</code>、<code>iotop</code></td>
+</tr>
+<tr>
+<td>端口与连接异常</td>
+<td><code>ss -ltnp</code>、<code>ss -s</code></td>
+</tr>
+<tr>
+<td>网通不通、是否丢包</td>
+<td><code>ping</code>&#x2F;<code>mtr</code>、<code>sar -n</code>、<code>nstat</code></td>
+</tr>
+<tr>
+<td>进程打开了啥</td>
+<td><code>lsof -p</code>、<code>ls /proc/PID/fd</code></td>
+</tr>
+<tr>
+<td>服务为何挂</td>
+<td><code>journalctl -u</code>、<code>dmesg -T</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-与容器、应用叠层"><a href="#8-与容器、应用叠层" class="headerlink" title="8. 与容器、应用叠层"></a>8. 与容器、应用叠层</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Pod 限 CPU 200m 但节点空闲 → 应用「算不过来」是配额/throttle</span><br><span class="line">节点 CPU 打满 → 调度密度、噪声邻居、HPA/扩容不足</span><br><span class="line">应用 P95 高但机器空闲 → 锁、下游、GC、连接池 —— 回 Trace</span><br><span class="line">cgroup OOM、节点 free 仍高 → 调 limit/堆，勿只看节点</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>看什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>业务</strong></td>
+<td>RED、错误码、Trace、<code>request_id</code></td>
+</tr>
+<tr>
+<td><strong>运行时</strong></td>
+<td>JVM&#x2F;Go 指标、协程&#x2F;线程、GC</td>
+</tr>
+<tr>
+<td><strong>容器</strong></td>
+<td>requests&#x2F;limits、CPU throttle、OOMKilled</td>
+</tr>
+<tr>
+<td><strong>节点</strong></td>
+<td>本篇四大资源</td>
+</tr>
+<tr>
+<td><strong>依赖</strong></td>
+<td>DB&#x2F;Redis&#x2F;MQ 自身指标（勿用节点 CPU 代替慢查询）</td>
+</tr>
+</tbody></table>
+<p>K8s 探针、HPA、资源请求见 <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">K8s 篇</a>；发布后回归见 <a href="/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/">可观测 CI</a>。</p>
+<hr>
+<h2 id="9-案例决策表与反模式"><a href="#9-案例决策表与反模式" class="headerlink" title="9. 案例决策表与反模式"></a>9. 案例决策表与反模式</h2><h3 id="9-1-案例"><a href="#9-1-案例" class="headerlink" title="9.1 案例"></a>9.1 案例</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>API P95 升高，CPU&#x2F;盘都低</strong></td>
+<td>Trace → 下游超时&#x2F;锁&#x2F;连池；查是否 cgroup throttle</td>
+</tr>
+<tr>
+<td><strong>MySQL 延迟升，iowait+util 高</strong></td>
+<td>慢查询与锁 → 缺索引&#x2F;刷盘 → PVC&#x2F;云盘积分 → 同节点噪声</td>
+</tr>
+<tr>
+<td><strong>Redis 偶发毛刺</strong></td>
+<td>大 Key&#x2F;慢日志 → fork&#x2F;AOF（Redis 篇）→ 节点 IO&#x2F;CPU → 网络重传</td>
+</tr>
+<tr>
+<td><strong>仅某 Pod 慢</strong></td>
+<td>同节点邻居 CPU&#x2F;IO；该 Pod limit；副本是否不均</td>
+</tr>
+<tr>
+<td><strong>发布后变慢</strong></td>
+<td>金丝雀回滚；对比 Trace；再看是否新增大包&#x2F;同步日志</td>
+</tr>
+</tbody></table>
+<h3 id="9-2-反模式"><a href="#9-2-反模式" class="headerlink" title="9.2 反模式"></a>9.2 反模式</h3><ol>
+<li>无 Trace&#x2F;基线，直接调 <code>sysctl</code>  </li>
+<li>把 Cache 当泄漏清掉  </li>
+<li>iowait 高却加 CPU  </li>
+<li>只看容器内 <code>top</code>，忽略 throttle 与节点邻居  </li>
+<li>生产长时间 <code>strace -p</code> 全量附着  </li>
+<li>用节点「看起来空」否定应用层问题（或反过来）</li>
+</ol>
+<hr>
+<h2 id="10-自检与面试"><a href="#10-自检与面试" class="headerlink" title="10. 自检与面试"></a>10. 自检与面试</h2><h3 id="S1-iowait-高说明-CPU-不够用吗？"><a href="#S1-iowait-高说明-CPU-不够用吗？" class="headerlink" title="S1. iowait 高说明 CPU 不够用吗？"></a>S1. iowait 高说明 CPU 不够用吗？</h3><p><strong>推荐回答：</strong> 不说明。表示 CPU 在等 IO；应查磁盘&#x2F;网络阻塞与谁在产生 IO，而非先加 CPU 核数。</p>
+<h3 id="S2-机器很空但接口很慢，先看哪？"><a href="#S2-机器很空但接口很慢，先看哪？" class="headerlink" title="S2. 机器很空但接口很慢，先看哪？"></a>S2. 机器很空但接口很慢，先看哪？</h3><p><strong>推荐回答：</strong> 应用 Trace 与依赖；锁&#x2F;下游&#x2F;GC&#x2F;连池；再确认是否 cgroup 限额导致「节点看起来空」。</p>
+<h3 id="S3-load-很高但-CPU-idle-也高，可能是什么？"><a href="#S3-load-很高但-CPU-idle-也高，可能是什么？" class="headerlink" title="S3. load 很高但 CPU idle 也高，可能是什么？"></a>S3. load 很高但 CPU idle 也高，可能是什么？</h3><p><strong>推荐回答：</strong> 不可中断睡眠（等磁盘等）推高 load；用 <code>wa</code>、<code>iostat</code>、进程状态核对，不是简单「缺核」。</p>
+<h3 id="S4-free-里-Cache-很大要不要紧？"><a href="#S4-free-里-Cache-很大要不要紧？" class="headerlink" title="S4. free 里 Cache 很大要不要紧？"></a>S4. <code>free</code> 里 Cache 很大要不要紧？</h3><p><strong>推荐回答：</strong> 通常正常，Linux 用空闲内存做页缓存；看 <code>available</code> 与进程 RSS 趋势。业务泄漏看 RSS 单调涨或 cgroup OOM。</p>
+<h3 id="S5-急救包-60-秒先跑哪些命令？"><a href="#S5-急救包-60-秒先跑哪些命令？" class="headerlink" title="S5. 急救包 60 秒先跑哪些命令？"></a>S5. 急救包 60 秒先跑哪些命令？</h3><p><strong>推荐回答：</strong> <code>uptime</code>、<code>free -h</code>、<code>mpstat</code>、<code>iostat -xz</code>、<code>ss -s</code>，再按红项下钻。功能细节见 §7。</p>
+<h3 id="S6-ss-与-iostat-各解决什么问题？"><a href="#S6-ss-与-iostat-各解决什么问题？" class="headerlink" title="S6. ss 与 iostat 各解决什么问题？"></a>S6. <code>ss</code> 与 <code>iostat</code> 各解决什么问题？</h3><p><strong>推荐回答：</strong> <code>ss</code> 看套接字&#x2F;监听&#x2F;连接队列与状态；<code>iostat</code> 看块设备 IOPS、吞吐、util、await。见 §7.4、§7.5。</p>
+<h3 id="S7-为何生产慎用-strace-tcpdump？"><a href="#S7-为何生产慎用-strace-tcpdump？" class="headerlink" title="S7. 为何生产慎用 strace&#x2F;tcpdump？"></a>S7. 为何生产慎用 <code>strace</code>&#x2F;<code>tcpdump</code>？</h3><p><strong>推荐回答：</strong> 开销大，易放大延迟甚至拖垮进程&#x2F;打满盘；必须短时、过滤、限 PID&#x2F;端口。优先用 Metrics&#x2F;Trace&#x2F;<code>ss</code>&#x2F;<code>pidstat</code>。</p>
+<h3 id="I1-K8s-上-MySQL-延迟升高，如何分层排？"><a href="#I1-K8s-上-MySQL-延迟升高，如何分层排？" class="headerlink" title="I1. K8s 上 MySQL 延迟升高，如何分层排？"></a>I1. K8s 上 MySQL 延迟升高，如何分层排？</h3><p><strong>推荐回答：</strong> 业务慢查询与锁 → <code>iostat</code>&#x2F;<code>wa</code> → 节点与 PVC&#x2F;云盘 → 同节点噪声 → 再考虑参数。对齐 MySQL 与本篇。</p>
+<h3 id="I2-如何向评审说明「性能排查达标」？"><a href="#I2-如何向评审说明「性能排查达标」？" class="headerlink" title="I2. 如何向评审说明「性能排查达标」？"></a>I2. 如何向评审说明「性能排查达标」？</h3><p><strong>推荐回答：</strong> 任意慢请求能用 Trace 定位到跨度；节点侧有 USE 读数习惯与基线；会用 §7 命令分层下钻；容器限额与 OOM 可查；不靠盲目改内核参数。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>先应用 Trace，再资源饱和；分清 us 忙与 wa 等 IO；Cache≠泄漏；容器限额与节点现实一起看。</strong></p>
+<p><strong>工具：先宽后窄（§6）；命令功能见 §7；有基线再调优。</strong></p>
+<p><strong>上一篇：</strong> <a href="/2026/10/06/Elasticsearch%E5%AD%A6%E4%B9%A0-%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2%E4%B8%8ERAG%E5%AF%B9%E7%85%A7/">Elasticsearch</a> · <strong>系列回链：</strong> <a href="/2026/10/03/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">后端自检</a> · <a href="/2026/10/02/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%8F%AF%E8%A7%82%E6%B5%8B%E4%B8%8ECICD/">可观测与 CI&#x2F;CD</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%8F%AF%E8%A7%82%E6%B5%8B/" rel="tag"># 可观测</a>
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/%E6%80%A7%E8%83%BD/" rel="tag"># 性能</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/10/06/Elasticsearch%E5%AD%A6%E4%B9%A0-%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2%E4%B8%8ERAG%E5%AF%B9%E7%85%A7/" rel="prev" title="Elasticsearch学习-全文检索与RAG对照">
+                  <i class="fa fa-angle-left"></i> Elasticsearch学习-全文检索与RAG对照
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

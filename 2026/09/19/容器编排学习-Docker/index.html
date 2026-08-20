@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Docker 一篇收齐：镜像分层、Dockerfile、网络存储、Compose、安全与排障，并预习 K8s 映射。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="容器编排学习-Docker">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Docker 一篇收齐：镜像分层、Dockerfile、网络存储、Compose、安全与排障，并预习 K8s 映射。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-04T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.667Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="容器">
+<meta property="article:tag" content="Docker">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/","path":"/2026/09/19/容器编排学习-Docker/","title":"容器编排学习-Docker"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>容器编排学习-Docker | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AE%B9%E5%99%A8-vs-VM%EF%BC%9B%E9%9A%94%E7%A6%BB%E4%B8%8E%E5%88%86%E5%B1%82"><span class="nav-number">2.</span> <span class="nav-text">1. 容器 vs VM；隔离与分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%A0%B8%E5%BF%83%E5%91%BD%E4%BB%A4%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="nav-number">3.</span> <span class="nav-text">2. 核心命令与生命周期</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Dockerfile"><span class="nav-number">4.</span> <span class="nav-text">3. Dockerfile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E9%95%9C%E5%83%8F%EF%BC%9Atag%E3%80%81digest%E3%80%81%E6%8E%A8%E6%8B%89"><span class="nav-number">5.</span> <span class="nav-text">4. 镜像：tag、digest、推拉</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E8%B5%84%E6%BA%90%E9%99%90%E5%88%B6"><span class="nav-number">6.</span> <span class="nav-text">5. 生命周期与资源限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E7%BD%91%E7%BB%9C"><span class="nav-number">7.</span> <span class="nav-text">6. 网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AD%98%E5%82%A8"><span class="nav-number">8.</span> <span class="nav-text">7. 存储</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-Compose"><span class="nav-number">9.</span> <span class="nav-text">8. Compose</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E5%AE%89%E5%85%A8%E5%9F%BA%E7%BA%BF"><span class="nav-number">10.</span> <span class="nav-text">9. 安全基线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E6%8E%92%E9%9A%9C%E6%B8%85%E5%8D%95"><span class="nav-number">11.</span> <span class="nav-text">10. 排障清单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E9%A2%84%E4%B9%A0%E6%98%A0%E5%B0%84%EF%BC%9ADocker-%E2%86%92-Kubernetes"><span class="nav-number">12.</span> <span class="nav-text">11. 预习映射：Docker → Kubernetes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">13.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/19/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Docker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="容器编排学习-Docker | 我的记录小站">
+      <meta itemprop="description" content="Docker 一篇收齐：镜像分层、Dockerfile、网络存储、Compose、安全与排障，并预习 K8s 映射。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          容器编排学习-Docker
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-04 10:00:00" itemprop="dateCreated datePublished" datetime="2026-08-04T10:00:00+08:00">2026-08-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Docker 一篇收齐：镜像分层、Dockerfile、网络存储、Compose、安全与排障，并预习 K8s 映射。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本系列入口。先掌握 <strong>单机容器</strong>：镜像如何构建与分层、容器如何运行与隔离、网络&#x2F;存储&#x2F;Compose 如何落地；再进入 <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">Kubernetes</a> 做编排。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Docker 引擎日常全流程</td>
+<td>Swarm 编排深挖</td>
+</tr>
+<tr>
+<td>Dockerfile &#x2F; Compose 可跑通</td>
+<td>某云 Registry 产品控制台教程</td>
+</tr>
+<tr>
+<td>安全与排障基线</td>
+<td>镜像安检商业产品专项</td>
+</tr>
+</tbody></table>
+<p><strong>下一步：</strong> <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">Kubernetes</a></p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1</td>
+<td>容器 vs VM；隔离与分层机制</td>
+</tr>
+<tr>
+<td>§2</td>
+<td>核心命令与生命周期</td>
+</tr>
+<tr>
+<td>§3</td>
+<td>Dockerfile</td>
+</tr>
+<tr>
+<td>§4</td>
+<td>镜像管理</td>
+</tr>
+<tr>
+<td>§5</td>
+<td>资源与重启</td>
+</tr>
+<tr>
+<td>§6</td>
+<td>网络</td>
+</tr>
+<tr>
+<td>§7</td>
+<td>存储</td>
+</tr>
+<tr>
+<td>§8</td>
+<td>Compose</td>
+</tr>
+<tr>
+<td>§9</td>
+<td>安全基线</td>
+</tr>
+<tr>
+<td>§10</td>
+<td>排障</td>
+</tr>
+<tr>
+<td>§11</td>
+<td>→ K8s 预习映射</td>
+</tr>
+</tbody></table>
+<p>各节结构：<strong>是什么 → 机制 → 示例 → 注意点</strong>。</p>
+<hr>
+<h2 id="1-容器-vs-VM；隔离与分层"><a href="#1-容器-vs-VM；隔离与分层" class="headerlink" title="1. 容器 vs VM；隔离与分层"></a>1. 容器 vs VM；隔离与分层</h2><p><strong>是什么：</strong> Docker 用镜像打包应用与依赖，用容器以进程级隔离运行。比虚拟机更轻，因为 <strong>共享宿主机内核</strong>，不跑完整 Guest OS。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>解决什么</th>
+<th>不解决什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Namespace</strong></td>
+<td>进程&#x2F;网络&#x2F;挂载等视图隔离</td>
+<td>内核漏洞、同内核恶意逃逸面</td>
+</tr>
+<tr>
+<td><strong>cgroup</strong></td>
+<td>CPU&#x2F;内存等资源限制</td>
+<td>「限了就一定够用」的容量规划</td>
+</tr>
+<tr>
+<td><strong>UnionFS &#x2F; 分层</strong></td>
+<td>只读层叠加 + 可写层；写时复制</td>
+<td>把可写层当数据库</td>
+</tr>
+</tbody></table>
+<p>镜像层只读；启动容器时在顶上加可写层。修改已有文件时，常先从只读层 <strong>复制到可写层再改</strong>（写时复制）。</p>
+<p><strong>示例直觉：</strong> 多个容器可共用同一基础镜像层，磁盘上只存一份底层；各自可写层独立。</p>
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>容器不是「迷你 VM」——不能假设内核模块、完整 systemd 与强隔离。  </li>
+<li>同宿主机、同内核：加固靠最小镜像、非 root、能力收敛，而非「有容器就安全」。  </li>
+<li>可写层短暂：删容器常丢可写层数据；持久化必须用卷（§7）。  </li>
+<li>口诀仍成立：Dockerfile 里稳定指令靠上，常变 COPY 靠下，利于缓存。</li>
+</ol>
+<hr>
+<h2 id="2-核心命令与生命周期"><a href="#2-核心命令与生命周期" class="headerlink" title="2. 核心命令与生命周期"></a>2. 核心命令与生命周期</h2><p><strong>是什么：</strong> CLI 管理「镜像 → 容器实例」的创建、观察、进入与销毁。命令是手段，关键是分清 <strong>镜像（不可变模板）</strong> 与 <strong>容器（一次运行）</strong>。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>docker run</code></td>
+<td><strong>创建新容器</strong>并启动（可加 <code>-d</code> 后台）</td>
+</tr>
+<tr>
+<td><code>docker start</code></td>
+<td>启动 <strong>已存在</strong> 的停止容器</td>
+</tr>
+<tr>
+<td>主进程 &#x2F; PID1</td>
+<td>容器内 PID1 收信号；进程退出则容器退出</td>
+</tr>
+<tr>
+<td><code>exec</code></td>
+<td>在已运行容器内再起进程，<strong>不替代</strong>主进程</td>
+</tr>
+</tbody></table>
+<p><strong>示例：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name web -p 8080:80 nginx:alpine</span><br><span class="line">docker ps</span><br><span class="line">docker logs -f web</span><br><span class="line">docker <span class="built_in">exec</span> -it web sh</span><br><span class="line">docker stop web &amp;&amp; docker <span class="built_in">rm</span> web</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>每次 <code>run</code> 都是新实例；配置应进镜像&#x2F;编排，勿当长期手工「雪花机」。  </li>
+<li>主进程若非 PID1 或未正确转发信号，<code>stop</code> 可能变强杀、优雅退出失败——Dockerfile 推荐 <strong>exec 形式</strong> ENTRYPOINT&#x2F;CMD。  </li>
+<li><code>exec</code> 进容器调试可以，但不要依赖「手工改容器内文件」当发布方式。  </li>
+<li><code>rmi</code> 删镜像前需无容器引用；先 <code>rm</code> 容器。</li>
+</ol>
+<hr>
+<h2 id="3-Dockerfile"><a href="#3-Dockerfile" class="headerlink" title="3. Dockerfile"></a>3. Dockerfile</h2><p><strong>是什么：</strong> 构建镜像的声明式配方。目标是 <strong>可复现、可缓存、体积可控</strong>。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>FROM</code></td>
+<td>基础镜像</td>
+</tr>
+<tr>
+<td><code>COPY</code>&#x2F;<code>ADD</code></td>
+<td>复制（一般优先 COPY；ADD 有解压&#x2F;URL 副作用）</td>
+</tr>
+<tr>
+<td><code>RUN</code></td>
+<td><strong>构建期</strong>执行</td>
+</tr>
+<tr>
+<td><code>ARG</code></td>
+<td><strong>构建期</strong>参数，默认不进最终运行环境（除非再赋给 ENV）</td>
+</tr>
+<tr>
+<td><code>ENV</code></td>
+<td><strong>运行期</strong>可见环境变量</td>
+</tr>
+<tr>
+<td><code>EXPOSE</code></td>
+<td><strong>文档化</strong>端口，<strong>不会</strong>自动 <code>-p</code> 发布</td>
+</tr>
+<tr>
+<td><code>CMD</code> &#x2F; <code>ENTRYPOINT</code></td>
+<td>默认进程；推荐 JSON exec 形式</td>
+</tr>
+</tbody></table>
+<p><strong>CMD vs ENTRYPOINT：</strong> 仅 CMD 易被 <code>docker run … override</code> 整段替换；ENTRYPOINT+CMD 则入口固定、参数可覆盖。K8s 中对应关系见下篇：<code>command</code>≈ENTRYPOINT，<code>args</code>≈CMD。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> python:<span class="number">3.12</span>-slim</span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /app</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> requirements.txt .</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> pip install --no-cache-dir -r requirements.txt</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> . .</span></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="language-bash"> [<span class="string">&quot;python&quot;</span>]</span></span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;app.py&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<p>多阶段：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> golang:<span class="number">1.22</span> AS build</span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /src</span></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> . .</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> CGO_ENABLED=0 go build -o /out/app .</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">FROM</span> gcr.io/distroless/static</span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> --from=build /out/app /app</span></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="language-bash"> [<span class="string">&quot;/app&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>构建上下文过大极慢——用 <code>.dockerignore</code> 排除 <code>.git</code>、依赖目录、<code>.env</code>。  </li>
+<li><code>EXPOSE</code> 了不等于宿主机能访问——仍需 <code>-p</code> 或编排暴露。  </li>
+<li>密钥写进 <code>RUN</code>&#x2F;<code>COPY</code> 会进 <strong>镜像层历史</strong>，删文件也不等于从历史消失。  </li>
+<li>依赖安装与源码 COPY 分层，避免改一行代码就重装全部依赖。</li>
+</ol>
+<hr>
+<h2 id="4-镜像：tag、digest、推拉"><a href="#4-镜像：tag、digest、推拉" class="headerlink" title="4. 镜像：tag、digest、推拉"></a>4. 镜像：tag、digest、推拉</h2><p><strong>是什么：</strong> 镜像要命名、分发、固定版本。tag 是指针，digest 是内容指纹。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>tag</td>
+<td>可变引用（<code>latest</code> 会漂）</td>
+</tr>
+<tr>
+<td>digest</td>
+<td><code>@sha256:…</code> 内容寻址，更可复现</td>
+</tr>
+<tr>
+<td>registry</td>
+<td>推拉仓库；私有仓需登录&#x2F;凭证</td>
+</tr>
+</tbody></table>
+<p><strong>示例：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker build -t myapp:1.0 .</span><br><span class="line">docker tag myapp:1.0 registry.example.com/team/myapp:1.0</span><br><span class="line">docker push registry.example.com/team/myapp:1.0</span><br><span class="line">docker pull nginx:alpine</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>生产避免只钉 <code>latest</code>；用语义化版本或 git sha，关键环境可钉 digest。  </li>
+<li><code>pull</code> 失败先查：网络、仓库地址、认证、镜像名拼写。  </li>
+<li><code>docker image prune</code> &#x2F; <code>system prune</code> 会删未用数据——先 <code>system df</code>，确认无误伤。  </li>
+<li>多架构镜像（manifest list）在 Apple Silicon &#x2F; 混合节点上要注意平台匹配。</li>
+</ol>
+<hr>
+<h2 id="5-生命周期与资源限制"><a href="#5-生命周期与资源限制" class="headerlink" title="5. 生命周期与资源限制"></a>5. 生命周期与资源限制</h2><p><strong>是什么：</strong> 限制 CPU&#x2F;内存防止单容器拖死宿主机；用 restart 策略处理进程退出。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--memory</code></td>
+<td>内存上限；超限常被 OOM 杀</td>
+</tr>
+<tr>
+<td><code>--cpus</code></td>
+<td>CPU 配额（软限制直觉：争用时被节流）</td>
+</tr>
+<tr>
+<td><code>--restart</code></td>
+<td><code>no</code> &#x2F; <code>on-failure</code> &#x2F; <code>always</code> &#x2F; <code>unless-stopped</code></td>
+</tr>
+</tbody></table>
+<p><strong>示例：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name api \</span><br><span class="line">  --memory=512m --cpus=1.0 \</span><br><span class="line">  --restart=unless-stopped \</span><br><span class="line">  myapp:1.0</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>OOM 后进程被杀，若 <code>always</code> 重启，可能对「必崩配置」形成 <strong>重启死循环</strong>——先看 logs 修根因。  </li>
+<li>限制过小导致频繁 OOM；过大则失去保护——按压测设。  </li>
+<li>重要数据仍须 Volume，与 restart 无关。  </li>
+<li>退出码结合 <code>ps -a</code> 与 logs，不要只看「容器不见了」。</li>
+</ol>
+<hr>
+<h2 id="6-网络"><a href="#6-网络" class="headerlink" title="6. 网络"></a>6. 网络</h2><p><strong>是什么：</strong> 容器默认在隔离网络命名空间；要对外服务或容器间通信，靠网络模式与端口发布。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>bridge</code>（默认）</td>
+<td>虚拟桥；<code>-p 宿主:容器</code> 做端口映射（DNAT 到容器）</td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td>共用宿主网络栈（Linux），少一层隔离</td>
+</tr>
+<tr>
+<td><code>none</code></td>
+<td>无网</td>
+</tr>
+<tr>
+<td>自定义 bridge</td>
+<td>同网络内可用 <strong>容器名 DNS</strong></td>
+</tr>
+</tbody></table>
+<p><strong>示例：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker network create appnet</span><br><span class="line">docker run -d --name db --network appnet postgres:16</span><br><span class="line">docker run -d --name api --network appnet -p 8080:8080 myapi</span><br><span class="line"><span class="comment"># api 内连 db:5432</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>容器内若只监听 <code>127.0.0.1</code>，即使用 <code>-p</code>，宿主机也常常 <strong>访问不到</strong>——应监听 <code>0.0.0.0</code>（或明确网卡）。  </li>
+<li>勿写死容器 IP：重建即变；用名字或编排 Service。  </li>
+<li><code>host</code> 模式端口直接占宿主，隔离变弱，生产慎用。  </li>
+<li><code>-p</code> 只解决「进容器端口」；跨主机多机通信需要编排或覆盖网络，不是单机 bridge 默认能力。</li>
+</ol>
+<hr>
+<h2 id="7-存储"><a href="#7-存储" class="headerlink" title="7. 存储"></a>7. 存储</h2><p><strong>是什么：</strong> 把数据从容器可写层拆出，使容器可扔、数据可留。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>具名 Volume</strong></td>
+<td>Docker 管理，适合持久数据</td>
+</tr>
+<tr>
+<td><strong>匿名卷</strong></td>
+<td>未命名，易乱，难管理</td>
+</tr>
+<tr>
+<td><strong>bind mount</strong></td>
+<td>挂宿主路径，开发方便、可移植性差</td>
+</tr>
+<tr>
+<td><strong>tmpfs</strong></td>
+<td>内存，停即丢，适合敏感临时</td>
+</tr>
+</tbody></table>
+<p><strong>示例：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker volume create pgdata</span><br><span class="line">docker run -d --name db \</span><br><span class="line">  -v pgdata:/var/lib/postgresql/data \</span><br><span class="line">  -e POSTGRES_PASSWORD=secret \</span><br><span class="line">  postgres:16</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li><code>docker rm</code> 容器 <strong>默认不删</strong> 具名卷；忘了会占盘——用 <code>volume ls</code>&#x2F;<code>prune</code> 治理。  </li>
+<li>匿名卷更多来自 Dockerfile <code>VOLUME</code> 未显式命名——生产尽量具名。  </li>
+<li>bind 依赖宿主绝对路径，换机器易挂；权限 UID 不对会 Permission denied。  </li>
+<li>备份责任在卷&#x2F;外部存储，不在「容器还在」。</li>
+</ol>
+<hr>
+<h2 id="8-Compose"><a href="#8-Compose" class="headerlink" title="8. Compose"></a>8. Compose</h2><p><strong>是什么：</strong> 用一份 YAML 声明多服务、网络、卷，把散装 <code>docker run</code> 变成 <strong>可版本管理的单机应用描述</strong>。适合开发与单机部署，不是集群编排器。</p>
+<p><strong>机制要点：</strong></p>
+<ul>
+<li><code>services</code> &#x2F; <code>networks</code> &#x2F; <code>volumes</code> 一等公民。  </li>
+<li><code>depends_on</code> 默认只保证 <strong>容器启动顺序</strong>，不保证「应用已可服务」。  </li>
+<li><code>condition: service_healthy</code> 才接近「依赖健康后再启」（仍非业务级就绪的全部）。</li>
+</ul>
+<p><strong>示例：</strong> 见下（两服务 + healthcheck）。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">web:</span></span><br><span class="line">    <span class="attr">build:</span> <span class="string">.</span></span><br><span class="line">    <span class="attr">ports:</span> [<span class="string">&quot;8080:8080&quot;</span>]</span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">DATABASE_URL:</span> <span class="string">postgres://postgres:secret@db:5432/app</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="attr">db:</span></span><br><span class="line">        <span class="attr">condition:</span> <span class="string">service_healthy</span></span><br><span class="line">    <span class="attr">networks:</span> [<span class="string">appnet</span>]</span><br><span class="line">  <span class="attr">db:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">postgres:16</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">POSTGRES_PASSWORD:</span> <span class="string">secret</span></span><br><span class="line">    <span class="attr">volumes:</span> [<span class="string">pgdata:/var/lib/postgresql/data</span>]</span><br><span class="line">    <span class="attr">healthcheck:</span></span><br><span class="line">      <span class="attr">test:</span> [<span class="string">&quot;CMD-SHELL&quot;</span>, <span class="string">&quot;pg_isready -U postgres&quot;</span>]</span><br><span class="line">      <span class="attr">interval:</span> <span class="string">5s</span></span><br><span class="line">      <span class="attr">retries:</span> <span class="number">5</span></span><br><span class="line">    <span class="attr">networks:</span> [<span class="string">appnet</span>]</span><br><span class="line"><span class="attr">networks:</span> &#123;<span class="string">appnet:</span>&#125;</span><br><span class="line"><span class="attr">volumes:</span> &#123;<span class="string">pgdata:</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker compose up -d --build</span><br><span class="line">docker compose down      <span class="comment"># 加 -v 会删具名卷，慎用</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>把 Compose 当成 K8s：没有多机调度、滚动自愈、声明式集群状态。  </li>
+<li>仅 <code>depends_on: db</code> 就以为 DB 已可连——竞态下 web 仍会启动失败。  </li>
+<li><code>down -v</code> 清空卷等于删库——生产&#x2F;共享环境严禁随手加 <code>-v</code>。  </li>
+<li>密钥仍勿写进镜像；Compose 文件进 git 时注意脱敏与密钥注入方式。</li>
+</ol>
+<hr>
+<h2 id="9-安全基线"><a href="#9-安全基线" class="headerlink" title="9. 安全基线"></a>9. 安全基线</h2><p><strong>是什么：</strong> 缩小攻击面与泄密面，使「能跑」变成「可上线一点」。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>非 root（<code>USER</code>）</td>
+<td>降低逃逸后权限面</td>
+</tr>
+<tr>
+<td>最小镜像</td>
+<td>少包 &#x3D; 少 CVE</td>
+</tr>
+<tr>
+<td>密钥运行时注入</td>
+<td>避免进镜像层历史</td>
+</tr>
+<tr>
+<td><strong>capabilities</strong></td>
+<td>Linux 能力集；默认能力可再 <code>--cap-drop</code> 收敛</td>
+</tr>
+<tr>
+<td><strong>seccomp</strong> 等</td>
+<td>限制可用系统调用（运行时&#x2F;编排侧配置，点到）</td>
+</tr>
+<tr>
+<td>镜像扫描</td>
+<td>Scout &#x2F; Trivy 等认名</td>
+</tr>
+</tbody></table>
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>构建时 <code>ENV PASSWORD=</code> 或 <code>COPY .env</code> → 进层历史，可被 <code>history</code>&#x2F;导出层看到。  </li>
+<li>以 root 跑应用扩大逃逸与写宿主风险。  </li>
+<li>超大胖镜像 &#x3D; 更多 CVE 面；slim&#x2F;distroless + 少包。  </li>
+<li>扫描是信号不是过门金牌——要修高危与基础镜像来源。  </li>
+<li>「加 <code>--privileged</code> 先跑通」会把能力与设备几乎全打开，仅排障临时用，禁止当默认。</li>
+</ol>
+<hr>
+<h2 id="10-排障清单"><a href="#10-排障清单" class="headerlink" title="10. 排障清单"></a>10. 排障清单</h2><p><strong>是什么：</strong> 固定观察顺序，避免无脑删容器重来。</p>
+<p><strong>机制要点（顺序）：</strong> <code>ps -a</code> → <code>logs</code> → <code>inspect</code>&#x2F;<code>events</code> → 确认命令与端口监听 → <code>stats</code>&#x2F;卷权限。</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>先查</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>立刻退出</td>
+<td>主进程、CMD&#x2F;ENTRYPOINT、缺文件</td>
+</tr>
+<tr>
+<td>端口不通</td>
+<td><code>-p</code>、是否听 <code>0.0.0.0</code></td>
+</tr>
+<tr>
+<td>构建怪</td>
+<td><code>.dockerignore</code>、缓存、<code>--no-cache</code></td>
+</tr>
+<tr>
+<td>盘满</td>
+<td><code>docker system df</code>；慎 prune</td>
+</tr>
+<tr>
+<td>权限</td>
+<td>挂载 UID</td>
+</tr>
+</tbody></table>
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>不看 logs 就 <code>rm -f</code> 再 <code>run</code>——根因还在，只会浪费时间。  </li>
+<li>盲目 <code>docker system prune -a --volumes</code> 可能删掉未用镜像与卷数据。  </li>
+<li>用 <code>exec</code> 在容器里「修好」当发布完成——重建后修改全丢。  </li>
+<li>忽略 <code>stats</code>：CPU&#x2F;内存打满时表现为「偶发超时」，易误判成网络问题。</li>
+</ol>
+<hr>
+<h2 id="11-预习映射：Docker-→-Kubernetes"><a href="#11-预习映射：Docker-→-Kubernetes" class="headerlink" title="11. 预习映射：Docker → Kubernetes"></a>11. 预习映射：Docker → Kubernetes</h2><table>
+<thead>
+<tr>
+<th>Docker &#x2F; Compose</th>
+<th>Kubernetes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>镜像</td>
+<td>Pod 拉同一类镜像</td>
+</tr>
+<tr>
+<td><code>docker run</code></td>
+<td>Pod 模板</td>
+</tr>
+<tr>
+<td>Compose 服务&#x2F;副本</td>
+<td>Deployment</td>
+</tr>
+<tr>
+<td><code>ports</code></td>
+<td>Service &#x2F; Ingress</td>
+</tr>
+<tr>
+<td>env</td>
+<td>ConfigMap &#x2F; Secret</td>
+</tr>
+<tr>
+<td>Volume</td>
+<td>PVC（认名）</td>
+</tr>
+<tr>
+<td>Compose 单机</td>
+<td>集群调度与自愈</td>
+</tr>
+</tbody></table>
+<p><strong>注意：</strong> 概念近似 <strong>≠</strong> API 等价（例如 Compose healthcheck ≠ K8s 三种探针语义完全相同）。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>隔离靠 Namespace&#x2F;cgroup，交付靠分层镜像，数据靠卷，多服务单机靠 Compose；密钥与 <code>latest</code> 是高频坑。下一篇进入声明式集群编排。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/">容器编排学习-Kubernetes</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AE%B9%E5%99%A8/" rel="tag"># 容器</a>
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/18/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Py%E4%B8%8EGo%E5%AF%B9%E7%85%A7%E4%B8%8E%E5%AE%9E%E8%B7%B5%E6%B8%85%E5%8D%95/" rel="prev" title="测试框架学习-Py与Go对照与实践清单">
+                  <i class="fa fa-angle-left"></i> 测试框架学习-Py与Go对照与实践清单
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/20/%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92%E5%AD%A6%E4%B9%A0-Kubernetes/" rel="next" title="容器编排学习-Kubernetes">
+                  容器编排学习-Kubernetes <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

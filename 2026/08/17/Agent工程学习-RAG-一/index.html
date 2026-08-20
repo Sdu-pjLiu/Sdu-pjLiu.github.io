@@ -27,7 +27,7 @@
 <meta property="og:description" content="RAG 开篇：Embedding&#x2F;Chunk&#x2F;Index&#x2F;Retrieve&#x2F;Generate 评测驱动管线；LangChain 实现；与 LangChain（四）分工。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-07-20T11:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-20T06:17:18.742Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.664Z">
 <meta property="article:author" content="Sdu-pjLiu">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="LangChain">
@@ -137,7 +137,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%80%89%E5%9E%8B%EF%BC%9AChain-vs-Tool-vs-Graph"><span class="nav-number">2.</span> <span class="nav-text">1. 选型：Chain vs Tool vs Graph</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Embedding"><span class="nav-number">3.</span> <span class="nav-text">2. Embedding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Chunking"><span class="nav-number">4.</span> <span class="nav-text">3. Chunking</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Indexing"><span class="nav-number">5.</span> <span class="nav-text">4. Indexing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Retrieval"><span class="nav-number">6.</span> <span class="nav-text">5. Retrieval</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Generation%EF%BC%88Grounded%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. Generation（Grounded）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-LCEL-%E5%AE%8C%E6%95%B4%E9%93%BE%EF%BC%88%E5%A4%8D%E4%B9%A0-%E6%B7%B1%E5%8C%96%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">7. LCEL 完整链（复习 + 深化）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-RAG-%E8%AF%84%E6%B5%8B%E5%85%A5%E9%97%A8"><span class="nav-number">9.</span> <span class="nav-text">8. RAG 评测入门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E8%AF%84%E6%B5%8B%E5%B7%A5%E5%85%B7%E8%AE%A4%E5%90%8D"><span class="nav-number">10.</span> <span class="nav-text">9. 评测工具认名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">11.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%B3%BB%E5%88%97%E5%9C%A8%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">0. 本系列在学习路径中的位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%80%89%E5%9E%8B%EF%BC%9AChain-vs-Tool-vs-Graph"><span class="nav-number">2.</span> <span class="nav-text">1. 选型：Chain vs Tool vs Graph</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Embedding"><span class="nav-number">3.</span> <span class="nav-text">2. Embedding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Chunking"><span class="nav-number">4.</span> <span class="nav-text">3. Chunking</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Indexing"><span class="nav-number">5.</span> <span class="nav-text">4. Indexing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Retrieval"><span class="nav-number">6.</span> <span class="nav-text">5. Retrieval</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Generation%EF%BC%88Grounded%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. Generation（Grounded）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-LCEL-%E5%AE%8C%E6%95%B4%E9%93%BE%EF%BC%88%E5%A4%8D%E4%B9%A0-%E6%B7%B1%E5%8C%96%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">7. LCEL 完整链（复习 + 深化）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-RAG-%E8%AF%84%E6%B5%8B%E5%85%A5%E9%97%A8"><span class="nav-number">9.</span> <span class="nav-text">8. RAG 评测入门</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E9%BB%84%E9%87%91%E9%9B%86%E4%B8%8E%E5%9B%9E%E5%BD%92%E8%8A%82%E5%A5%8F%EF%BC%88%E7%94%9F%E4%BA%A7%EF%BC%89"><span class="nav-number">9.1.</span> <span class="nav-text">8.1 黄金集与回归节奏（生产）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E8%AF%84%E6%B5%8B%E5%B7%A5%E5%85%B7%E8%AE%A4%E5%90%8D"><span class="nav-number">10.</span> <span class="nav-text">9. 评测工具认名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%A8%A1%E5%9D%97%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95"><span class="nav-number">11.</span> <span class="nav-text">本模块自检与面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -150,7 +150,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">93</span>
+          <span class="site-state-item-count">112</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -160,7 +160,7 @@
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">63</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -223,7 +223,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-08-20 14:17:18" itemprop="dateModified" datetime="2026-08-20T14:17:18+08:00">2026-08-20</time>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -486,6 +486,44 @@
 </tr>
 </tbody></table>
 <p><strong>L0 实验：</strong> 准备 20–50 页语料 + <strong>10 问评测集</strong>（含标准引用 doc_id）；跑朴素 RAG，记录 Recall@4 与人工 Faithfulness，作为后续增强的 baseline。</p>
+<h3 id="8-1-黄金集与回归节奏（生产）"><a href="#8-1-黄金集与回归节奏（生产）" class="headerlink" title="8.1 黄金集与回归节奏（生产）"></a>8.1 黄金集与回归节奏（生产）</h3><p><strong>是什么：</strong> 「跑通一次评测」≠「可持续守住质量」。黄金集是固定、可版本化的问答与 gold 引用，用于发版回归。</p>
+<table>
+<thead>
+<tr>
+<th>字段（最小）</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>question</code></td>
+<td>用户问法（可含改写变体 ID）</td>
+</tr>
+<tr>
+<td><code>gold_chunk_ids</code> &#x2F; <code>gold_source_ids</code></td>
+<td>检索必须命中的证据</td>
+</tr>
+<tr>
+<td><code>must_cite</code></td>
+<td>生成必须引用的 source</td>
+</tr>
+<tr>
+<td><code>forbidden_docs</code></td>
+<td>越权&#x2F;无关文档（多租户用例）</td>
+</tr>
+<tr>
+<td><code>rubric</code></td>
+<td>Task Success 要点（可勾选）</td>
+</tr>
+</tbody></table>
+<p><strong>节奏：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">日常改 Prompt/索引 → 跑黄金集子集（快）</span><br><span class="line">发版 / 换 embedding / 换 rerank → 全量黄金集 + 抽检 Faithfulness</span><br><span class="line">线上坏例 → 入库黄金集（标注日期与根因）→ 下次回归必跑</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>只测「模型觉得答案好」不测 gold chunk → 检索退化发现不了。  </li>
+<li>黄金集从不更新 → 与真实 query 分布脱节。  </li>
+<li>坏例修完不入库 → 同一幻觉反复上线。</li>
+</ol>
 <hr>
 <h2 id="9-评测工具认名"><a href="#9-评测工具认名" class="headerlink" title="9. 评测工具认名"></a>9. 评测工具认名</h2><p><strong>原则：</strong> 本篇 §8 与 <a href="/2026/07/16/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%9F%BA%E7%A1%80-%E5%9B%9B/#6-%E5%8F%91%E7%89%88%E5%9B%9E%E5%BD%92-Checklist">Agent（四）§6</a> 中的指标是 <strong>工程口径</strong>；RAGAS &#x2F; DeepEval &#x2F; TruLens 等是 <strong>自动化实现</strong>，不是第二套标准。选型时看：能否输出与 Trace 字段一致的 Recall、Faithfulness、Citation 结果。</p>
 <table>

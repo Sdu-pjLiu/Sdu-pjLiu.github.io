@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="消息队列一篇打底：为何用 MQ、投递语义、丢消息&#x2F;重复&#x2F;顺序&#x2F;积压四大工程问题，以及重试死信与 Outbox 认名。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="消息队列学习-基础模型与通用工程问题">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="消息队列一篇打底：为何用 MQ、投递语义、丢消息&#x2F;重复&#x2F;顺序&#x2F;积压四大工程问题，以及重试死信与 Outbox 认名。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-06T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.668Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="消息队列">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/","path":"/2026/09/25/消息队列学习-基础模型与通用工程问题/","title":"消息队列学习-基础模型与通用工程问题"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>消息队列学习-基础模型与通用工程问题 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%BA%E4%BD%95%E7%94%A8%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97"><span class="nav-number">2.</span> <span class="nav-text">1. 为何用消息队列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%A0%B8%E5%BF%83%E6%8A%BD%E8%B1%A1"><span class="nav-number">3.</span> <span class="nav-text">2. 核心抽象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%8A%95%E9%80%92%E8%AF%AD%E4%B9%89%EF%BC%88%E5%B7%A5%E7%A8%8B%E7%8E%B0%E5%AE%9E%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">3. 投递语义（工程现实）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%A2%E6%B6%88%E6%81%AF%EF%BC%88%E4%B8%89%E6%AE%B5%E9%93%BE%E8%B7%AF%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. 丢消息（三段链路）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E9%87%8D%E5%A4%8D%E6%B6%88%E8%B4%B9%E4%B8%8E%E5%B9%82%E7%AD%89"><span class="nav-number">6.</span> <span class="nav-text">5. 重复消费与幂等</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E6%B6%88%E6%81%AF-ID-%E4%B8%8E%E5%B9%82%E7%AD%89%E8%A7%84%E8%8C%83"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 消息 ID 与幂等规范</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E9%A1%BA%E5%BA%8F%E6%B6%88%E6%81%AF"><span class="nav-number">7.</span> <span class="nav-text">6. 顺序消息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E6%B6%88%E6%81%AF%E7%A7%AF%E5%8E%8B"><span class="nav-number">8.</span> <span class="nav-text">7. 消息积压</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E9%87%8D%E8%AF%95%E3%80%81%E6%AD%BB%E4%BF%A1%E3%80%81%E5%BB%B6%E6%97%B6"><span class="nav-number">9.</span> <span class="nav-text">8. 重试、死信、延时</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E6%AD%BB%E4%BF%A1%E8%BF%90%E8%90%A5%E4%B8%8E%E5%8F%AF%E8%A7%82%E6%B5%8B"><span class="nav-number">9.1.</span> <span class="nav-text">8.1 死信运营与可观测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-RPC%E3%80%81%E6%9C%AC%E5%9C%B0%E6%B6%88%E6%81%AF%E8%A1%A8%E4%B8%8E-Outbox"><span class="nav-number">10.</span> <span class="nav-text">9. RPC、本地消息表与 Outbox</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E7%AB%AF%E5%88%B0%E7%AB%AF%E6%A1%88%E4%BE%8B%EF%BC%9A%E8%AE%A2%E5%8D%95%E5%B7%B2%E6%94%AF%E4%BB%98"><span class="nav-number">11.</span> <span class="nav-text">10. 端到端案例：订单已支付</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E5%A4%A7%E9%97%AE%E9%A2%98%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="nav-number">12.</span> <span class="nav-text">四大问题速查表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">13.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="消息队列学习-基础模型与通用工程问题 | 我的记录小站">
+      <meta itemprop="description" content="消息队列一篇打底：为何用 MQ、投递语义、丢消息&#x2F;重复&#x2F;顺序&#x2F;积压四大工程问题，以及重试死信与 Outbox 认名。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          消息队列学习-基础模型与通用工程问题
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-06 10:00:00" itemprop="dateCreated datePublished" datetime="2026-08-06T10:00:00+08:00">2026-08-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">消息队列一篇打底：为何用 MQ、投递语义、丢消息/重复/顺序/积压四大工程问题，以及重试死信与 Outbox 认名。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本系列入口。先建立 <strong>与具体产品无关的可靠性心智</strong>：解耦与削峰、至少一次与幂等、顺序与积压；再进入 <a href="/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">Kafka 核心与生产实践</a> 把主路径写透，并在对照篇完成三大 MQ 选型。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>通用模型与丢&#x2F;重&#x2F;乱&#x2F;积压</td>
+<td>某一云厂商控制台逐步截图</td>
+</tr>
+<tr>
+<td>与 RPC&#x2F;本地消息表关系</td>
+<td>Broker 源码逐函数精读</td>
+</tr>
+<tr>
+<td>为 Kafka &#x2F; Rabbit &#x2F; Rocket 打底</td>
+<td>Pulsar &#x2F; ActiveMQ 深挖</td>
+</tr>
+</tbody></table>
+<p><strong>与 Redis 边界：</strong> <a href="/2026/09/22/Redis%E5%AD%A6%E4%B9%A0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6/">Redis</a> 的 List &#x2F; PubSub &#x2F; Stream 可作简易队列或通知，但 <strong>可靠投递、长期积压、多消费者运维、跨服务契约</strong> 以本系列专业 MQ 为准。Stream 能力边界见 Redis 篇，不在此重复产品化。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">Kafka 核心与生产实践</a></p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1</td>
+<td>为何用 MQ；何时不用</td>
+</tr>
+<tr>
+<td>§2</td>
+<td>核心抽象</td>
+</tr>
+<tr>
+<td>§3</td>
+<td>投递语义</td>
+</tr>
+<tr>
+<td>§4–§7</td>
+<td>丢 &#x2F; 重 &#x2F; 乱 &#x2F; 积压</td>
+</tr>
+<tr>
+<td>§8</td>
+<td>重试、死信、延时</td>
+</tr>
+<tr>
+<td>§9</td>
+<td>RPC、本地消息表、Outbox</td>
+</tr>
+<tr>
+<td>§10</td>
+<td>端到端案例：订单已支付</td>
+</tr>
+</tbody></table>
+<p>各节结构：<strong>是什么 → 机制 → 示例&#x2F;时序 → 注意点</strong>。</p>
+<hr>
+<h2 id="1-为何用消息队列"><a href="#1-为何用消息队列" class="headerlink" title="1. 为何用消息队列"></a>1. 为何用消息队列</h2><p><strong>是什么：</strong> 消息队列（MQ）在服务之间传递异步消息，使调用方不必同步等待下游完成。</p>
+<p><strong>典型收益：</strong></p>
+<table>
+<thead>
+<tr>
+<th>收益</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>解耦</td>
+<td>上游只发事件，下游可独立演进、增减消费者</td>
+</tr>
+<tr>
+<td>异步</td>
+<td>耗时工作（发邮件、算分、通知）移出请求路径</td>
+</tr>
+<tr>
+<td>削峰</td>
+<td>流量尖刺先进队列，消费者按能力消化</td>
+</tr>
+<tr>
+<td>最终一致</td>
+<td>用「事件 + 补偿」替代处处分布式事务</td>
+</tr>
+</tbody></table>
+<p><strong>何时不该用：</strong></p>
+<ol>
+<li>强同步、强一致、必须立刻知道成败的路径（下单扣款本身仍常走 DB 事务）。  </li>
+<li>流量很小、调用链简单——引入 MQ 增加运维与排障成本。  </li>
+<li>把 MQ 当数据库：长期查历史、复杂查询不该压在 Topic 上。</li>
+</ol>
+<p><strong>注意点：</strong> MQ 解决的是 <strong>异步协作与缓冲</strong>，不是自动保证业务正确；正确性靠幂等、对账与补偿。</p>
+<hr>
+<h2 id="2-核心抽象"><a href="#2-核心抽象" class="headerlink" title="2. 核心抽象"></a>2. 核心抽象</h2><p><strong>是什么：</strong> 各产品名词不同，心智可统一为三类角色。</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Producer</strong></td>
+<td>发送消息</td>
+</tr>
+<tr>
+<td><strong>Broker（集群）</strong></td>
+<td>接收、存储、转发</td>
+</tr>
+<tr>
+<td><strong>Consumer</strong></td>
+<td>拉取&#x2F;推送并处理</td>
+</tr>
+</tbody></table>
+<p><strong>Topic vs Queue（认名）：</strong></p>
+<ul>
+<li><strong>发布订阅 &#x2F; Topic：</strong> 一条消息可被多个订阅组各自消费（Kafka Topic + Consumer Group；Rocket Topic）。  </li>
+<li><strong>点对点 &#x2F; Queue：</strong> 一条消息通常只被一个消费者拿走（Rabbit 队列语义更贴近）。</li>
+</ul>
+<p>选型时先问：要广播给多种下游，还是任务只处理一次。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Producer ──publish──► Broker ──► Consumer Group A</span><br><span class="line">                         │</span><br><span class="line">                         └──► Consumer Group B（各有一份逻辑消费）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="3-投递语义（工程现实）"><a href="#3-投递语义（工程现实）" class="headerlink" title="3. 投递语义（工程现实）"></a>3. 投递语义（工程现实）</h2><table>
+<thead>
+<tr>
+<th>语义</th>
+<th>含义</th>
+<th>工程现实</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>最多一次</strong> at-most-once</td>
+<td>可能丢，不重</td>
+<td>吞吐优先、可丢日志</td>
+</tr>
+<tr>
+<td><strong>至少一次</strong> at-least-once</td>
+<td>不丢，可能重</td>
+<td><strong>最常见默认目标</strong></td>
+</tr>
+<tr>
+<td><strong>恰好一次</strong> exactly-once</td>
+<td>不丢不重</td>
+<td>需 Broker + 客户端事务&#x2F;幂等链路；<strong>业务仍建议幂等</strong></td>
+</tr>
+</tbody></table>
+<p><strong>结论：</strong> 面试与生产都优先做到「至少一次 + 业务幂等」。迷信「开了 exactly-once 就万事大吉」会在重试、多系统、人工补单处翻车。</p>
+<hr>
+<h2 id="4-丢消息（三段链路）"><a href="#4-丢消息（三段链路）" class="headerlink" title="4. 丢消息（三段链路）"></a>4. 丢消息（三段链路）</h2><p><strong>是什么：</strong> 消息在「生产确认 → Broker 落盘&#x2F;副本 → 消费 ACK」任一环失败且未正确处理，即表现为业务侧「没发生」。</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>典型丢法</th>
+<th>通用对策方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>生产</td>
+<td>发完不等确认就当成功；超时当失败却未重试策略</td>
+<td>等待 Broker ACK&#x2F;Confirm；失败重试+本地记录</td>
+</tr>
+<tr>
+<td>Broker</td>
+<td>只写单机内存；副本不足仍报成功；磁盘坏</td>
+<td>持久化 + 多副本；写成功条件收紧</td>
+</tr>
+<tr>
+<td>消费</td>
+<td>未处理完就 ACK；进程崩溃在 ACK 后业务未落库</td>
+<td><strong>先业务成功再 ACK</strong>；失败重试&#x2F;死信</td>
+</tr>
+</tbody></table>
+<p><strong>时序（至少一次心智）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">发送 → 等 Broker 确认（落盘/副本达标）</span><br><span class="line">消费 → 处理业务（写 DB 等）→ 成功后再提交 offset / ACK</span><br><span class="line">失败 → 不 ACK → 再次投递 → 业务必须幂等</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点 &#x2F; 反模式：</strong></p>
+<ol>
+<li>客户端超时重试但无幂等 → 变重复而非「只丢」。  </li>
+<li>自动提交 offset 开太大 → 未处理完已提交 → 真丢。  </li>
+<li>只保证其中一段，其它两段裸奔。</li>
+</ol>
+<hr>
+<h2 id="5-重复消费与幂等"><a href="#5-重复消费与幂等" class="headerlink" title="5. 重复消费与幂等"></a>5. 重复消费与幂等</h2><p><strong>是什么：</strong> 至少一次必然可能重复；网络重试、Rebalance、ACK 超时都会再投递。</p>
+<p><strong>幂等手段（由易到难）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>业务唯一键</td>
+<td>订单号&#x2F;消息 ID 唯一索引，插入冲突则跳过</td>
+</tr>
+<tr>
+<td>状态机</td>
+<td>仅允许「待支付→已支付」等合法迁移</td>
+</tr>
+<tr>
+<td>去重表</td>
+<td>处理前查「已处理消息 ID」</td>
+</tr>
+<tr>
+<td>天然幂等</td>
+<td>按最终状态覆盖写（set 成某值）</td>
+</tr>
+</tbody></table>
+<p><strong>口诀：先幂等，再调 MQ 参数。</strong> 参数降低重复概率，幂等消灭重复危害。</p>
+<h3 id="5-1-消息-ID-与幂等规范"><a href="#5-1-消息-ID-与幂等规范" class="headerlink" title="5.1 消息 ID 与幂等规范"></a>5.1 消息 ID 与幂等规范</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>eventId &#x2F; messageId</strong></td>
+<td>生产侧生成 UUID（或业务流水号），放入 header 或 body 固定字段</td>
+</tr>
+<tr>
+<td><strong>业务键</strong></td>
+<td>如 <code>orderId</code>；扣库存用「订单维度唯一」而非仅 messageId</td>
+</tr>
+<tr>
+<td><strong>落库</strong></td>
+<td><code>processed_event(event_id UNIQUE)</code> 或业务表唯一约束；冲突即跳过</td>
+</tr>
+<tr>
+<td><strong>日志</strong></td>
+<td>打印 eventId + 业务键，便于跨服务追踪</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>幂等粒度要覆盖「副作用」（扣款、发券），不只覆盖「写一行日志」。  </li>
+<li>仅用自增 DB id 当幂等键在多生产者下会撞车；重试必须带同一 eventId。</li>
+</ol>
+<hr>
+<h2 id="6-顺序消息"><a href="#6-顺序消息" class="headerlink" title="6. 顺序消息"></a>6. 顺序消息</h2><p><strong>是什么：</strong> 业务要求消息按某键顺序处理（同一订单的创建→支付→发货）。</p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>含义</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全局有序</td>
+<td>整个 Topic 单通道</td>
+<td>吞吐崩、难扩展</td>
+</tr>
+<tr>
+<td><strong>分区&#x2F;队列内有序</strong></td>
+<td>同 key 进同一分区且单线程消费</td>
+<td>常见可落地方案</td>
+</tr>
+</tbody></table>
+<p><strong>机制要点：</strong> 生产端用业务 key 做分区键；消费端同分区串行。跨分区无法靠 Broker 保证全局顺序。</p>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>分区数变更、错误的 key 策略会打乱顺序假设。  </li>
+<li>消费失败重试时勿并发打乱同 key。  </li>
+<li>能接受最终一致时，不要强上全局有序。</li>
+</ol>
+<hr>
+<h2 id="7-消息积压"><a href="#7-消息积压" class="headerlink" title="7. 消息积压"></a>7. 消息积压</h2><p><strong>是什么：</strong> 生产速率持续大于消费，lag 升高，延迟暴涨甚至磁盘写满。</p>
+<p><strong>发现：</strong> 消费滞后（lag）、队列深度、端到端延迟告警。</p>
+<p><strong>处理策略：</strong></p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>扩消费者（与分区&#x2F;队列数匹配）</td>
+<td>消费 CPU 不够、分区有空闲</td>
+</tr>
+<tr>
+<td>优化消费逻辑（批量、异步、减远程调用）</td>
+<td>单条过慢</td>
+</tr>
+<tr>
+<td>扩分区后再扩消费者</td>
+<td>并行度顶格（注意顺序与再均衡）</td>
+</tr>
+<tr>
+<td><strong>临时分流 topic</strong></td>
+<td>紧急：新服务消费积压副本&#x2F;新流量，旧逻辑止血</td>
+</tr>
+<tr>
+<td>降级 &#x2F; 丢弃非关键 + 事后补偿</td>
+<td>保核心链路</td>
+</tr>
+<tr>
+<td>限流生产</td>
+<td>保护下游不被冲垮</td>
+</tr>
+</tbody></table>
+<p><strong>反模式：</strong> 积压时无限加大重试并发 → 雪上加霜；不查根因只加机器。</p>
+<hr>
+<h2 id="8-重试、死信、延时"><a href="#8-重试、死信、延时" class="headerlink" title="8. 重试、死信、延时"></a>8. 重试、死信、延时</h2><table>
+<thead>
+<tr>
+<th>机制</th>
+<th>是什么</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>重试</strong></td>
+<td>失败后再次投递</td>
+<td>要退避，避免重试风暴；与幂等绑定</td>
+</tr>
+<tr>
+<td><strong>死信（DLQ）</strong></td>
+<td>超过次数进死信队列人工&#x2F;补偿</td>
+<td>要有处理剧本，别只进不管</td>
+</tr>
+<tr>
+<td><strong>延时消息</strong></td>
+<td>到期才可消费</td>
+<td>实现因产品而异（Rocket 原生、Rabbit 插件&#x2F;TTL+DLX、Kafka 常靠业务或外部）</td>
+</tr>
+</tbody></table>
+<p><strong>重试风暴反模式：</strong> 下游 500 时所有消费者疯狂重试 → 把下游打得更死。应熔断、限流、指数退避、隔离线程池。</p>
+<h3 id="8-1-死信运营与可观测"><a href="#8-1-死信运营与可观测" class="headerlink" title="8.1 死信运营与可观测"></a>8.1 死信运营与可观测</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>告警</td>
+<td>死信队列&#x2F;主题深度 &gt; 0 告警</td>
+</tr>
+<tr>
+<td>责任人</td>
+<td>指定值班处理，禁止「只进不管」</td>
+</tr>
+<tr>
+<td>关联</td>
+<td>日志带 eventId，能反查生产与业务单</td>
+</tr>
+<tr>
+<td>剧本</td>
+<td>重放 &#x2F; 人工修数 &#x2F; 丢弃+补偿 三选一写进 runbook</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="9-RPC、本地消息表与-Outbox"><a href="#9-RPC、本地消息表与-Outbox" class="headerlink" title="9. RPC、本地消息表与 Outbox"></a>9. RPC、本地消息表与 Outbox</h2><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同步 RPC</td>
+<td>强依赖下游可用；简单但峰值脆弱</td>
+</tr>
+<tr>
+<td>发消息后直接改状态</td>
+<td>进程崩溃可能「DB 已改消息未发」或相反</td>
+</tr>
+<tr>
+<td><strong>本地消息表</strong></td>
+<td>与业务同事务写「待发送」表，异步任务扫表发 MQ</td>
+</tr>
+<tr>
+<td><strong>Outbox</strong></td>
+<td>同思路的标准化：业务事务提交 Outbox，relay 发消息</td>
+</tr>
+</tbody></table>
+<p>用于需要「业务提交与发事件尽量同成败」的场景；再配合下游幂等达到最终一致。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">业务事务：改订单 + 写 outbox</span><br><span class="line">    ↓</span><br><span class="line">Relay：读 outbox → 发 MQ → 标记已发送</span><br><span class="line">    ↓</span><br><span class="line">下游消费：幂等处理</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> Outbox 也有堆积与重复发送；仍要幂等。不要用分布式事务硬扛所有链路。</p>
+<p>与缓存&#x2F;锁&#x2F;本地事务的取舍总表，详见 <a href="/2026/09/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%AD%A6%E4%B9%A0-%E4%BA%8B%E5%8A%A1%E9%94%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%B6%88%E6%81%AF/">分布式一致性学习</a>。</p>
+<hr>
+<h2 id="10-端到端案例：订单已支付"><a href="#10-端到端案例：订单已支付" class="headerlink" title="10. 端到端案例：订单已支付"></a>10. 端到端案例：订单已支付</h2><p><strong>场景：</strong> 用户支付成功后，需要通知 <strong>库存</strong>、<strong>积分</strong>、<strong>搜索</strong> 三个下游；允许最终一致，不允许漏扣库存。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[订单服务]</span><br><span class="line">  本地事务：订单=已支付 + 写 outbox(eventId, OrderPaid, orderId)</span><br><span class="line">       ↓</span><br><span class="line">  Relay：读 outbox → 发 MQ（Kafka 示例：Topic order.paid, key=orderId）</span><br><span class="line">       ↓</span><br><span class="line">  ┌─ Consumer Group inventory ─→ 幂等扣库存（orderId 唯一）→ ACK</span><br><span class="line">  ├─ Consumer Group points     ─→ 幂等加积分 → ACK</span><br><span class="line">  └─ Consumer Group search     ─→ 更新索引（可短暂延迟）→ ACK</span><br><span class="line"></span><br><span class="line">失败：重试退避 → 超次进死信 → 告警人工；保留期内可按 eventId 重放</span><br></pre></td></tr></table></figure>
+
+<p><strong>设计要点对照：</strong></p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>本例做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>丢</td>
+<td>Outbox + 生产确认&#x2F;acks；先业务再 ACK</td>
+</tr>
+<tr>
+<td>重</td>
+<td>eventId &#x2F; orderId 唯一约束</td>
+</tr>
+<tr>
+<td>乱</td>
+<td>key&#x3D;orderId，同订单同分区</td>
+</tr>
+<tr>
+<td>积压</td>
+<td>分 Group 独立扩容；搜索可降级</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 库存与积分不要塞进同一消费者硬编码串行——用多 Group 解耦失败域。完整 Kafka 参数见 <a href="/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">Kafka 篇</a>。</p>
+<hr>
+<h2 id="四大问题速查表"><a href="#四大问题速查表" class="headerlink" title="四大问题速查表"></a>四大问题速查表</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>一句话</th>
+<th>优先动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>丢</td>
+<td>三段任一未确认</td>
+<td>生产确认 + 副本 + 先处理再 ACK</td>
+</tr>
+<tr>
+<td>重</td>
+<td>至少一次常态</td>
+<td>业务幂等</td>
+</tr>
+<tr>
+<td>乱</td>
+<td>缺分区键或并发消费同 key</td>
+<td>同 key 同分区 + 串行</td>
+</tr>
+<tr>
+<td>积压</td>
+<td>消费跟不上</td>
+<td>lag 告警 + 扩容&#x2F;优化&#x2F;分流</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>先接受「至少一次 + 幂等」为默认工程语义；丢看三段，乱看分区键，积压看 lag 与并行度。下一篇把这套心智落到 <strong>Kafka</strong> 参数与运行机制上。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/">Kafka 核心与生产实践</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" rel="tag"># 消息队列</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/24/Redis%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/" rel="prev" title="Redis学习-自检面试与对照">
+                  <i class="fa fa-angle-left"></i> Redis学习-自检面试与对照
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/26/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-Kafka%E6%A0%B8%E5%BF%83%E4%B8%8E%E7%94%9F%E4%BA%A7%E5%AE%9E%E8%B7%B5/" rel="next" title="消息队列学习-Kafka核心与生产实践">
+                  消息队列学习-Kafka核心与生产实践 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

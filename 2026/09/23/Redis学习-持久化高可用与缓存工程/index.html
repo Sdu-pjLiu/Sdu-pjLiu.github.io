@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Redis 一篇收齐：RDB&#x2F;AOF、主从哨兵 Cluster（含复制时序与客户端路由）、缓存一致性并发、锁与生产运维清单；口径 Redis 7.x。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis学习-持久化高可用与缓存工程">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/23/Redis%E5%AD%A6%E4%B9%A0-%E6%8C%81%E4%B9%85%E5%8C%96%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E7%BC%93%E5%AD%98%E5%B7%A5%E7%A8%8B/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Redis 一篇收齐：RDB&#x2F;AOF、主从哨兵 Cluster（含复制时序与客户端路由）、缓存一致性并发、锁与生产运维清单；口径 Redis 7.x。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-05T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.667Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/23/Redis%E5%AD%A6%E4%B9%A0-%E6%8C%81%E4%B9%85%E5%8C%96%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E7%BC%93%E5%AD%98%E5%B7%A5%E7%A8%8B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/23/Redis%E5%AD%A6%E4%B9%A0-%E6%8C%81%E4%B9%85%E5%8C%96%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E7%BC%93%E5%AD%98%E5%B7%A5%E7%A8%8B/","path":"/2026/09/23/Redis学习-持久化高可用与缓存工程/","title":"Redis学习-持久化高可用与缓存工程"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Redis学习-持久化高可用与缓存工程 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%8C%81%E4%B9%85%E5%8C%96%E6%80%BB%E8%A7%88"><span class="nav-number">2.</span> <span class="nav-text">1. 持久化总览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-RDB"><span class="nav-number">3.</span> <span class="nav-text">2. RDB</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-AOF-%E4%B8%8E%E6%B7%B7%E5%90%88%E6%8C%81%E4%B9%85%E5%8C%96"><span class="nav-number">4.</span> <span class="nav-text">3. AOF 与混合持久化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="nav-number">5.</span> <span class="nav-text">4. 主从复制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%93%A8%E5%85%B5%EF%BC%88Sentinel%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. 哨兵（Sentinel）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Cluster-%E4%B8%8E%E6%9E%B6%E6%9E%84%E9%80%89%E5%9E%8B"><span class="nav-number">7.</span> <span class="nav-text">6. Cluster 与架构选型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.</span> <span class="nav-text">7. 缓存架构模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Cache-Aside%EF%BC%88%E6%97%81%E8%B7%AF%EF%BC%8C%E4%B8%BB%E6%8E%A8%EF%BC%89"><span class="nav-number">8.1.</span> <span class="nav-text">Cache-Aside（旁路，主推）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E5%AE%83%E8%AE%A4%E5%90%8D"><span class="nav-number">8.2.</span> <span class="nav-text">其它认名</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E7%A9%BF%E9%80%8F%E3%80%81%E5%87%BB%E7%A9%BF%E3%80%81%E9%9B%AA%E5%B4%A9"><span class="nav-number">9.</span> <span class="nav-text">8. 穿透、击穿、雪崩</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E7%BC%93%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">10.</span> <span class="nav-text">9. 缓存与数据库一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="nav-number">11.</span> <span class="nav-text">10. 分布式锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E7%94%9F%E4%BA%A7%E8%BF%90%E7%BB%B4%E6%B8%85%E5%8D%95"><span class="nav-number">12.</span> <span class="nav-text">11. 生产运维清单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12-%E9%A2%84%E7%83%AD%E3%80%81%E9%99%8D%E7%BA%A7%E4%B8%8E%E5%BC%80%E5%85%B3"><span class="nav-number">13.</span> <span class="nav-text">12. 预热、降级与开关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#13-%E5%85%B8%E5%9E%8B%E6%9E%B6%E6%9E%84%E5%8F%A3%E8%BF%B0"><span class="nav-number">14.</span> <span class="nav-text">13. 典型架构口述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">15.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/23/Redis%E5%AD%A6%E4%B9%A0-%E6%8C%81%E4%B9%85%E5%8C%96%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E7%BC%93%E5%AD%98%E5%B7%A5%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Redis学习-持久化高可用与缓存工程 | 我的记录小站">
+      <meta itemprop="description" content="Redis 一篇收齐：RDB&#x2F;AOF、主从哨兵 Cluster（含复制时序与客户端路由）、缓存一致性并发、锁与生产运维清单；口径 Redis 7.x。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Redis学习-持久化高可用与缓存工程
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-05 11:00:00" itemprop="dateCreated datePublished" datetime="2026-08-05T11:00:00+08:00">2026-08-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Redis 一篇收齐：RDB/AOF、主从哨兵 Cluster（含复制时序与客户端路由）、缓存一致性并发、锁与生产运维清单；口径 Redis 7.x。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/22/Redis%E5%AD%A6%E4%B9%A0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6/">数据结构与核心机制</a>：本篇回答 <strong>数据丢不丢、挂了怎么办、和数据库怎么配合、生产怎么运维</strong>。仍以 <strong>Redis 7.x</strong> 为主；对复制、一致性、Cluster 路由做生产级展开。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>持久化选型、HA 架构决策</td>
+<td>云控制台逐步截图</td>
+</tr>
+<tr>
+<td>缓存模式、三大问题、一致性、锁</td>
+<td>源码级复制状态机精读</td>
+</tr>
+<tr>
+<td>生产监控与大 Key&#x2F;热 Key 治理</td>
+<td>Codis 等历史方案展开、Streams MQ 产品化</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>对比</th>
+<th>自建</th>
+<th>云托管 Redis</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>控制力</td>
+<td>参数、版本、拓扑全自管</td>
+<td>少运维，按厂商能力</td>
+</tr>
+<tr>
+<td>成本形态</td>
+<td>机器 + 人力</td>
+<td>按规格付费</td>
+</tr>
+<tr>
+<td>责任</td>
+<td>备份、故障转移、扩容自己扛</td>
+<td>SLA&#x2F;备份策略读文档确认</td>
+</tr>
+<tr>
+<td>适用</td>
+<td>强定制、已有平台团队</td>
+<td>多数业务默认优先评估</td>
+</tr>
+</tbody></table>
+<p><strong>下一步：</strong> <a href="/2026/09/24/Redis%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">自检面试与对照</a></p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1–§3</td>
+<td>持久化</td>
+</tr>
+<tr>
+<td>§4–§6</td>
+<td>主从（时序）、哨兵、Cluster 路由与选型</td>
+</tr>
+<tr>
+<td>§7–§10</td>
+<td>缓存模式、三大问题、一致性并发、锁</td>
+</tr>
+<tr>
+<td>§11–§13</td>
+<td>生产运维清单、预热降级、架构口述</td>
+</tr>
+</tbody></table>
+<p>各节结构：<strong>是什么 → 机制 → 示例 → 注意点</strong>。</p>
+<hr>
+<h2 id="1-持久化总览"><a href="#1-持久化总览" class="headerlink" title="1. 持久化总览"></a>1. 持久化总览</h2><p><strong>是什么：</strong> 内存数据进程退出即消失；持久化把状态落到磁盘，以便重启恢复或备份。</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>特点</th>
+<th>典型取舍</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RDB</strong></td>
+<td>某时刻快照，文件紧凑，恢复快</td>
+<td>两次快照间可能丢数据；fork 有开销</td>
+</tr>
+<tr>
+<td><strong>AOF</strong></td>
+<td>追加写命令，可更高耐久</td>
+<td>文件更大；重放恢复可能更慢</td>
+</tr>
+<tr>
+<td><strong>混合</strong>（4.0+）</td>
+<td>AOF 重写时用 RDB 作前缀再追加增量</td>
+<td>兼顾恢复速度与增量安全</td>
+</tr>
+</tbody></table>
+<p><strong>决策口径：</strong></p>
+<ul>
+<li>可丢一段时间缓存 → 偏 RDB 或甚至关持久化（纯缓存 + 可重建）。  </li>
+<li>要当「内存数据库」少丢 → AOF <code>everysec</code> 或混合，并做备份。  </li>
+<li>生产常见：RDB 作定期备份 + AOF&#x2F;<code>everysec</code>（或混合）作耐久，按业务容忍度调。</li>
+</ul>
+<hr>
+<h2 id="2-RDB"><a href="#2-RDB" class="headerlink" title="2. RDB"></a>2. RDB</h2><p><strong>是什么：</strong> 按规则把内存数据生成二进制快照（如 <code>dump.rdb</code>）。</p>
+<p><strong>机制要点：</strong></p>
+<ol>
+<li><code>BGSAVE</code>：主进程 <code>fork</code> 子进程写盘；利用写时复制（COW），共享页在被修改时才拷贝。  </li>
+<li>配置如 <code>save 900 1</code> 表示 900 秒内至少 1 次写则触发（具体以配置为准）。  </li>
+<li>恢复：启动时加载 RDB，通常快于重放庞大 AOF。</li>
+</ol>
+<p><strong>注意点：</strong></p>
+<ol>
+<li><strong>丢数据窗口</strong>：崩溃点距上次成功快照之间的写入会丢。  </li>
+<li><strong>fork 与延迟</strong>：大数据集 fork 瞬间可能卡住&#x2F;延迟升高；COW 导致内存短暂上涨。  </li>
+<li>大 Key 使快照与加载更重（回链第 1 篇治理）。  </li>
+<li>只开 RDB 当「绝对不丢」是错的。</li>
+</ol>
+<hr>
+<h2 id="3-AOF-与混合持久化"><a href="#3-AOF-与混合持久化" class="headerlink" title="3. AOF 与混合持久化"></a>3. AOF 与混合持久化</h2><p><strong>是什么：</strong> 将写命令追加到 AOF 文件；重启时重放恢复。</p>
+<p><strong>fsync 策略：</strong></p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>含义</th>
+<th>丢数据上界（大致）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>always</code></td>
+<td>每命令刷盘</td>
+<td>最安全，最慢</td>
+</tr>
+<tr>
+<td><code>everysec</code></td>
+<td>每秒刷盘</td>
+<td>常见生产折中，约 1 秒</td>
+</tr>
+<tr>
+<td><code>no</code></td>
+<td>交给 OS</td>
+<td>更快，丢更多</td>
+</tr>
+</tbody></table>
+<p><strong>AOF 重写：</strong> 文件膨胀后后台重写为更短等价命令序列，降低体积与重放时间。</p>
+<p><strong>混合持久化：</strong> 重写时文件前半为 RDB 格式快照，后半为增量 AOF；恢复时先载快照再重放增量。由 <code>aof-use-rdb-preamble</code> 等配置控制（以你版本文档为准）。</p>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>AOF 损坏需 <code>redis-check-aof</code> 等工具修复意识。  </li>
+<li>重写同样涉及 fork，注意高峰窗口。  </li>
+<li>纯缓存可关 AOF；会话&#x2F;库存等「丢了很痛」则不要省这点磁盘。</li>
+</ol>
+<hr>
+<h2 id="4-主从复制"><a href="#4-主从复制" class="headerlink" title="4. 主从复制"></a>4. 主从复制</h2><p><strong>是什么：</strong> 主（master）接收写，从（replica）异步复制数据；用于读扩展、数据冗余、故障时人工或自动提升。</p>
+<p><strong>全量同步时序（口述）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">从连接主，发送 PSYNC（无偏移或无效）</span><br><span class="line">    ↓</span><br><span class="line">主判定需全量 → BGSAVE 生成 RDB（fork）</span><br><span class="line">    ↓</span><br><span class="line">主把快照发给从；期间新写入进 replication buffer</span><br><span class="line">    ↓</span><br><span class="line">从载入 RDB 后，主再发送缓冲中的增量命令</span><br><span class="line">    ↓</span><br><span class="line">进入持续命令传播（异步）</span><br></pre></td></tr></table></figure>
+
+<p><strong>部分同步时序：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">从短暂断线后重连，带 replication ID + offset</span><br><span class="line">    ↓</span><br><span class="line">主若 backlog（积压缓冲）仍覆盖该 offset → 只发送缺失段（PSYNC 继续）</span><br><span class="line">    ↓</span><br><span class="line">否则退回全量同步</span><br></pre></td></tr></table></figure>
+
+<p><strong>机制要点：</strong></p>
+<ol>
+<li>复制默认 <strong>异步</strong>：主写成功不代表从已追上 → <strong>读写分离有延迟</strong>，读从可能旧数据。  </li>
+<li><code>repl-backlog-size</code> 过小 → 短暂抖动也反复全量 → 主库与网络压力陡增。  </li>
+<li>可用 <code>INFO replication</code> 看 <code>master_repl_offset</code> 与从的 lag。</li>
+</ol>
+<p><strong>写安全认名：</strong> <code>min-replicas-to-write</code> &#x2F; <code>min-replicas-max-lag</code> 可在从不足或延迟过大时拒绝写入，降低「主写了但从都没跟上就挂」的风险——以丢失容忍度权衡可用性。</p>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>全量窗口对大内存实例很重；换机、加从尽量避开业务高峰。  </li>
+<li>从库只读；过期语义与版本配置有关，联调验证。  </li>
+<li>复制 ≠ 水平写扩展；单主写入上限仍在主。  </li>
+<li>网络分区下可能出现旧主「假活」（脑裂相关，哨兵&#x2F;Cluster 用法定人数缓解，仍需理解风险）。</li>
+</ol>
+<hr>
+<h2 id="5-哨兵（Sentinel）"><a href="#5-哨兵（Sentinel）" class="headerlink" title="5. 哨兵（Sentinel）"></a>5. 哨兵（Sentinel）</h2><p><strong>是什么：</strong> 一组哨兵进程监控主从；主客观判定主故障后 <strong>自动故障转移</strong>，选出新主并通知相关方。适合 <strong>单分片（一组主从）</strong> 的高可用。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主观下线（SDOWN）</td>
+<td>单个哨兵认为主不可达</td>
+</tr>
+<tr>
+<td>客观下线（ODOWN）</td>
+<td>足够多哨兵同意后确认（法定人数）</td>
+</tr>
+<tr>
+<td>领导者哨兵</td>
+<td>协调选主与 failover</td>
+</tr>
+<tr>
+<td>客户端</td>
+<td>经哨兵发现当前主地址（需哨兵感知客户端&#x2F;SDK）</td>
+</tr>
+</tbody></table>
+<p><strong>故障转移口述步骤：</strong></p>
+<ol>
+<li>哨兵探测主失败 → 达法定人数标 ODOWN。  </li>
+<li>选举领导者哨兵 → 按规则挑选从库晋升（复制偏移、优先级等）。  </li>
+<li>让其他从指向新主 → 发布新主信息（<code>+switch-master</code> 等）。  </li>
+<li>旧主若回转，降为从，追数据。</li>
+</ol>
+<p><strong>客户端感知：</strong> 应用配置哨兵地址列表而非写死主 IP；failover 后通过哨兵查询新主再重连。切换窗口内可能短暂写失败，需重试与幂等。</p>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>哨兵本身要多实例（建议奇数、跨故障域）；哨兵挂光则无人自动切。  </li>
+<li>转移期间有短暂不可写&#x2F;连接切换窗口。  </li>
+<li><strong>不解决单机内存写满</strong>：数据仍在一个主的内存模型里。  </li>
+<li>脑裂极端场景：网络分区可能导致「旧主仍被部分客户端写入」——结合 <code>min-replicas-to-write</code>、客户端只信哨兵、以及业务幂等降低伤害。</li>
+</ol>
+<hr>
+<h2 id="6-Cluster-与架构选型"><a href="#6-Cluster-与架构选型" class="headerlink" title="6. Cluster 与架构选型"></a>6. Cluster 与架构选型</h2><p><strong>是什么：</strong> Redis Cluster 将数据按 <strong>16384 个哈希槽</strong> 分布到多个主节点；每个主可带从，节点级故障可转移。解决 <strong>数据量与写吞吐水平扩展</strong>。</p>
+<p><strong>机制要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>槽</td>
+<td><code>CRC16(key) mod 16384</code> 定位；<code>&#123;hash tag&#125;</code> 可让相关 key 同槽</td>
+</tr>
+<tr>
+<td>MOVED</td>
+<td>槽已固定在它节点，客户端应改道并 <strong>缓存槽映射</strong></td>
+</tr>
+<tr>
+<td>ASK</td>
+<td>迁移中的临时重定向（一次有效，勿当永久映射）</td>
+</tr>
+<tr>
+<td>跨槽限制</td>
+<td>多 key 事务&#x2F;Lua 要求 key 同槽，否则失败</td>
+</tr>
+</tbody></table>
+<p><strong>客户端路由流程：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">计算 key 的槽 → 查本地槽表 → 发往对应节点</span><br><span class="line">    ↓</span><br><span class="line">若返回 MOVED &lt;slot&gt; &lt;host:port&gt;</span><br><span class="line">    → 更新槽表 → 重发命令</span><br><span class="line">若返回 ASK &lt;slot&gt; &lt;host:port&gt;</span><br><span class="line">    → 对该次请求发 ASKING 再访问目标（迁移中）</span><br></pre></td></tr></table></figure>
+
+<p>因此必须使用 <strong>支持 Cluster 的客户端</strong>；把 Cluster 当单机连只会频踩重定向。</p>
+<p><strong>扩缩容认名：</strong> 迁移槽位把 key 从甲挪到乙；期间读写作 ASK；运维控流量、盯迁移进度与延迟。</p>
+<p><strong>故障转移口述：</strong> 某主挂掉 → 其从被选为新主接管槽 → 客户端经重定向更新视图。与哨兵不同：这里是 <strong>多主分片</strong> 各自 HA。</p>
+<p><strong>hash tag 示例：</strong> <code>order:&#123;1001&#125;:data</code> 与 <code>order:&#123;1001&#125;:lock</code> 因 <code>&#123;&#125;</code> 内相同而同槽，便于同事务&#x2F;Lua；滥用会导致槽倾斜。</p>
+<p><strong>选型表（生产决策核心）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>形态</th>
+<th>解决什么</th>
+<th>代价 &#x2F; 限制</th>
+<th>何时用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>单机</strong></td>
+<td>开发、小流量</td>
+<td>无 HA</td>
+<td>本地&#x2F;演示</td>
+</tr>
+<tr>
+<td><strong>主从</strong></td>
+<td>读扩展、备份</td>
+<td>主挂需人工或外挂切换</td>
+<td>过渡</td>
+</tr>
+<tr>
+<td><strong>主从 + 哨兵</strong></td>
+<td>单分片自动 failover</td>
+<td>不分片；运维哨兵拓扑</td>
+<td>数据单机装得下、要 HA</td>
+</tr>
+<tr>
+<td><strong>Cluster</strong></td>
+<td>分片扩展 + 分片 HA</td>
+<td>跨槽限制；客户端要支持；运维更复杂</td>
+<td>容量&#x2F;写并发超出单主</td>
+</tr>
+<tr>
+<td><strong>云托管</strong></td>
+<td>少运维、规格化 HA&#x2F;分片</td>
+<td>厂商锁定与费用；能力以文档为准</td>
+<td>多数中小团队默认优选</td>
+</tr>
+</tbody></table>
+<p>历史 Codis 等：理解「曾用代理分片」即可，新系统优先官方 Cluster 或托管。</p>
+<hr>
+<h2 id="7-缓存架构模式"><a href="#7-缓存架构模式" class="headerlink" title="7. 缓存架构模式"></a>7. 缓存架构模式</h2><p><strong>是什么：</strong> 应用、缓存、数据库如何分工。</p>
+<h3 id="Cache-Aside（旁路，主推）"><a href="#Cache-Aside（旁路，主推）" class="headerlink" title="Cache-Aside（旁路，主推）"></a>Cache-Aside（旁路，主推）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">读：App → Redis？命中返回</span><br><span class="line">         未命中 → DB → 写回 Redis（带 TTL）→ 返回</span><br><span class="line"></span><br><span class="line">写：App → 写 DB 成功 → 删除（或更新）Redis 对应 key</span><br></pre></td></tr></table></figure>
+
+<p><strong>为何常见：</strong> 缓存失败时可回源 DB；逻辑在应用侧清晰。</p>
+<h3 id="其它认名"><a href="#其它认名" class="headerlink" title="其它认名"></a>其它认名</h3><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Read&#x2F;Write Through</td>
+<td>缓存层负责回源&#x2F;回写 DB，应用只打缓存</td>
+</tr>
+<tr>
+<td>Write Behind</td>
+<td>先写缓存异步落 DB——吞吐高，丢风险与一致性更难</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 选模式先定「缓存可不可以丢、能否接受短暂不一致」。Pub&#x2F;Sub 可作失效通知，但不保证每个消费者收到。</p>
+<hr>
+<h2 id="8-穿透、击穿、雪崩"><a href="#8-穿透、击穿、雪崩" class="headerlink" title="8. 穿透、击穿、雪崩"></a>8. 穿透、击穿、雪崩</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>现象</th>
+<th>常见手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>穿透</strong></td>
+<td>查 <strong>不存在</strong> 的数据，缓存不中，每次打 DB</td>
+<td>参数校验；缓存空值（短 TTL）；布隆过滤器拦不存在 ID</td>
+</tr>
+<tr>
+<td><strong>击穿</strong></td>
+<td><strong>热点 key</strong> 过期瞬间并发打爆 DB</td>
+<td>互斥锁重建；逻辑过期（异步更新）；热点永不过期+后台刷新</td>
+</tr>
+<tr>
+<td><strong>雪崩</strong></td>
+<td>大量 key <strong>同时</strong>过期或 Redis 整挂</td>
+<td>TTL 加随机抖动；多级缓存；限流降级；Redis HA（哨兵&#x2F;Cluster&#x2F;托管）</td>
+</tr>
+</tbody></table>
+<p><strong>手段展开：</strong></p>
+<ol>
+<li><strong>空值缓存：</strong> <code>SET id:999 &quot;&quot; EX 60</code>——防穿透，TTL 宜短，避免长期占坑。  </li>
+<li><strong>布隆：</strong> 有 <strong>误判</strong>（可能判存在实际不存在）——只能作前置拦截；容量与误差率按基数规划；数据删除后布隆难删，需重建或接受假阳。  </li>
+<li><strong>互斥重建：</strong> 未命中时用短锁，只有持锁者读 DB 回填，其他人稍候再读缓存。  </li>
+<li><strong>逻辑过期：</strong> value 内带过期时间戳，物理 key 不过期；发现逻辑过期则异步刷新，请求先返回旧值（接受短暂脏读）。  </li>
+<li><strong>TTL 抖动：</strong> 基础 TTL + 随机秒数，避免整点集体失效。</li>
+</ol>
+<p><strong>注意点：</strong> 三者勿混：穿透是「没有这份数据」，击穿是「有但刚好失效的热点」，雪崩是「大面积同时失效或缓存层挂」。</p>
+<hr>
+<h2 id="9-缓存与数据库一致性"><a href="#9-缓存与数据库一致性" class="headerlink" title="9. 缓存与数据库一致性"></a>9. 缓存与数据库一致性</h2><p><strong>是什么：</strong> 双写下缓存与 DB 谁新谁旧。本系列主推 <strong>最终一致</strong> 的 Cache-Aside。</p>
+<p><strong>推荐路径：先更新 DB，再删除缓存</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">写请求：更新 DB 成功 → DEL cache:key（失败则重试/投递补偿）</span><br><span class="line">读请求：GET 未命中 → 读 DB → SET 回填（带 TTL）</span><br></pre></td></tr></table></figure>
+
+<p><strong>并发脏读窗口（为何还会脏）：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">T1 读：缓存未命中</span><br><span class="line">T1 读 DB 得旧值 V1（尚未提交新事务可见，或时序交叉）</span><br><span class="line">T2 写：DB 更新为 V2，并 DEL 缓存</span><br><span class="line">T1 回填：把旧值 V1 又写回缓存  ← 脏缓存</span><br></pre></td></tr></table></figure>
+
+<p>延迟双删、加短锁串行化重建、或消息总线删缓存，都是 <strong>缩小窗口</strong>，不是消灭不一致。TTL 是最后托底。</p>
+<p><strong>延迟双删认名：</strong> 写 DB → 删缓存 → 业务稍候再删一次，缓解「回填旧值」窗口；仍是最终一致增强。</p>
+<p><strong>注意点：</strong></p>
+<ol>
+<li>Redis <strong>不能</strong>单独承诺跨系统强一致；要强一致用 DB 约束、单写模型、分布式事务等别套路。  </li>
+<li>读从库 + 删缓存时序更易脏读，架构上要承认延迟。  </li>
+<li>「更新缓存而非删除」在并发下更难正确，一般不如删。  </li>
+<li>预热与降级见 §12。</li>
+</ol>
+<p>与 Outbox、本地事务、锁边界的统一决策表，详见 <a href="/2026/09/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%AD%A6%E4%B9%A0-%E4%BA%8B%E5%8A%A1%E9%94%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%B6%88%E6%81%AF/">分布式一致性学习</a>。</p>
+<hr>
+<h2 id="10-分布式锁"><a href="#10-分布式锁" class="headerlink" title="10. 分布式锁"></a>10. 分布式锁</h2><p><strong>是什么：</strong> 多实例互斥进入临界区。Redis 锁是 <strong>尽力而为的协调</strong>，不是数据库事务。</p>
+<p><strong>最小正确示例：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 加锁</span></span><br><span class="line">SET lock:order:9 <span class="string">&quot;token-uuid-1&quot;</span> NX EX 30</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解锁 Lua（原子：比对 token 再 DEL）</span></span><br><span class="line">EVAL <span class="string">&quot;if redis.call(&#x27;GET&#x27;,KEYS[1])==ARGV[1] then return redis.call(&#x27;DEL&#x27;,KEYS[1]) else return 0 end&quot;</span> 1 lock:order:9 token-uuid-1</span><br></pre></td></tr></table></figure>
+
+<p><strong>进阶认名：</strong></p>
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>续期（看门狗）</td>
+<td>业务未完成则延长 TTL——Redisson 等客户端常见</td>
+</tr>
+<tr>
+<td>可重入</td>
+<td>同线程二次加锁——需客户端约定</td>
+</tr>
+<tr>
+<td>红锁</td>
+<td>多独立实例上锁定——争议多，面试知概念与批评即可</td>
+</tr>
+</tbody></table>
+<p><strong>Pipeline vs 锁：</strong> Pipeline 不提供互斥；锁解决互斥，不解决业务多 key 原子（多 key 仍要同槽或外部事务）。</p>
+<p><strong>反模式：</strong></p>
+<ol>
+<li><code>SETNX</code> 无过期 → 进程崩溃死锁。  </li>
+<li>解锁不校验 token → 误删他人锁。  </li>
+<li>持锁时间 ≪ 业务耗时且无续期 → 并发进入。  </li>
+<li>用锁「保证库存绝对正确」却不做 DB 约束&#x2F;对账。  </li>
+<li>Cluster 下锁 key 与业务 key 跨槽导致脚本失败——用 hash tag。</li>
+</ol>
+<hr>
+<h2 id="11-生产运维清单"><a href="#11-生产运维清单" class="headerlink" title="11. 生产运维清单"></a>11. 生产运维清单</h2><table>
+<thead>
+<tr>
+<th>领域</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>容量</td>
+<td><code>maxmemory</code> + 淘汰策略；预留 fork&#x2F;COW 与碎片余量</td>
+</tr>
+<tr>
+<td>磁盘</td>
+<td>RDB&#x2F;AOF 目录空间、写速；备份拷离机</td>
+</tr>
+<tr>
+<td>备份恢复</td>
+<td>定期拷贝 RDB&#x2F;AOF；<strong>做恢复演练</strong>，别等灾难才第一次试</td>
+</tr>
+<tr>
+<td>大 Key</td>
+<td>监控 <code>MEMORY USAGE</code>；拆分；<code>UNLINK</code>；禁止高峰 <code>KEYS</code></td>
+</tr>
+<tr>
+<td>热 Key</td>
+<td>本地缓存、拆 key、读写分离、业务限流</td>
+</tr>
+<tr>
+<td>安全</td>
+<td>绑定私网、ACL、强密码、rename 危险命令、最小权限</td>
+</tr>
+<tr>
+<td>监控认名</td>
+<td>命中率、连接数、ops、P99 延迟、<code>used_memory</code>、碎片率、复制偏移&#x2F;积压、慢日志、拒绝&#x2F;驱逐数</td>
+</tr>
+</tbody></table>
+<p><strong>上线前检查清单：</strong></p>
+<ol>
+<li><input disabled="" type="checkbox"> <code>maxmemory</code> 与 policy 已设；告警接内存、延迟、拒绝连接  </li>
+<li><input disabled="" type="checkbox"> 持久化策略与业务丢失容忍度一致；备份任务与恢复演练有记录  </li>
+<li><input disabled="" type="checkbox"> 危险命令已禁用&#x2F;重命名；非公网；ACL 分账  </li>
+<li><input disabled="" type="checkbox"> 客户端超时、池大小、Cluster&#x2F;哨兵地址配置正确  </li>
+<li><input disabled="" type="checkbox"> 缓存键均有 TTL 或明确永久理由；TTL 有抖动  </li>
+<li><input disabled="" type="checkbox"> 大 Key&#x2F;热 Key 巡检纳入例行；failover 演练过至少一次</li>
+</ol>
+<p><strong>变更习惯：</strong> 参数与拓扑变更走变更单；客户端熔断与 Redis HA 一起设计。</p>
+<hr>
+<h2 id="12-预热、降级与开关"><a href="#12-预热、降级与开关" class="headerlink" title="12. 预热、降级与开关"></a>12. 预热、降级与开关</h2><p><strong>是什么：</strong> 把「缓存层出问题」当成常态设计，而不是事后救火。</p>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>预热</strong></td>
+<td>发布&#x2F;大促前把热点 key 灌进缓存，降低冷启动击穿</td>
+</tr>
+<tr>
+<td><strong>降级开关</strong></td>
+<td>Redis 超时升高时短路缓存、只读 DB 或返回兜底；配合限流</td>
+</tr>
+<tr>
+<td><strong>多级缓存</strong></td>
+<td>本地 Caffeine 等 + Redis，削热 Key 与跨机房延迟</td>
+</tr>
+<tr>
+<td><strong>空窗保护</strong></td>
+<td>互斥重建 + 短空值，避免击穿与穿透叠加</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> 降级会增加 DB 压力，必须有限流与熔断；预热名单要可更新，避免灌入过期活动数据。</p>
+<hr>
+<h2 id="13-典型架构口述"><a href="#13-典型架构口述" class="headerlink" title="13. 典型架构口述"></a>13. 典型架构口述</h2><ol>
+<li><strong>开发单机：</strong> 一个 <code>redis-server</code>，可关持久化或开 RDB；无 HA。  </li>
+<li><strong>主从 + 哨兵：</strong> 单主多从，哨兵自动切主；适合内存单机够用、要自动恢复。  </li>
+<li><strong>Cluster：</strong> 多主分片 + 每主有从；适合容量与写扩展；客户端支持槽路由与 MOVED&#x2F;ASK。  </li>
+<li><strong>云托管：</strong> 选规格与架构模板；确认备份、多 AZ、参数白名单与限流。</li>
+</ol>
+<p>口述模板：「数据量约 X，QPS 约 Y，丢失容忍约 Z 秒；选形态 A；Cache-Aside + TTL 抖动；穿透用空值&#x2F;布隆；击穿用互斥；Redis 挂了走降级限流回源。」</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>持久化决定「挂了丢多少」；哨兵&#x2F;Cluster&#x2F;托管决定「挂了谁接手、能否分片」；缓存三大问题与删缓存策略决定「会不会打爆 DB」；锁只解决互斥；预热&#x2F;降级决定「坏了业务是否还活」。下一篇用自检与面经题收口。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/24/Redis%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/">自检面试与对照</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/22/Redis%E5%AD%A6%E4%B9%A0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6/">数据结构与核心机制</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Redis/" rel="tag"># Redis</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/22/Redis%E5%AD%A6%E4%B9%A0-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6/" rel="prev" title="Redis学习-数据结构与核心机制">
+                  <i class="fa fa-angle-left"></i> Redis学习-数据结构与核心机制
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/24/Redis%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/" rel="next" title="Redis学习-自检面试与对照">
+                  Redis学习-自检面试与对照 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

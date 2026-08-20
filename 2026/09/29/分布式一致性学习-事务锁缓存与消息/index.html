@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="收口单机事务、缓存与 DB、分布式锁、Outbox&#x2F;Saga 与 Agent 写工具一致性；一张决策总表对齐 MySQL&#x2F;Redis&#x2F;MQ&#x2F;Agent。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式一致性学习-事务锁缓存与消息">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%AD%A6%E4%B9%A0-%E4%BA%8B%E5%8A%A1%E9%94%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%B6%88%E6%81%AF/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="收口单机事务、缓存与 DB、分布式锁、Outbox&#x2F;Saga 与 Agent 写工具一致性；一张决策总表对齐 MySQL&#x2F;Redis&#x2F;MQ&#x2F;Agent。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-07T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T08:19:18.668Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="消息队列">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="一致性">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%AD%A6%E4%B9%A0-%E4%BA%8B%E5%8A%A1%E9%94%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%B6%88%E6%81%AF/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%AD%A6%E4%B9%A0-%E4%BA%8B%E5%8A%A1%E9%94%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%B6%88%E6%81%AF/","path":"/2026/09/29/分布式一致性学习-事务锁缓存与消息/","title":"分布式一致性学习-事务锁缓存与消息"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>分布式一致性学习-事务锁缓存与消息 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8D%95%E6%9C%BA%E4%BA%8B%E5%8A%A1%E4%B8%8E%E9%9A%94%E7%A6%BB%E5%8F%A3%E8%BF%B0"><span class="nav-number">2.</span> <span class="nav-text">1. 单机事务与隔离口述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E7%BC%93%E5%AD%98%E4%B8%8E-DB"><span class="nav-number">3.</span> <span class="nav-text">2. 缓存与 DB</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E8%BE%B9%E7%95%8C"><span class="nav-number">4.</span> <span class="nav-text">3. 分布式锁边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Outbox-Saga-%E5%B0%91%E7%94%A8-2PC"><span class="nav-number">5.</span> <span class="nav-text">4. Outbox &#x2F; Saga &#x2F; 少用 2PC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Saga-%E8%A1%A5%E5%81%BF%E6%97%B6%E5%BA%8F%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 Saga 补偿时序（认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Agent-%E5%86%99%E5%B7%A5%E5%85%B7%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">6.</span> <span class="nav-text">5. Agent 写工具一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%86%B3%E7%AD%96%E6%80%BB%E8%A1%A8%E4%B8%8E%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.</span> <span class="nav-text">6. 决策总表与反模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E5%9C%BA%E6%99%AF%EF%BC%9A%E3%80%8C%E4%B8%8B%E5%8D%95%E6%89%A3%E5%BA%93%E5%AD%98-%E5%8F%91%E7%A7%AF%E5%88%86-%E6%9B%B4%E6%96%B0%E7%BC%93%E5%AD%98%E3%80%8D"><span class="nav-number">7.1.</span> <span class="nav-text">6.1 场景：「下单扣库存 + 发积分 + 更新缓存」</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E5%86%B3%E7%AD%96%E6%80%BB%E8%A1%A8"><span class="nav-number">7.2.</span> <span class="nav-text">6.2 决策总表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.3.</span> <span class="nav-text">6.3 反模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95%EF%BC%88%E7%9F%AD%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">7. 自检与面试（短）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-%E8%84%8F%E8%AF%BB-%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB-%E5%B9%BB%E8%AF%BB-%E4%B8%A2%E5%A4%B1%E6%9B%B4%E6%96%B0%E5%90%84%E9%9D%A0%E4%BB%80%E4%B9%88%E6%B2%BB%EF%BC%9F"><span class="nav-number">8.1.</span> <span class="nav-text">S1. 脏读 &#x2F; 不可重复读 &#x2F; 幻读 &#x2F; 丢失更新各靠什么治？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E4%B8%BA%E4%BD%95%E6%8E%A8%E8%8D%90%E5%85%88%E5%86%99-DB-%E5%86%8D%E5%88%A0%E7%BC%93%E5%AD%98%EF%BC%9F"><span class="nav-number">8.2.</span> <span class="nav-text">S2. 为何推荐先写 DB 再删缓存？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S3-Outbox-%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E3%80%81%E4%B8%8D%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">8.3.</span> <span class="nav-text">S3. Outbox 解决什么、不解决什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S4-Saga-%E8%A1%A5%E5%81%BF%E5%A4%B1%E8%B4%A5%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="nav-number">8.4.</span> <span class="nav-text">S4. Saga 补偿失败怎么办？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E5%8F%A3%E8%BF%B0%E3%80%8C%E4%B8%8B%E5%8D%95%E6%89%A3%E5%BA%93%E5%AD%98-%E7%A7%AF%E5%88%86-%E7%BC%93%E5%AD%98%E3%80%8D%E6%96%B9%E6%A1%88%E4%B8%8E%E5%8F%96%E8%88%8D%E3%80%82"><span class="nav-number">8.5.</span> <span class="nav-text">I1. 口述「下单扣库存 + 积分 + 缓存」方案与取舍。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I2-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E8%83%BD%E4%BF%9D%E8%AF%81%E6%89%A3%E5%BA%93%E5%AD%98%E5%8F%AA%E4%B8%80%E6%AC%A1%E5%90%97%EF%BC%9F"><span class="nav-number">8.6.</span> <span class="nav-text">I2. 分布式锁能保证扣库存只一次吗？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">112</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%AD%A6%E4%B9%A0-%E4%BA%8B%E5%8A%A1%E9%94%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%B6%88%E6%81%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="分布式一致性学习-事务锁缓存与消息 | 我的记录小站">
+      <meta itemprop="description" content="收口单机事务、缓存与 DB、分布式锁、Outbox&#x2F;Saga 与 Agent 写工具一致性；一张决策总表对齐 MySQL&#x2F;Redis&#x2F;MQ&#x2F;Agent。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分布式一致性学习-事务锁缓存与消息
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-07 10:00:00" itemprop="dateCreated datePublished" datetime="2026-08-07T10:00:00+08:00">2026-08-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 16:19:18" itemprop="dateModified" datetime="2026-08-20T16:19:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">收口单机事务、缓存与 DB、分布式锁、Outbox/Saga 与 Agent 写工具一致性；一张决策总表对齐 MySQL/Redis/MQ/Agent。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本篇是 <strong>一致性决策收口</strong>：把已学的 MySQL 事务、Redis 缓存、MQ Outbox、Agent 写工具放到同一张取舍表上。不新开产品巡览，只回答「多步副作用怎么选强一致还是最终一致」。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>口述隔离级别与丢更；缓存+DB 窗口</td>
+<td>云厂商分布式事务产品手册</td>
+</tr>
+<tr>
+<td>锁边界；Outbox&#x2F;Saga；少用 2PC</td>
+<td>共识算法（Paxos&#x2F;Raft）精读</td>
+</tr>
+<tr>
+<td>Agent 写工具与业务同口径</td>
+<td>新框架 &#x2F; Pulsar &#x2F; Flink</td>
+</tr>
+</tbody></table>
+<p><strong>回链：</strong></p>
+<ul>
+<li>单机事务与锁：<a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/">MySQL 手册（三）</a></li>
+<li>缓存一致性：<a href="/2026/09/23/Redis%E5%AD%A6%E4%B9%A0-%E6%8C%81%E4%B9%85%E5%8C%96%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E7%BC%93%E5%AD%98%E5%B7%A5%E7%A8%8B/">Redis 持久化高可用与缓存工程</a></li>
+<li>Outbox &#x2F; 至少一次：<a href="/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">消息队列基础</a></li>
+<li>Agent 写工具：<a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">Agent 工程化（三）</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1</td>
+<td>单机事务与隔离口述</td>
+</tr>
+<tr>
+<td>§2</td>
+<td>缓存与 DB</td>
+</tr>
+<tr>
+<td>§3</td>
+<td>分布式锁边界</td>
+</tr>
+<tr>
+<td>§4</td>
+<td>Outbox &#x2F; Saga &#x2F; 少用 2PC</td>
+</tr>
+<tr>
+<td>§5</td>
+<td>Agent 写工具一致性</td>
+</tr>
+<tr>
+<td>§6</td>
+<td>决策总表与反模式</td>
+</tr>
+<tr>
+<td>§7</td>
+<td>自检与面试（短）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="1-单机事务与隔离口述"><a href="#1-单机事务与隔离口述" class="headerlink" title="1. 单机事务与隔离口述"></a>1. 单机事务与隔离口述</h2><p><strong>是什么：</strong> 同一库内多语句的原子性与隔离；强一致首先落在 <strong>本地事务</strong>，不是锁服务或 MQ。</p>
+<p><strong>机制（口述要点）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>含义</th>
+<th>默认 RR 下</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>脏读</td>
+<td>读到未提交</td>
+<td>InnoDB 默认避免</td>
+</tr>
+<tr>
+<td>不可重复读</td>
+<td>同事务两次读行内容变</td>
+<td>MVCC 快照缓解</td>
+</tr>
+<tr>
+<td>幻读</td>
+<td>同条件多出行</td>
+<td>间隙锁 &#x2F; Next-Key 部分抑制</td>
+</tr>
+<tr>
+<td>丢失更新</td>
+<td>读-改-写互相覆盖</td>
+<td>隔离级别不自动解决 → <code>FOR UPDATE</code> &#x2F; 乐观版本</td>
+</tr>
+</tbody></table>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BEGIN</span><br><span class="line">  SELECT stock FOR UPDATE  -- 悲观：占行</span><br><span class="line">  UPDATE stock = stock - 1</span><br><span class="line">  INSERT order ...</span><br><span class="line">COMMIT</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> 事务内禁止远程 RPC；长事务拖锁与 undo。跨库「一次 COMMIT」不是单机事务能给的。</p>
+<hr>
+<h2 id="2-缓存与-DB"><a href="#2-缓存与-DB" class="headerlink" title="2. 缓存与 DB"></a>2. 缓存与 DB</h2><p><strong>是什么：</strong> Cache-Aside 下 DB 为权威，缓存可短暂脏；目标多为 <strong>最终一致</strong>。</p>
+<p><strong>推荐：</strong> 先写 DB，再删缓存；读未命中回源回填（带 TTL）。并发回填旧值窗口见 <a href="/2026/09/23/Redis%E5%AD%A6%E4%B9%A0-%E6%8C%81%E4%B9%85%E5%8C%96%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E7%BC%93%E5%AD%98%E5%B7%A5%E7%A8%8B/#9-%E7%BC%93%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%80%E8%87%B4%E6%80%A7">Redis 缓存一致性</a>。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">下单成功写 DB → DEL inventory:sku（失败 → 重试/补偿消息）</span><br><span class="line">读：GET miss → 读 DB → SET TTL</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意点：</strong> 「更新缓存而非删除」更难；读从库 + 删缓存窗口更大；Redis 不承诺跨系统强一致。</p>
+<hr>
+<h2 id="3-分布式锁边界"><a href="#3-分布式锁边界" class="headerlink" title="3. 分布式锁边界"></a>3. 分布式锁边界</h2><p><strong>是什么：</strong> 多实例互斥；<strong>不替代</strong> 事务与幂等。</p>
+<table>
+<thead>
+<tr>
+<th>能做</th>
+<th>不能做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>防并发双扣「尽力而为」</td>
+<td>替代 DB 唯一约束 &#x2F; 行锁</td>
+</tr>
+<tr>
+<td>临界区串行化</td>
+<td>保证持锁方崩溃后业务已提交且仅一次</td>
+</tr>
+<tr>
+<td>配合短临界区</td>
+<td>当分布式事务协调器</td>
+</tr>
+</tbody></table>
+<p>锁过期续期失败 → 双持锁可能；解锁必须比对 token（Lua）。库存真相仍在 DB 约束。</p>
+<hr>
+<h2 id="4-Outbox-Saga-少用-2PC"><a href="#4-Outbox-Saga-少用-2PC" class="headerlink" title="4. Outbox &#x2F; Saga &#x2F; 少用 2PC"></a>4. Outbox &#x2F; Saga &#x2F; 少用 2PC</h2><p><strong>跨服务最终一致主路径：本地事务 + Outbox + 幂等消费。</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">本地事务：扣库存行 + 写 outbox(OrderPaid)</span><br><span class="line">  → Relay 发 MQ（至少一次）</span><br><span class="line">  → 积分服务幂等加分</span><br><span class="line">  → 搜索/缓存消费者删缓存或重建</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>适用</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Outbox</strong></td>
+<td>一服务内「改状态 + 发事件」同成败</td>
+<td>Relay&#x2F;堆积；下游仍幂等</td>
+</tr>
+<tr>
+<td><strong>Saga</strong></td>
+<td>多服务长流程；可补偿</td>
+<td>补偿难写；中间态可见</td>
+</tr>
+<tr>
+<td><strong>2PC &#x2F; XA</strong></td>
+<td>极少：强一致且参与方少、同运维域</td>
+<td>阻塞、运维重；默认不选</td>
+</tr>
+</tbody></table>
+<h3 id="4-1-Saga-补偿时序（认名）"><a href="#4-1-Saga-补偿时序（认名）" class="headerlink" title="4.1 Saga 补偿时序（认名）"></a>4.1 Saga 补偿时序（认名）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">订票 Saga：预留航班 → 预留酒店 → 扣款</span><br><span class="line">失败在「酒店」：补偿取消航班预留；不扣款</span><br><span class="line">失败在「扣款」：补偿取消酒店 + 取消航班</span><br><span class="line">每步：本地事务 + 幂等；补偿也须幂等</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>点</th>
+<th>口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>中间态</strong></td>
+<td>用户可能短暂看到「预订中」——产品需接受</td>
+</tr>
+<tr>
+<td><strong>与 Outbox</strong></td>
+<td>每步完成发事件驱动下一步，或编排器推进</td>
+</tr>
+<tr>
+<td><strong>何时不用</strong></td>
+<td>单库能搞定的别拆 Saga</td>
+</tr>
+</tbody></table>
+<p><strong>注意点：</strong> Outbox 仍会重复投递；Saga 不是「自动强一致」；2PC 卡住会拖死资源；补偿失败要人工&#x2F;对账队列。</p>
+<hr>
+<h2 id="5-Agent-写工具一致性"><a href="#5-Agent-写工具一致性" class="headerlink" title="5. Agent 写工具一致性"></a>5. Agent 写工具一致性</h2><p>Agent 重试、interrupt 重放、队列至少一次 → <strong>与业务写路径同口径</strong>：</p>
+<ol>
+<li>写工具带 <code>invocation_id</code> &#x2F; 业务幂等键  </li>
+<li>高风险写 → HITL；确认后再落库  </li>
+<li>「落库 + 入队」用 Outbox，勿只在内存发 MQ  </li>
+<li>审计表与副作用表可对账</li>
+</ol>
+<p>详见 <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">Agent 工程化（三）§6.1</a> · <a href="/2026/09/07/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E5%9B%9B/">工程化（四）Worker</a>。</p>
+<hr>
+<h2 id="6-决策总表与反模式"><a href="#6-决策总表与反模式" class="headerlink" title="6. 决策总表与反模式"></a>6. 决策总表与反模式</h2><h3 id="6-1-场景：「下单扣库存-发积分-更新缓存」"><a href="#6-1-场景：「下单扣库存-发积分-更新缓存」" class="headerlink" title="6.1 场景：「下单扣库存 + 发积分 + 更新缓存」"></a>6.1 场景：「下单扣库存 + 发积分 + 更新缓存」</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[订单库本地事务]</span><br><span class="line">  扣库存（行锁/条件更新）+ 写订单 + 写 outbox(OrderPaid)</span><br><span class="line">       ↓</span><br><span class="line">  Relay → MQ</span><br><span class="line">       ↓</span><br><span class="line">  ├─ 积分服务：幂等加积分（order_id 唯一）</span><br><span class="line">  └─ 缓存/搜索：删/重建缓存（最终一致）</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>一致强度</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>扣库存 + 订单</td>
+<td><strong>强（本地事务）</strong></td>
+<td>钱货同源，不可漏扣</td>
+</tr>
+<tr>
+<td>发积分</td>
+<td><strong>最终</strong></td>
+<td>可延迟；幂等 + 对账</td>
+</tr>
+<tr>
+<td>更新缓存</td>
+<td><strong>最终</strong></td>
+<td>TTL&#x2F;删缓存托底</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-决策总表"><a href="#6-2-决策总表" class="headerlink" title="6.2 决策总表"></a>6.2 决策总表</h3><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>首选</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同库多表原子</td>
+<td>本地事务 + 合适隔离&#x2F;锁</td>
+</tr>
+<tr>
+<td>防丢更</td>
+<td><code>FOR UPDATE</code> &#x2F; 乐观版本 &#x2F; 原子 SQL</td>
+</tr>
+<tr>
+<td>缓存与 DB</td>
+<td>先 DB 后删缓存；认最终一致</td>
+</tr>
+<tr>
+<td>跨服务通知</td>
+<td>Outbox + 至少一次 + 幂等</td>
+</tr>
+<tr>
+<td>长流程可回滚</td>
+<td>Saga + 补偿</td>
+</tr>
+<tr>
+<td>多实例临界区</td>
+<td>Redis 锁（辅助）+ DB 约束（权威）</td>
+</tr>
+<tr>
+<td>Agent 写副作用</td>
+<td>幂等键 + 审计 + 同 Outbox</td>
+</tr>
+</tbody></table>
+<h3 id="6-3-反模式"><a href="#6-3-反模式" class="headerlink" title="6.3 反模式"></a>6.3 反模式</h3><ol>
+<li>事务里调 HTTP&#x2F;发邮件再 COMMIT  </li>
+<li>靠分布式锁当库存真相  </li>
+<li>无幂等假设恰好一次  </li>
+<li>先改缓存再写 DB 当强一致  </li>
+<li>Agent Prompt「不要重复下单」替代幂等键  </li>
+<li>处处 2PC</li>
+</ol>
+<hr>
+<h2 id="7-自检与面试（短）"><a href="#7-自检与面试（短）" class="headerlink" title="7. 自检与面试（短）"></a>7. 自检与面试（短）</h2><h3 id="S1-脏读-不可重复读-幻读-丢失更新各靠什么治？"><a href="#S1-脏读-不可重复读-幻读-丢失更新各靠什么治？" class="headerlink" title="S1. 脏读 &#x2F; 不可重复读 &#x2F; 幻读 &#x2F; 丢失更新各靠什么治？"></a>S1. 脏读 &#x2F; 不可重复读 &#x2F; 幻读 &#x2F; 丢失更新各靠什么治？</h3><p><strong>推荐回答：</strong> 前三者主要靠隔离 + MVCC&#x2F;锁；丢失更新靠悲观锁、乐观版本或原子更新，不是「调高隔离」 alone。</p>
+<h3 id="S2-为何推荐先写-DB-再删缓存？"><a href="#S2-为何推荐先写-DB-再删缓存？" class="headerlink" title="S2. 为何推荐先写 DB 再删缓存？"></a>S2. 为何推荐先写 DB 再删缓存？</h3><p><strong>推荐回答：</strong> DB 为权威；删失败可补偿；更新缓存并发更易脏。窗口用延迟双删&#x2F;锁缩小，TTL 托底。</p>
+<h3 id="S3-Outbox-解决什么、不解决什么？"><a href="#S3-Outbox-解决什么、不解决什么？" class="headerlink" title="S3. Outbox 解决什么、不解决什么？"></a>S3. Outbox 解决什么、不解决什么？</h3><p><strong>推荐回答：</strong> 解决「业务提交与发事件尽量同成败」；不解决下游重复消费（仍要幂等）与跨服务即时强一致。</p>
+<h3 id="S4-Saga-补偿失败怎么办？"><a href="#S4-Saga-补偿失败怎么办？" class="headerlink" title="S4. Saga 补偿失败怎么办？"></a>S4. Saga 补偿失败怎么办？</h3><p><strong>推荐回答：</strong> 补偿也须幂等；失败进对账&#x2F;人工队列；产品接受中间态。能单库事务解决的不要上 Saga。见 §4.1。</p>
+<h3 id="I1-口述「下单扣库存-积分-缓存」方案与取舍。"><a href="#I1-口述「下单扣库存-积分-缓存」方案与取舍。" class="headerlink" title="I1. 口述「下单扣库存 + 积分 + 缓存」方案与取舍。"></a>I1. 口述「下单扣库存 + 积分 + 缓存」方案与取舍。</h3><p><strong>推荐回答：</strong> 库存与订单本地事务强一致；积分与缓存走 Outbox 最终一致；锁只辅助；Agent 若触发写单须幂等与审计。对照 §6.1。</p>
+<h3 id="I2-分布式锁能保证扣库存只一次吗？"><a href="#I2-分布式锁能保证扣库存只一次吗？" class="headerlink" title="I2. 分布式锁能保证扣库存只一次吗？"></a>I2. 分布式锁能保证扣库存只一次吗？</h3><p><strong>推荐回答：</strong> 不能单独保证。锁过期、进程暂停可双持；权威用 DB 条件更新&#x2F;唯一约束；锁降低冲突概率。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>强一致优先落本地事务；跨服务默认最终一致（Outbox + 幂等）。</strong></p>
+<p><strong>缓存与锁是加速与协调，不是第二真相源。</strong></p>
+<p><strong>Agent 写工具与 MQ&#x2F;DB 同口径，不另造一套。</strong></p>
+<p><strong>相关：</strong> <a href="/2026/06/04/MySQL%E5%BC%80%E5%8F%91%E8%BF%90%E7%BB%B4%E6%89%8B%E5%86%8C-%E4%B8%89/">MySQL 手册三</a> · <a href="/2026/09/23/Redis%E5%AD%A6%E4%B9%A0-%E6%8C%81%E4%B9%85%E5%8C%96%E9%AB%98%E5%8F%AF%E7%94%A8%E4%B8%8E%E7%BC%93%E5%AD%98%E5%B7%A5%E7%A8%8B/">Redis 缓存工程</a> · <a href="/2026/09/25/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%80%9A%E7%94%A8%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98/">MQ 基础</a> · <a href="/2026/09/06/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-Agent%E5%B7%A5%E7%A8%8B%E5%8C%96-%E4%B8%89/">Agent 工程化三</a></p>
+<p><strong>下一篇（后端服务工程）：</strong> <a href="/2026/09/30/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-API%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/">API 与服务契约</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+              <a href="/tags/Redis/" rel="tag"># Redis</a>
+              <a href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" rel="tag"># 消息队列</a>
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+              <a href="/tags/%E4%B8%80%E8%87%B4%E6%80%A7/" rel="tag"># 一致性</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/28/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AD%A6%E4%B9%A0-%E8%87%AA%E6%A3%80%E9%9D%A2%E8%AF%95%E4%B8%8E%E5%AF%B9%E7%85%A7/" rel="prev" title="消息队列学习-自检面试与对照">
+                  <i class="fa fa-angle-left"></i> 消息队列学习-自检面试与对照
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/30/%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-API%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/" rel="next" title="后端服务工程学习-API与服务契约">
+                  后端服务工程学习-API与服务契约 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
