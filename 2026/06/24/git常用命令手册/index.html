@@ -349,8 +349,11 @@
 <hr>
 <h2 id="四、撤销、恢复与回退"><a href="#四、撤销、恢复与回退" class="headerlink" title="四、撤销、恢复与回退"></a>四、撤销、恢复与回退</h2><h3 id="4-1-工作区与暂存区"><a href="#4-1-工作区与暂存区" class="headerlink" title="4.1 工作区与暂存区"></a>4.1 工作区与暂存区</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 丢弃工作区对某文件的改动（未 add）</span></span><br><span class="line">git restore file.txt</span><br><span class="line">git checkout -- file.txt      <span class="comment"># 旧写法，效果相同</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消暂存（已 add，未 commit）</span></span><br><span class="line">git restore --staged file.txt</span><br><span class="line">git reset HEAD file.txt       <span class="comment"># 旧写法</span></span><br></pre></td></tr></table></figure>
 
-<h3 id="4-2-修改最近一次提交"><a href="#4-2-修改最近一次提交" class="headerlink" title="4.2 修改最近一次提交"></a>4.2 修改最近一次提交</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 追加文件到上次提交（未 push 时使用）</span></span><br><span class="line">git add forgotten.txt</span><br><span class="line">git commit --amend</span><br><span class="line"></span><br><span class="line"><span class="comment"># 仅修改提交说明</span></span><br><span class="line">git commit --amend -m <span class="string">&quot;新的提交说明&quot;</span></span><br></pre></td></tr></table></figure>
+<h3 id="4-2-修改最近一次提交"><a href="#4-2-修改最近一次提交" class="headerlink" title="4.2 修改最近一次提交"></a>4.2 修改最近一次提交</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 追加文件到上次提交（未 push 时使用；会打开编辑器改说明，也可直接保存退出）</span></span><br><span class="line">git add forgotten.txt</span><br><span class="line">git commit --amend</span><br><span class="line"></span><br><span class="line"><span class="comment"># 保留原提交说明，只把已暂存改动并入最近一次提交（常用：hook 自动改文件后、或漏 add）</span></span><br><span class="line">git commit --amend --no-edit</span><br><span class="line"></span><br><span class="line"><span class="comment"># 仅修改提交说明（不改树时也可只用这一条）</span></span><br><span class="line">git commit --amend -m <span class="string">&quot;新的提交说明&quot;</span></span><br></pre></td></tr></table></figure>
 
+<blockquote>
+<p><strong>注意：</strong> <code>--amend</code> 会改写最近一次 commit 的哈希。若该提交已 <code>push</code>，需 <code>git push --force-with-lease</code>（慎用；共享分支勿强推）。<code>--no-edit</code> 只是「不改 message」，历史仍被改写。</p>
+</blockquote>
 <h3 id="4-3-回退本地提交"><a href="#4-3-回退本地提交" class="headerlink" title="4.3 回退本地提交"></a>4.3 回退本地提交</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 保留工作区改动，仅移动 HEAD（改动回到暂存区）</span></span><br><span class="line">git reset --soft HEAD~1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 保留工作区改动，清空暂存区（默认 mixed）</span></span><br><span class="line">git reset HEAD~1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 丢弃工作区与暂存区改动（危险）</span></span><br><span class="line">git reset --hard HEAD~1</span><br></pre></td></tr></table></figure>
 
 <h3 id="4-4-撤销已推送的提交"><a href="#4-4-撤销已推送的提交" class="headerlink" title="4.4 撤销已推送的提交"></a>4.4 撤销已推送的提交</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成一次「反向提交」，不改写历史（推荐用于已 push 的分支）</span></span><br><span class="line">git revert abc1234</span><br><span class="line">git revert HEAD</span><br></pre></td></tr></table></figure>
@@ -451,6 +454,14 @@
 <tr>
 <td>暂存并提交</td>
 <td><code>git add . &amp;&amp; git commit -m &quot;msg&quot;</code></td>
+</tr>
+<tr>
+<td>追加到上次提交（保留说明）</td>
+<td><code>git commit --amend --no-edit</code></td>
+</tr>
+<tr>
+<td>改上次提交说明</td>
+<td><code>git commit --amend -m &quot;msg&quot;</code></td>
 </tr>
 <tr>
 <td>推送</td>
