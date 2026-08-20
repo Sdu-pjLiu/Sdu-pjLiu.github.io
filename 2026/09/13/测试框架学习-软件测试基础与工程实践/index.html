@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="测试概念三维对照、分层与类型、用例设计（含边界测试）、替身、可测设计；AB 实验认名。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="测试框架学习-软件测试基础与工程实践">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="测试概念三维对照、分层与类型、用例设计（含边界测试）、替身、可测设计；AB 实验认名。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-29T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T06:17:18.744Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="测试">
+<meta property="article:tag" content="软件测试">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/","path":"/2026/09/13/测试框架学习-软件测试基础与工程实践/","title":"测试框架学习-软件测试基础与工程实践"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>测试框架学习-软件测试基础与工程实践 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%A6%82%E5%BF%B5%E4%B8%89%E7%BB%B4%E5%AF%B9%E7%85%A7%EF%BC%88%E9%98%B2%E6%B7%B7%E6%B7%86%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">1. 概念三维对照（防混淆）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%B5%8B%E8%AF%95%E7%9B%AE%E7%9A%84%E4%B8%8E%E8%B4%A8%E9%87%8F%E8%A7%82"><span class="nav-number">3.</span> <span class="nav-text">2. 测试目的与质量观</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%B5%8B%E8%AF%95%E5%88%86%E5%B1%82"><span class="nav-number">4.</span> <span class="nav-text">3. 测试分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E6%B5%8B%E8%AF%95%E7%B1%BB%E5%9E%8B%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">4. 测试类型（认名）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-AB-Test%EF%BC%88%E4%BA%A7%E5%93%81%E5%AE%9E%E9%AA%8C%EF%BC%8C%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 AB Test（产品实验，认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%94%A8%E4%BE%8B%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%B3%95%EF%BC%88%E6%A1%86%E6%9E%B6%E4%B9%8B%E5%89%8D%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">5. 用例设计方法（框架之前）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E9%BB%91%E7%9B%92-%E7%99%BD%E7%9B%92-%E7%81%B0%E7%9B%92%EF%BC%88%E5%8F%AF%E8%A7%81%E6%80%A7%EF%BC%8C%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 黑盒 &#x2F; 白盒 &#x2F; 灰盒（可见性，认名）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E6%B5%8B%E8%AF%95%E6%9B%BF%E8%BA%AB%E8%B0%B1%E7%B3%BB"><span class="nav-number">7.</span> <span class="nav-text">6. 测试替身谱系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%A5%BD%E6%B5%8B%E8%AF%95%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="nav-number">8.</span> <span class="nav-text">7. 好测试的属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E5%8F%AF%E6%B5%8B%E8%AE%BE%E8%AE%A1"><span class="nav-number">9.</span> <span class="nav-text">8. 可测设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E8%84%86%E6%80%A7%E4%B8%8E%E5%81%B6%E5%8F%91%E5%A4%B1%E8%B4%A5%EF%BC%88Flaky%EF%BC%89"><span class="nav-number">10.</span> <span class="nav-text">9. 脆性与偶发失败（Flaky）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E6%96%AD%E8%A8%80%E4%B8%8E%E9%A2%84%E8%A8%80%E6%9C%BA"><span class="nav-number">11.</span> <span class="nav-text">10. 断言与预言机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E5%BA%A6%E9%87%8F%E4%B8%8E%E6%B5%81%E7%A8%8B%EF%BC%88%E4%B8%8D%E7%BB%91-CI-%E4%BA%A7%E5%93%81%EF%BC%89"><span class="nav-number">12.</span> <span class="nav-text">11. 度量与流程（不绑 CI 产品）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12-TDD-BDD%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">13.</span> <span class="nav-text">12. TDD &#x2F; BDD（认名）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#13-%E4%B8%8E%E6%9C%AC%E7%B3%BB%E5%88%97%E5%B7%A5%E5%85%B7%E6%98%A0%E5%B0%84"><span class="nav-number">14.</span> <span class="nav-text">13. 与本系列工具映射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14-%E7%B3%BB%E5%88%97%E5%AF%BC%E8%88%AA"><span class="nav-number">15.</span> <span class="nav-text">14. 系列导航</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">16.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">93</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="测试框架学习-软件测试基础与工程实践 | 我的记录小站">
+      <meta itemprop="description" content="测试概念三维对照、分层与类型、用例设计（含边界测试）、替身、可测设计；AB 实验认名。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          测试框架学习-软件测试基础与工程实践
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-29 10:00:00" itemprop="dateCreated datePublished" datetime="2026-07-29T10:00:00+08:00">2026-07-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 14:17:18" itemprop="dateModified" datetime="2026-08-20T14:17:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">测试概念三维对照、分层与类型、用例设计（含边界测试）、替身、可测设计；AB 实验认名。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本系列入口。先建立 <strong>与具体框架无关</strong> 的测试口径：测什么、怎么设计用例、怎么隔离、怎样才算好测试；再进入 <a href="/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Python 测试工具链</a> 与 <a href="/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Go 测试工具链</a>。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与边界"><a href="#0-本篇位置与边界" class="headerlink" title="0. 本篇位置与边界"></a>0. 本篇位置与边界</h2><table>
+<thead>
+<tr>
+<th>本文</th>
+<th>后续工具链</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>概念、方法、工程判断</td>
+<td>pytest &#x2F; Go testing 等「怎么写」</td>
+</tr>
+</tbody></table>
+<p><strong>不做：</strong> ISTQB 全文背诵、测试管理平台操作、浏览器 E2E、性能&#x2F;安全专项工具链、AB 实验平台与统计深挖。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Python 测试工具链</a></p>
+<hr>
+<h2 id="1-概念三维对照（防混淆）"><a href="#1-概念三维对照（防混淆）" class="headerlink" title="1. 概念三维对照（防混淆）"></a>1. 概念三维对照（防混淆）</h2><p>口语里常把「单元测试、边界测试、AB Test」并列，其实它们 <strong>不在同一轴</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>轴</th>
+<th>回答的问题</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>分层</strong></td>
+<td>测多深、依赖多少</td>
+<td>单元、组件、集成、E2E</td>
+</tr>
+<tr>
+<td><strong>类型</strong></td>
+<td>测什么目的</td>
+<td>功能、回归、冒烟、性能、验收</td>
+</tr>
+<tr>
+<td><strong>设计方法</strong></td>
+<td>用例输入怎么选</td>
+<td>等价类、<strong>边界值（边界测试）</strong>、判定表</td>
+</tr>
+<tr>
+<td>（相关）<strong>可见性</strong></td>
+<td>是否看实现</td>
+<td>黑盒、白盒、灰盒</td>
+</tr>
+<tr>
+<td>（相关）<strong>替身</strong></td>
+<td>怎么隔离依赖</td>
+<td>stub &#x2F; mock &#x2F; fake</td>
+</tr>
+<tr>
+<td>（相关）<strong>产品实验</strong></td>
+<td>线上哪个方案更好</td>
+<td><strong>AB Test</strong>（非质量单测主线）</td>
+</tr>
+</tbody></table>
+<p>组合示例（正确说法）：</p>
+<ul>
+<li>「在 <strong>单元层</strong> 用 <strong>边界值</strong> 做 <strong>功能回归</strong>」——三轴都清楚。  </li>
+<li>「做个边界测试」——通常指设计方法，常落在单元&#x2F;接口层执行。  </li>
+<li>「做个 AB」——产品分流实验，<strong>不是</strong> pytest&#x2F;go test 那类自动化质量测试。</li>
+</ul>
+<p><strong>单元测试 ≠ 测试的全部</strong>：单元只是分层中的一层；本系列以单元&#x2F;组件为主，是因为反馈快、成本低，不是因为其它层不存在。</p>
+<hr>
+<h2 id="2-测试目的与质量观"><a href="#2-测试目的与质量观" class="headerlink" title="2. 测试目的与质量观"></a>2. 测试目的与质量观</h2><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>验证（Verification）</strong></td>
+<td>是否按规格做对（做对了没有）</td>
+</tr>
+<tr>
+<td><strong>确认（Validation）</strong></td>
+<td>是否做了该做的事（做对了事情没有）</td>
+</tr>
+</tbody></table>
+<p>测试能提高发现缺陷的置信度，<strong>不能证明无缺陷</strong>。覆盖率、用例数都是信号，不是质量证书——与工具链中「覆盖率≠质量」同一口径。</p>
+<p>缺陷越早发现成本通常越低：单元层便宜，生产上才发现最贵。</p>
+<hr>
+<h2 id="3-测试分层"><a href="#3-测试分层" class="headerlink" title="3. 测试分层"></a>3. 测试分层</h2><table>
+<thead>
+<tr>
+<th>层级</th>
+<th>典型对象</th>
+<th>速度&#x2F;稳定性</th>
+<th>本系列</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>单元</strong></td>
+<td>函数、类、小模块</td>
+<td>快、稳</td>
+<td><strong>主线</strong></td>
+</tr>
+<tr>
+<td><strong>组件 &#x2F; Handler</strong></td>
+<td>HTTP Handler、无真端口</td>
+<td>较快</td>
+<td>Go httptest 主线</td>
+</tr>
+<tr>
+<td><strong>集成</strong></td>
+<td>真 DB、真消息、多模块接线</td>
+<td>较慢、较脆</td>
+<td>点到为止</td>
+</tr>
+<tr>
+<td><strong>契约</strong></td>
+<td>服务间 API 合同</td>
+<td>中</td>
+<td>认名</td>
+</tr>
+<tr>
+<td><strong>E2E</strong></td>
+<td>浏览器&#x2F;全链路</td>
+<td>慢、贵</td>
+<td><strong>不做</strong></td>
+</tr>
+</tbody></table>
+<p><strong>测试金字塔：</strong> 底层多、上层少。若团队大量依赖 UI E2E（「冰淇淋」反模式），反馈会慢且脆——应把断言下沉到单元&#x2F;组件。</p>
+<p>同一套 <strong>边界值用例</strong>，可以写在单元层，也可以写在接口&#x2F;集成层；变的是分层，不是「边界」本身。</p>
+<hr>
+<h2 id="4-测试类型（认名）"><a href="#4-测试类型（认名）" class="headerlink" title="4. 测试类型（认名）"></a>4. 测试类型（认名）</h2><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>一句话</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能测试</td>
+<td>行为是否符合需求</td>
+<td>日常主量</td>
+</tr>
+<tr>
+<td>回归测试</td>
+<td>改动后旧行为是否仍成立</td>
+<td>自动化单测多属此类</td>
+</tr>
+<tr>
+<td>冒烟测试</td>
+<td>主路径能否快速通</td>
+<td><strong>子集</strong>；比全量回归更短</td>
+</tr>
+<tr>
+<td>验收测试</td>
+<td>是否达到可交付标准</td>
+<td>常含业务验收口径</td>
+</tr>
+<tr>
+<td>探索性测试</td>
+<td>不预设脚本、边学边测</td>
+<td>补自动化盲区；本系列不深挖</td>
+</tr>
+<tr>
+<td>性能 &#x2F; 安全 &#x2F; 兼容</td>
+<td>专项质量属性</td>
+<td>只认名</td>
+</tr>
+</tbody></table>
+<p><strong>冒烟 vs 回归：</strong> 冒烟问「能不能开机」；回归问「改完旧能力还在不在」。冒烟失败通常应挡住更深测试。</p>
+<p>研发日常主业通常是 <strong>功能 + 回归</strong> 的自动化（落在单元&#x2F;组件层最多）。</p>
+<h3 id="4-1-AB-Test（产品实验，认名）"><a href="#4-1-AB-Test（产品实验，认名）" class="headerlink" title="4.1 AB Test（产品实验，认名）"></a>4.1 AB Test（产品实验，认名）</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>是什么</strong></td>
+<td>用户分流到 A&#x2F;B 方案，比转化、留存等 <strong>业务指标</strong>，用统计决策</td>
+</tr>
+<tr>
+<td><strong>解决什么</strong></td>
+<td>「哪个产品方案更好」，不是「这段代码有没有 bug」</td>
+</tr>
+<tr>
+<td><strong>典型链路</strong></td>
+<td>分流 → 埋点 → 指标 → 显著性</td>
+</tr>
+<tr>
+<td><strong>与本系列</strong></td>
+<td><strong>非主线</strong>；质量保障仍靠分层测试与用例设计</td>
+</tr>
+</tbody></table>
+<p>不要把 AB 与单元&#x2F;边界并列成「三种测试方法」。需要实验平台、样本量、功效分析时另开专题。</p>
+<hr>
+<h2 id="5-用例设计方法（框架之前）"><a href="#5-用例设计方法（框架之前）" class="headerlink" title="5. 用例设计方法（框架之前）"></a>5. 用例设计方法（框架之前）</h2><p>框架（<code>parametrize</code>、table-driven）只是 <strong>把已设计好的用例跑起来</strong>；设计本身在前。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>要点</th>
+<th>落到工具</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>等价类</strong></td>
+<td>同类输入期望同类行为，每类取代表</td>
+<td>表的一行</td>
+</tr>
+<tr>
+<td><strong>边界值（边界测试）</strong></td>
+<td>边界及其内侧外侧易错；口语常称边界测试</td>
+<td>0、空、max±1</td>
+</tr>
+<tr>
+<td><strong>判定表</strong></td>
+<td>多条件组合 → 动作</td>
+<td>多列表格</td>
+</tr>
+<tr>
+<td><strong>状态迁移</strong></td>
+<td>合法&#x2F;非法迁移</td>
+<td>按状态列用例</td>
+</tr>
+<tr>
+<td><strong>错误猜测</strong></td>
+<td>经验：空针、超时、重复提交</td>
+<td>错误路径行</td>
+</tr>
+<tr>
+<td><strong>配对&#x2F;两两</strong></td>
+<td>多因子时降组合爆炸</td>
+<td>控制 parametrize 规模</td>
+</tr>
+</tbody></table>
+<p>口诀：<strong>先等价类与边界，再谈穷举；错误路径与 happy path 同权重。</strong></p>
+<h3 id="5-1-黑盒-白盒-灰盒（可见性，认名）"><a href="#5-1-黑盒-白盒-灰盒（可见性，认名）" class="headerlink" title="5.1 黑盒 &#x2F; 白盒 &#x2F; 灰盒（可见性，认名）"></a>5.1 黑盒 &#x2F; 白盒 &#x2F; 灰盒（可见性，认名）</h3><table>
+<thead>
+<tr>
+<th>叫法</th>
+<th>含义</th>
+<th>与设计方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>黑盒</strong></td>
+<td>不看实现，按规格与接口选输入</td>
+<td>等价类、边界值常用黑盒视角</td>
+</tr>
+<tr>
+<td><strong>白盒</strong></td>
+<td>看分支&#x2F;路径，按结构补测</td>
+<td>常与分支覆盖、条件覆盖配合</td>
+</tr>
+<tr>
+<td><strong>灰盒</strong></td>
+<td>知部分结构（如状态、错误码）</td>
+<td>接口测常见</td>
+</tr>
+</tbody></table>
+<p>边界值 <strong>既可以</strong> 黑盒推出（规格上下限），<strong>也可以</strong> 白盒加强（某分支临界条件）。轴是「可见性」，不是「分层」。</p>
+<hr>
+<h2 id="6-测试替身谱系"><a href="#6-测试替身谱系" class="headerlink" title="6. 测试替身谱系"></a>6. 测试替身谱系</h2><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>行为</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Dummy</strong></td>
+<td>占位，几乎不用</td>
+<td>凑参数</td>
+</tr>
+<tr>
+<td><strong>Stub</strong></td>
+<td>固定返回，不关心如何被调</td>
+<td>简单下游</td>
+</tr>
+<tr>
+<td><strong>Spy</strong></td>
+<td>记录调用供事后断言</td>
+<td>校验是否通知过</td>
+</tr>
+<tr>
+<td><strong>Mock</strong></td>
+<td>预设期望，交互不符则失败</td>
+<td>严格交互</td>
+</tr>
+<tr>
+<td><strong>Fake</strong></td>
+<td>可用的简化实现（内存库）</td>
+<td>可读、少生成代码</td>
+</tr>
+</tbody></table>
+<p>对照本系列：</p>
+<ul>
+<li>Python：<code>MagicMock</code> &#x2F; <code>mocker</code> 常充当 stub+spy+mock；手写对象可当 fake。  </li>
+<li>Go：优先手写 <strong>fake</strong>；需要严格交互再用 <strong>GoMock</strong>。</li>
+</ul>
+<p>术语混用很常见；面试时能按上表澄清即可。</p>
+<hr>
+<h2 id="7-好测试的属性"><a href="#7-好测试的属性" class="headerlink" title="7. 好测试的属性"></a>7. 好测试的属性</h2><p><strong>FIRST（常用口径）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>字母</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Fast</td>
+<td>快，默认可频繁跑</td>
+</tr>
+<tr>
+<td>Independent</td>
+<td>独立，不靠顺序</td>
+</tr>
+<tr>
+<td>Repeatable</td>
+<td>可重复，同环境同结果</td>
+</tr>
+<tr>
+<td>Self-validating</td>
+<td>自验证，成败由断言决定</td>
+</tr>
+<tr>
+<td>Timely</td>
+<td>及时，与代码一起演进</td>
+</tr>
+</tbody></table>
+<p><strong>结构：AAA &#x2F; Given-When-Then</strong></p>
+<ol>
+<li>Arrange &#x2F; Given：准备  </li>
+<li>Act &#x2F; When：执行  </li>
+<li>Assert &#x2F; Then：断言</li>
+</ol>
+<p>一个用例优先验证 <strong>一个行为</strong>；失败信息应能定位原因。</p>
+<hr>
+<h2 id="8-可测设计"><a href="#8-可测设计" class="headerlink" title="8. 可测设计"></a>8. 可测设计</h2><p>测试难，往往是设计难测，而不只是「不会用框架」。</p>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>依赖注入</strong></td>
+<td>测试可塞替身</td>
+</tr>
+<tr>
+<td><strong>纯函数</strong></td>
+<td>无 IO，最好测</td>
+</tr>
+<tr>
+<td><strong>副作用外置</strong></td>
+<td>IO 在边界，核心可单测</td>
+</tr>
+<tr>
+<td><strong>面向接口</strong>（Go）</td>
+<td>替换实现成本低</td>
+</tr>
+</tbody></table>
+<p>反模式：巨石函数、隐藏全局单例、构造时就连外网。</p>
+<hr>
+<h2 id="9-脆性与偶发失败（Flaky）"><a href="#9-脆性与偶发失败（Flaky）" class="headerlink" title="9. 脆性与偶发失败（Flaky）"></a>9. 脆性与偶发失败（Flaky）</h2><table>
+<thead>
+<tr>
+<th>常见根因</th>
+<th>处理方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>共享可变状态 &#x2F; 顺序依赖</td>
+<td>fixture&#x2F;<code>Cleanup</code>、独立数据</td>
+</tr>
+<tr>
+<td>真实时间、随机</td>
+<td>注入时钟&#x2F;种子</td>
+</tr>
+<tr>
+<td>外网、真第三方</td>
+<td>mock&#x2F;fake；集成另跑</td>
+</tr>
+<tr>
+<td>异步竞态</td>
+<td>显式等待或同步化；Go 加 <code>-race</code></td>
+</tr>
+<tr>
+<td>盲目重试变绿</td>
+<td>慎用；优先修根因</td>
+</tr>
+</tbody></table>
+<p>偶发红会腐蚀信任：人们开始忽略失败。</p>
+<hr>
+<h2 id="10-断言与预言机"><a href="#10-断言与预言机" class="headerlink" title="10. 断言与预言机"></a>10. 断言与预言机</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>弱断言</strong></td>
+<td>只断言「不抛异常」→ 假绿</td>
+</tr>
+<tr>
+<td><strong>过强断言</strong></td>
+<td>绑死无关字段&#x2F;调用次序 → 脆</td>
+</tr>
+<tr>
+<td><strong>预言机</strong></td>
+<td>如何知道期望值：规格、对照实现、不变量、差分</td>
+</tr>
+</tbody></table>
+<p>属性测试（Hypothesis &#x2F; Go fuzz）本质是用 <strong>不变量</strong> 当预言机的一种。</p>
+<hr>
+<h2 id="11-度量与流程（不绑-CI-产品）"><a href="#11-度量与流程（不绑-CI-产品）" class="headerlink" title="11. 度量与流程（不绑 CI 产品）"></a>11. 度量与流程（不绑 CI 产品）</h2><table>
+<thead>
+<tr>
+<th>度量</th>
+<th>口径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>行覆盖</td>
+<td>行是否执行过</td>
+</tr>
+<tr>
+<td>分支覆盖</td>
+<td><code>if/else</code> 等分支是否走过</td>
+</tr>
+<tr>
+<td>变更覆盖</td>
+<td>diff 是否被测到（团队可选）</td>
+</tr>
+</tbody></table>
+<p>流程建议：PR 默认跑快测（单元）；夜间&#x2F;主分支可加集成；覆盖率作 <strong>防回退</strong>，不作唯一 KPI。</p>
+<hr>
+<h2 id="12-TDD-BDD（认名）"><a href="#12-TDD-BDD（认名）" class="headerlink" title="12. TDD &#x2F; BDD（认名）"></a>12. TDD &#x2F; BDD（认名）</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>TDD</strong></td>
+<td>红 → 绿 → 重构；用失败测试驱动实现</td>
+</tr>
+<tr>
+<td><strong>BDD</strong></td>
+<td>用业务可读场景（Given-When-Then）表达行为</td>
+</tr>
+</tbody></table>
+<p>本系列不强制宗教式流程；需要时借用其结构即可。Go 侧 Ginkgo 等 BDD 框架仅在工具链中点到。</p>
+<hr>
+<h2 id="13-与本系列工具映射"><a href="#13-与本系列工具映射" class="headerlink" title="13. 与本系列工具映射"></a>13. 与本系列工具映射</h2><table>
+<thead>
+<tr>
+<th>基础概念</th>
+<th>Python</th>
+<th>Go</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用例表 &#x2F; 等价类 &#x2F; 边界值</td>
+<td><code>parametrize</code></td>
+<td>table-driven + <code>t.Run</code></td>
+</tr>
+<tr>
+<td>资源生命周期</td>
+<td>fixture &#x2F; yield</td>
+<td><code>t.Cleanup</code> &#x2F; suite</td>
+</tr>
+<tr>
+<td>替身</td>
+<td>mock &#x2F; pytest-mock</td>
+<td>fake &#x2F; GoMock</td>
+</tr>
+<tr>
+<td>属性&#x2F;模糊</td>
+<td>Hypothesis</td>
+<td><code>FuzzXxx</code>（加分）</td>
+</tr>
+<tr>
+<td>HTTP 组件测</td>
+<td>（点到）</td>
+<td>httptest</td>
+</tr>
+<tr>
+<td>覆盖率</td>
+<td>pytest-cov</td>
+<td><code>-cover</code></td>
+</tr>
+<tr>
+<td>竞态</td>
+<td>约定&#x2F;隔离</td>
+<td><code>-race</code></td>
+</tr>
+<tr>
+<td>AB &#x2F; 实验</td>
+<td>（非本工具链）</td>
+<td>（非本工具链）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="14-系列导航"><a href="#14-系列导航" class="headerlink" title="14. 系列导航"></a>14. 系列导航</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">软件测试基础与工程实践（本篇）</span><br><span class="line">  → Python 测试工具链 → Python 自检与面试</span><br><span class="line">  → Go 测试工具链 → Go 自检与面试</span><br><span class="line">  → 对照与实践清单</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">软件测试基础与工程实践</a>（本篇）</li>
+<li><a href="/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Python 测试工具链</a></li>
+<li><a href="/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Python 自检与面试</a></li>
+<li><a href="/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Go 测试工具链</a></li>
+<li><a href="/2026/09/17/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Go 自检与面试</a></li>
+<li><a href="/2026/09/18/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Py%E4%B8%8EGo%E5%AF%B9%E7%85%A7%E4%B8%8E%E5%AE%9E%E8%B7%B5%E6%B8%85%E5%8D%95/">对照与实践清单</a></li>
+</ul>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>先分清 <strong>分层 &#x2F; 类型 &#x2F; 设计方法</strong>（及实验另册），再会设计用例与可测边界，再选框架落地。下一篇把口径落到 pytest 四件套。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Python 测试工具链</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B5%8B%E8%AF%95/" rel="tag"># 测试</a>
+              <a href="/tags/%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95/" rel="tag"># 软件测试</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/12/Agent%E5%B7%A5%E7%A8%8B%E5%AD%A6%E4%B9%A0-%E5%A4%96%E9%83%A8%E6%A1%86%E6%9E%B6%E5%B7%A1%E8%A7%88-%E5%9B%9B/" rel="prev" title="AI-Agent工程学习-外部框架巡览(四)">
+                  <i class="fa fa-angle-left"></i> AI-Agent工程学习-外部框架巡览(四)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/" rel="next" title="测试框架学习-Python测试工具链">
+                  测试框架学习-Python测试工具链 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="一篇收齐 testing、Testify、GoMock 与 httptest：命令、API、示例、边界与叠用模板。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="测试框架学习-Go测试工具链">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="一篇收齐 testing、Testify、GoMock 与 httptest：命令、API、示例、边界与叠用模板。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-01T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T06:17:18.744Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="测试">
+<meta property="article:tag" content="Go">
+<meta property="article:tag" content="Testify">
+<meta property="article:tag" content="GoMock">
+<meta property="article:tag" content="httptest">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/","path":"/2026/09/16/测试框架学习-Go测试工具链/","title":"测试框架学习-Go测试工具链"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>测试框架学习-Go测试工具链 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E7%9B%AE%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%AE%9A%E4%BD%8D%E4%B8%8E%E4%BE%9D%E8%B5%96"><span class="nav-number">2.</span> <span class="nav-text">1. 一句话定位与依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-testing-%E4%B8%8E-go-test"><span class="nav-number">3.</span> <span class="nav-text">2. testing 与 go test</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%8F%91%E7%8E%B0%E7%BA%A6%E5%AE%9A"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 发现约定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 常用命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-TestMain-%E4%B8%8E-Cleanup"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 TestMain 与 Cleanup</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-table-driven"><span class="nav-number">4.</span> <span class="nav-text">3. table-driven</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%9C%80%E5%B0%8F%E4%BE%8B"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 最小例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-wantErr-%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 wantErr 模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-Fatal-vs-Error"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 Fatal vs Error</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E5%B9%B6%E8%A1%8C"><span class="nav-number">4.4.</span> <span class="nav-text">3.4 并行</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Testify"><span class="nav-number">5.</span> <span class="nav-text">4. Testify</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-assert-vs-require"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 assert vs require</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%B8%B8%E7%94%A8%E6%96%AD%E8%A8%80%EF%BC%88%E8%AE%A4%E5%90%8D%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 常用断言（认名）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E4%B8%8E-table-driven"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 与 table-driven</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-suite%EF%BC%88%E4%BA%86%E8%A7%A3%EF%BC%89"><span class="nav-number">5.4.</span> <span class="nav-text">4.4 suite（了解）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-testify-mock-vs-GoMock"><span class="nav-number">5.5.</span> <span class="nav-text">4.5 testify&#x2F;mock vs GoMock</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-GoMock-%E4%B8%8E%E5%8F%AF%E6%B5%8B%E8%AE%BE%E8%AE%A1"><span class="nav-number">6.</span> <span class="nav-text">5. GoMock 与可测设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%85%88%E6%8E%A5%E5%8F%A3"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 先接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E6%89%8B%E5%86%99-fake-vs-GoMock"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 手写 fake vs GoMock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-mockgen-%E4%B8%8E-EXPECT"><span class="nav-number">6.3.</span> <span class="nav-text">5.3 mockgen 与 EXPECT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.4.</span> <span class="nav-text">5.4 反模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-httptest"><span class="nav-number">7.</span> <span class="nav-text">6. httptest</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-NewRecorder"><span class="nav-number">7.1.</span> <span class="nav-text">6.1 NewRecorder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-NewServer"><span class="nav-number">7.2.</span> <span class="nav-text">6.2 NewServer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E4%B8%8E-mock-%E5%88%86%E5%B7%A5"><span class="nav-number">7.3.</span> <span class="nav-text">6.3 与 mock 分工</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-%E5%8D%95%E5%85%83-vs-%E9%9B%86%E6%88%90"><span class="nav-number">7.4.</span> <span class="nav-text">6.4 单元 vs 集成</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Fuzz-%E7%82%B9%E5%88%B0%EF%BC%88%E5%AF%B9%E7%85%A7-Hypothesis%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">7. Fuzz 点到（对照 Hypothesis）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E5%8F%A0%E7%94%A8%E6%A8%A1%E6%9D%BF"><span class="nav-number">9.</span> <span class="nav-text">8. 叠用模板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E5%81%9A%E4%BB%80%E4%B9%88-%E4%B8%8D%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-number">10.</span> <span class="nav-text">9. 做什么 &#x2F; 不做什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E5%B8%B8%E8%A7%81%E5%9D%91"><span class="nav-number">11.</span> <span class="nav-text">10. 常见坑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">93</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="测试框架学习-Go测试工具链 | 我的记录小站">
+      <meta itemprop="description" content="一篇收齐 testing、Testify、GoMock 与 httptest：命令、API、示例、边界与叠用模板。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          测试框架学习-Go测试工具链
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-08-01 11:00:00" itemprop="dateCreated datePublished" datetime="2026-08-01T11:00:00+08:00">2026-08-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 14:17:18" itemprop="dateModified" datetime="2026-08-20T14:17:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">一篇收齐 testing、Testify、GoMock 与 httptest：命令、API、示例、边界与叠用模板。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Python 自检与面试</a>：本篇把 Go 侧推荐栈 <strong>合并为一篇</strong>。分层、替身、用例设计见<a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">基础篇</a>；此处聚焦 <strong>用法细节</strong>。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与目录"><a href="#0-本篇位置与目录" class="headerlink" title="0. 本篇位置与目录"></a>0. 本篇位置与目录</h2><p>下一步：<a href="/2026/09/17/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Go 自检与面试</a>。</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1</td>
+<td>总定位与依赖</td>
+</tr>
+<tr>
+<td>§2</td>
+<td>testing + go test 旗标</td>
+</tr>
+<tr>
+<td>§3</td>
+<td>table-driven 与辅助 API</td>
+</tr>
+<tr>
+<td>§4</td>
+<td>Testify</td>
+</tr>
+<tr>
+<td>§5</td>
+<td>GoMock 与 fake</td>
+</tr>
+<tr>
+<td>§6</td>
+<td>httptest</td>
+</tr>
+<tr>
+<td>§7</td>
+<td>Fuzz 点到</td>
+</tr>
+<tr>
+<td>§8</td>
+<td>叠用模板</td>
+</tr>
+<tr>
+<td>§9</td>
+<td>做什么&#x2F;不做什么</td>
+</tr>
+<tr>
+<td>§10</td>
+<td>常见坑</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="1-一句话定位与依赖"><a href="#1-一句话定位与依赖" class="headerlink" title="1. 一句话定位与依赖"></a>1. 一句话定位与依赖</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>testing + go test</strong></td>
+<td>官方运行器；表驱动默认范式</td>
+</tr>
+<tr>
+<td><strong>Testify</strong></td>
+<td>assert &#x2F; require &#x2F; 可选 suite</td>
+</tr>
+<tr>
+<td><strong>GoMock</strong></td>
+<td>按 interface 生成 mock + EXPECT</td>
+</tr>
+<tr>
+<td><strong>httptest</strong></td>
+<td>Recorder &#x2F; NewServer 测 HTTP</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/stretchr/testify</span><br><span class="line">go get go.uber.org/mock   <span class="comment"># 或 github.com/golang/mock，以团队为准</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-testing-与-go-test"><a href="#2-testing-与-go-test" class="headerlink" title="2. testing 与 go test"></a>2. testing 与 go test</h2><h3 id="2-1-发现约定"><a href="#2-1-发现约定" class="headerlink" title="2.1 发现约定"></a>2.1 发现约定</h3><ul>
+<li>文件：<code>*_test.go</code>  </li>
+<li><strong>内部测试包</strong>：<code>package foo</code>——可测未导出符号  </li>
+<li><strong>外部测试包</strong>：<code>package foo_test</code>——只测公开 API，更接近用户  </li>
+<li><code>TestXxx(t *testing.T)</code>；另有 <code>BenchmarkXxx</code>、<code>ExampleXxx</code>、<code>FuzzXxx</code></li>
+</ul>
+<h3 id="2-2-常用命令"><a href="#2-2-常用命令" class="headerlink" title="2.2 常用命令"></a>2.2 常用命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">go <span class="built_in">test</span> ./...</span><br><span class="line">go <span class="built_in">test</span> -v -run <span class="string">&#x27;TestAdd/negative&#x27;</span></span><br><span class="line">go <span class="built_in">test</span> -race ./...</span><br><span class="line">go <span class="built_in">test</span> -cover ./...</span><br><span class="line">go <span class="built_in">test</span> -coverprofile=coverage.out ./... &amp;&amp; go tool cover -html=coverage.out</span><br><span class="line">go <span class="built_in">test</span> -count=1 ./...          <span class="comment"># 禁用缓存</span></span><br><span class="line">go <span class="built_in">test</span> -<span class="built_in">timeout</span> 30s ./...</span><br><span class="line">go <span class="built_in">test</span> -short ./...            <span class="comment"># 配合 if testing.Short() 跳过慢测</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>旗标</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-race</code></td>
+<td>数据竞争</td>
+</tr>
+<tr>
+<td><code>-cover</code></td>
+<td>覆盖率摘要</td>
+</tr>
+<tr>
+<td><code>-count=N</code></td>
+<td>跑 N 次；<code>1</code> 常用于 bypass cache</td>
+</tr>
+<tr>
+<td><code>-short</code></td>
+<td>短模式</td>
+</tr>
+<tr>
+<td><code>-timeout</code></td>
+<td>单包超时</td>
+</tr>
+</tbody></table>
+<p>集成测可用 <strong>build tag</strong>（如 <code>//go:build integration</code>）或独立目录，避免拖慢默认 <code>go test ./...</code>。</p>
+<h3 id="2-3-TestMain-与-Cleanup"><a href="#2-3-TestMain-与-Cleanup" class="headerlink" title="2.3 TestMain 与 Cleanup"></a>2.3 TestMain 与 Cleanup</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMain</span><span class="params">(m *testing.M)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 包级 setup</span></span><br><span class="line">	code := m.Run()</span><br><span class="line">	<span class="comment">// teardown</span></span><br><span class="line">	os.Exit(code)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestX</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	t.Cleanup(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; <span class="comment">/* 关资源，LIFO */</span> &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>辅助函数加 <code>t.Helper()</code>，失败行号指向调用方。</p>
+<hr>
+<h2 id="3-table-driven"><a href="#3-table-driven" class="headerlink" title="3. table-driven"></a>3. table-driven</h2><h3 id="3-1-最小例"><a href="#3-1-最小例" class="headerlink" title="3.1 最小例"></a>3.1 最小例</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestAdd</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	tests := []<span class="keyword">struct</span> &#123;</span><br><span class="line">		name <span class="type">string</span></span><br><span class="line">		a, b <span class="type">int</span></span><br><span class="line">		want <span class="type">int</span></span><br><span class="line">	&#125;&#123;</span><br><span class="line">		&#123;<span class="string">&quot;positive&quot;</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>&#125;,</span><br><span class="line">		&#123;<span class="string">&quot;zero&quot;</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>&#125;,</span><br><span class="line">		&#123;<span class="string">&quot;negative&quot;</span>, <span class="number">-1</span>, <span class="number">1</span>, <span class="number">0</span>&#125;,</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> _, tt := <span class="keyword">range</span> tests &#123;</span><br><span class="line">		t.Run(tt.name, <span class="function"><span class="keyword">func</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">			got := Add(tt.a, tt.b)</span><br><span class="line">			<span class="keyword">if</span> got != tt.want &#123;</span><br><span class="line">				t.Errorf(<span class="string">&quot;got %d want %d&quot;</span>, got, tt.want)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应基础篇等价类&#x2F;边界值（边界测试）：表的一行 &#x3D; 一类输入。</p>
+<h3 id="3-2-wantErr-模式"><a href="#3-2-wantErr-模式" class="headerlink" title="3.2 wantErr 模式"></a>3.2 wantErr 模式</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> tt.wantErr &#123;</span><br><span class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatalf(<span class="string">&quot;want error&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">	t.Fatalf(<span class="string">&quot;unexpected: %v&quot;</span>, err)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-Fatal-vs-Error"><a href="#3-3-Fatal-vs-Error" class="headerlink" title="3.3 Fatal vs Error"></a>3.3 Fatal vs Error</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Error</code> &#x2F; <code>Errorf</code></td>
+<td>失败继续</td>
+</tr>
+<tr>
+<td><code>Fatal</code> &#x2F; <code>Fatalf</code></td>
+<td>失败并结束当前（子）测试</td>
+</tr>
+</tbody></table>
+<h3 id="3-4-并行"><a href="#3-4-并行" class="headerlink" title="3.4 并行"></a>3.4 并行</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">t.Parallel() <span class="comment">// 仅无共享可变状态时；表驱动子测试各自 Parallel 需注意隔离</span></span><br></pre></td></tr></table></figure>
+
+<p>Golden file（期望输出落盘对比）点到即可：适合大体快照，注意可读评审。</p>
+<hr>
+<h2 id="4-Testify"><a href="#4-Testify" class="headerlink" title="4. Testify"></a>4. Testify</h2><h3 id="4-1-assert-vs-require"><a href="#4-1-assert-vs-require" class="headerlink" title="4.1 assert vs require"></a>4.1 assert vs require</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">require.NoError(t, err)   <span class="comment">// 失败即停</span></span><br><span class="line">assert.Equal(t, <span class="number">42</span>, got)  <span class="comment">// 可继续收集失败</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-常用断言（认名）"><a href="#4-2-常用断言（认名）" class="headerlink" title="4.2 常用断言（认名）"></a>4.2 常用断言（认名）</h3><table>
+<thead>
+<tr>
+<th>API</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Equal</code> &#x2F; <code>NotEqual</code></td>
+<td>相等</td>
+</tr>
+<tr>
+<td><code>ElementsMatch</code></td>
+<td>切片元素相同（忽略顺序）</td>
+</tr>
+<tr>
+<td><code>Contains</code></td>
+<td>子串&#x2F;元素</td>
+</tr>
+<tr>
+<td><code>Nil</code> &#x2F; <code>NotNil</code></td>
+<td>空值</td>
+</tr>
+<tr>
+<td><code>Error</code> &#x2F; <code>NoError</code> &#x2F; <code>ErrorContains</code></td>
+<td>错误</td>
+</tr>
+<tr>
+<td><code>Eventually</code></td>
+<td>条件在超时内变为真（异步点到）</td>
+</tr>
+<tr>
+<td><code>Len</code></td>
+<td>长度</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-与-table-driven"><a href="#4-3-与-table-driven" class="headerlink" title="4.3 与 table-driven"></a>4.3 与 table-driven</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> _, tt := <span class="keyword">range</span> tests &#123;</span><br><span class="line">	t.Run(tt.name, <span class="function"><span class="keyword">func</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">		got, err := Parse(tt.in)</span><br><span class="line">		<span class="keyword">if</span> tt.wantErr &#123;</span><br><span class="line">			require.Error(t, err)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		require.NoError(t, err)</span><br><span class="line">		assert.Equal(t, tt.want, got)</span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-suite（了解）"><a href="#4-4-suite（了解）" class="headerlink" title="4.4 suite（了解）"></a>4.4 suite（了解）</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> APISuite <span class="keyword">struct</span> &#123;</span><br><span class="line">	suite.Suite</span><br><span class="line">	server *httptest.Server</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *APISuite)</span></span> SetupTest() &#123; <span class="comment">/* 每测前 */</span> &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *APISuite)</span></span> TearDownTest() &#123; <span class="comment">/* 每测后 */</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestAPISuite</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	suite.Run(t, <span class="built_in">new</span>(APISuite))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>小型纯函数单测通常不必上 suite。</p>
+<h3 id="4-5-testify-mock-vs-GoMock"><a href="#4-5-testify-mock-vs-GoMock" class="headerlink" title="4.5 testify&#x2F;mock vs GoMock"></a>4.5 testify&#x2F;mock vs GoMock</h3><p>Testify 自带 <code>mock</code>；本系列生成向以 <strong>GoMock</strong> 为主。原则：面向接口、少绑实现细节。</p>
+<hr>
+<h2 id="5-GoMock-与可测设计"><a href="#5-GoMock-与可测设计" class="headerlink" title="5. GoMock 与可测设计"></a>5. GoMock 与可测设计</h2><h3 id="5-1-先接口"><a href="#5-1-先接口" class="headerlink" title="5.1 先接口"></a>5.1 先接口</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> UserRepo <span class="keyword">interface</span> &#123;</span><br><span class="line">	Find(ctx context.Context, id <span class="type">int64</span>) (*User, <span class="type">error</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Service <span class="keyword">struct</span>&#123; repo UserRepo &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-手写-fake-vs-GoMock"><a href="#5-2-手写-fake-vs-GoMock" class="headerlink" title="5.2 手写 fake vs GoMock"></a>5.2 手写 fake vs GoMock</h3><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>何时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>手写 fake</td>
+<td>接口小、行为简单</td>
+</tr>
+<tr>
+<td>GoMock</td>
+<td>方法多、要严格次数&#x2F;参数&#x2F;次序</td>
+</tr>
+</tbody></table>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> fakeRepo <span class="keyword">struct</span>&#123; u *User &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f fakeRepo)</span></span> Find(ctx context.Context, id <span class="type">int64</span>) (*User, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">return</span> f.u, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-mockgen-与-EXPECT"><a href="#5-3-mockgen-与-EXPECT" class="headerlink" title="5.3 mockgen 与 EXPECT"></a>5.3 mockgen 与 EXPECT</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mockgen -<span class="built_in">source</span>=repo.go -destination=mocks/mock_repo.go -package=mocks</span><br><span class="line"><span class="comment"># 亦有 reflect 模式：按包与接口名生成</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ctrl := gomock.NewController(t)</span><br><span class="line">repo := mocks.NewMockUserRepo(ctrl)</span><br><span class="line">repo.EXPECT().</span><br><span class="line">	Find(gomock.Any(), <span class="type">int64</span>(<span class="number">1</span>)).</span><br><span class="line">	Return(&amp;User&#123;Name: <span class="string">&quot;Ada&quot;</span>&#125;, <span class="literal">nil</span>).</span><br><span class="line">	Times(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">repo.EXPECT().</span><br><span class="line">	Find(gomock.Any(), <span class="type">int64</span>(<span class="number">2</span>)).</span><br><span class="line">	DoAndReturn(<span class="function"><span class="keyword">func</span><span class="params">(ctx context.Context, id <span class="type">int64</span>)</span></span> (*User, <span class="type">error</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.New(<span class="string">&quot;missing&quot;</span>)</span><br><span class="line">	&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>常用：<code>Any()</code>、<code>Times</code>&#x2F;<code>AnyTimes</code>、<code>InOrder</code>（严格次序，慎用）、<code>Do</code>&#x2F;<code>DoAndReturn</code>、<code>AssignableToTypeOf</code>。<br>Controller 结束时校验未满足 EXPECT。</p>
+<h3 id="5-4-反模式"><a href="#5-4-反模式" class="headerlink" title="5.4 反模式"></a>5.4 反模式</h3><p>无接口硬 mock；EXPECT 过死；mock 被测逻辑本身。</p>
+<hr>
+<h2 id="6-httptest"><a href="#6-httptest" class="headerlink" title="6. httptest"></a>6. httptest</h2><h3 id="6-1-NewRecorder"><a href="#6-1-NewRecorder" class="headerlink" title="6.1 NewRecorder"></a>6.1 NewRecorder</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">req := httptest.NewRequest(http.MethodGet, <span class="string">&quot;/health&quot;</span>, <span class="literal">nil</span>)</span><br><span class="line"><span class="comment">// 或 NewRequestWithContext(ctx, ...)</span></span><br><span class="line">rr := httptest.NewRecorder()</span><br><span class="line">handler.ServeHTTP(rr, req)</span><br><span class="line"></span><br><span class="line">require.Equal(t, http.StatusOK, rr.Code)</span><br><span class="line">assert.Equal(t, <span class="string">&quot;ok&quot;</span>, rr.Body.String())</span><br><span class="line"></span><br><span class="line">resp := rr.Result() <span class="comment">// 完整 *http.Response；注意未 WriteHeader 时 Code 可能为 0，Result 会补默认</span></span><br><span class="line"><span class="keyword">defer</span> resp.Body.Close()</span><br></pre></td></tr></table></figure>
+
+<p>组装与生产一致的 mux&#x2F;中间件链再 <code>ServeHTTP</code>。</p>
+<h3 id="6-2-NewServer"><a href="#6-2-NewServer" class="headerlink" title="6.2 NewServer"></a>6.2 NewServer</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ts := httptest.NewServer(http.HandlerFunc(<span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	_, _ = w.Write([]<span class="type">byte</span>(<span class="string">`&#123;&quot;name&quot;:&quot;Ada&quot;&#125;`</span>))</span><br><span class="line">&#125;))</span><br><span class="line">t.Cleanup(ts.Close)</span><br><span class="line"></span><br><span class="line">resp, err := http.Get(ts.URL + <span class="string">&quot;/u/1&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>测自研 Client 时把 BaseURL 指到 <code>ts.URL</code>。<code>StartTLS</code> 点到即可。Client 应设超时，避免挂死。</p>
+<h3 id="6-3-与-mock-分工"><a href="#6-3-与-mock-分工" class="headerlink" title="6.3 与 mock 分工"></a>6.3 与 mock 分工</h3><table>
+<thead>
+<tr>
+<th>目标</th>
+<th>手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Handler 合同</td>
+<td>Recorder + fake service</td>
+</tr>
+<tr>
+<td>Client 编解码&#x2F;重试</td>
+<td>NewServer</td>
+</tr>
+<tr>
+<td>难启动 SDK</td>
+<td>GoMock&#x2F;fake</td>
+</tr>
+</tbody></table>
+<h3 id="6-4-单元-vs-集成"><a href="#6-4-单元-vs-集成" class="headerlink" title="6.4 单元 vs 集成"></a>6.4 单元 vs 集成</h3><p>单元：Recorder + fake。集成：真依赖 + build tag，少而精。</p>
+<hr>
+<h2 id="7-Fuzz-点到（对照-Hypothesis）"><a href="#7-Fuzz-点到（对照-Hypothesis）" class="headerlink" title="7. Fuzz 点到（对照 Hypothesis）"></a>7. Fuzz 点到（对照 Hypothesis）</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">FuzzParse</span><span class="params">(f *testing.F)</span></span> &#123;</span><br><span class="line">	f.Add(<span class="string">&quot;42&quot;</span>)</span><br><span class="line">	f.Fuzz(<span class="function"><span class="keyword">func</span><span class="params">(t *testing.T, in <span class="type">string</span>)</span></span> &#123;</span><br><span class="line">		_, _ = Parse(in) <span class="comment">// 断言不变量或「不 panic」</span></span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>与 Hypothesis 同属生成式找反例；本系列 Go 主线仍是 table-driven + httptest。</p>
+<hr>
+<h2 id="8-叠用模板"><a href="#8-叠用模板" class="headerlink" title="8. 叠用模板"></a>8. 叠用模板</h2><ol>
+<li>纯函数：table-driven + require&#x2F;assert。  </li>
+<li>Service：接口 + fake&#x2F;GoMock。  </li>
+<li>Handler：Recorder + 中间件链。  </li>
+<li>Client：NewServer。  </li>
+<li>CI：<code>go test -race ./...</code>，cover 防回退。</li>
+</ol>
+<hr>
+<h2 id="9-做什么-不做什么"><a href="#9-做什么-不做什么" class="headerlink" title="9. 做什么 &#x2F; 不做什么"></a>9. 做什么 &#x2F; 不做什么</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>testing</td>
+<td>组织、表驱动、race&#x2F;cover</td>
+<td>替代用例设计</td>
+</tr>
+<tr>
+<td>Testify</td>
+<td>可读断言与停&#x2F;不停</td>
+<td>生产代码依赖</td>
+</tr>
+<tr>
+<td>GoMock</td>
+<td>严格交互隔离</td>
+<td>无接口硬上、过死次序</td>
+</tr>
+<tr>
+<td>httptest</td>
+<td>HTTP 进出边</td>
+<td>替代下游 DB 集成</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="10-常见坑"><a href="#10-常见坑" class="headerlink" title="10. 常见坑"></a>10. 常见坑</h2><ol>
+<li>无 name &#x2F; 无 <code>t.Run</code>。  </li>
+<li>该 Fatal 却 Error。  </li>
+<li>忽略 <code>-race</code>；NewServer 未 Cleanup。  </li>
+<li>Recorder <code>Code</code> 为 0 未用 <code>Result()</code> 理解默认。  </li>
+<li>EXPECT 过死；单测打外网。  </li>
+<li>未统一时强上 Ginkgo，丢失表驱动可读性。</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>标准库 + 表驱动是骨架；Testify 理断言；GoMock 服务接口；httptest 覆盖 HTTP。概念回链<a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">基础篇</a>。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/17/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Go 自检与面试</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Python 自检与面试</a> · <a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">软件测试基础</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B5%8B%E8%AF%95/" rel="tag"># 测试</a>
+              <a href="/tags/Go/" rel="tag"># Go</a>
+              <a href="/tags/Testify/" rel="tag"># Testify</a>
+              <a href="/tags/GoMock/" rel="tag"># GoMock</a>
+              <a href="/tags/httptest/" rel="tag"># httptest</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="prev" title="测试框架学习-Python自检与面试">
+                  <i class="fa fa-angle-left"></i> 测试框架学习-Python自检与面试
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/17/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="测试框架学习-Go自检与面试">
+                  测试框架学习-Go自检与面试 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

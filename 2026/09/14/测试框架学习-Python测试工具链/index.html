@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="一篇收齐 pytest、pytest-cov、mock 与 Hypothesis：配置、API、示例、边界与叠用模板。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="测试框架学习-Python测试工具链">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="一篇收齐 pytest、pytest-cov、mock 与 Hypothesis：配置、API、示例、边界与叠用模板。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-30T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T06:17:18.744Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="测试">
+<meta property="article:tag" content="pytest">
+<meta property="article:tag" content="mock">
+<meta property="article:tag" content="Hypothesis">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/","path":"/2026/09/14/测试框架学习-Python测试工具链/","title":"测试框架学习-Python测试工具链"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>测试框架学习-Python测试工具链 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%9C%AC%E7%AF%87%E4%BD%8D%E7%BD%AE%E4%B8%8E%E7%9B%AE%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">0. 本篇位置与目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">1. 一句话定位与安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-pytest%EF%BC%9A%E5%8F%91%E7%8E%B0%E3%80%81CLI%E3%80%81%E9%85%8D%E7%BD%AE%E3%80%81%E6%96%AD%E8%A8%80"><span class="nav-number">3.</span> <span class="nav-text">2. pytest：发现、CLI、配置、断言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%8F%91%E7%8E%B0%E8%A7%84%E5%88%99"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 发现规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%9C%80%E5%B0%8F%E7%A4%BA%E4%BE%8B"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 最小示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%B8%B8%E7%94%A8-CLI"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 常用 CLI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E9%85%8D%E7%BD%AE%EF%BC%88pyproject-toml-%E7%A4%BA%E6%84%8F%EF%BC%89"><span class="nav-number">3.4.</span> <span class="nav-text">2.4 配置（pyproject.toml 示意）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E5%B8%83%E5%B1%80%E4%B8%8E-conftest"><span class="nav-number">3.5.</span> <span class="nav-text">2.5 布局与 conftest</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-%E7%94%A8%E4%BE%8B%E7%8B%AC%E7%AB%8B%E6%80%A7"><span class="nav-number">3.6.</span> <span class="nav-text">2.6 用例独立性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Fixture%E3%80%81%E5%8F%82%E6%95%B0%E5%8C%96%E4%B8%8E-Mark"><span class="nav-number">4.</span> <span class="nav-text">3. Fixture、参数化与 Mark</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 作用域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-yield-teardown"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 yield teardown</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-autouse%E3%80%81%E5%B7%A5%E5%8E%82%E3%80%81request"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 autouse、工厂、request</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E4%BE%9D%E8%B5%96%E9%93%BE"><span class="nav-number">4.4.</span> <span class="nav-text">3.4 依赖链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-parametrize"><span class="nav-number">4.5.</span> <span class="nav-text">3.5 parametrize</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-Mark"><span class="nav-number">4.6.</span> <span class="nav-text">3.6 Mark</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%86%85%E7%BD%AE-fixture-%E4%B8%8E%E5%BC%82%E5%B8%B8%E6%96%AD%E8%A8%80"><span class="nav-number">5.</span> <span class="nav-text">4. 内置 fixture 与异常断言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-pytest-cov"><span class="nav-number">6.</span> <span class="nav-text">5. pytest-cov</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E7%94%A8%E6%B3%95"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E8%83%BD%E8%AF%B4%E6%98%8E-%E4%B8%8D%E8%83%BD%E8%AF%B4%E6%98%8E"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 能说明 &#x2F; 不能说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E5%B7%A5%E7%A8%8B%E5%8F%A3%E5%BE%84"><span class="nav-number">6.3.</span> <span class="nav-text">5.3 工程口径</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Mock%EF%BC%88%E4%BE%9D%E8%B5%96%E9%9A%94%E7%A6%BB%EF%BC%89"><span class="nav-number">7.</span> <span class="nav-text">6. Mock（依赖隔离）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E4%BC%98%E5%85%88%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5"><span class="nav-number">7.1.</span> <span class="nav-text">6.1 优先依赖注入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-return-value-side-effect-spec"><span class="nav-number">7.2.</span> <span class="nav-text">6.2 return_value &#x2F; side_effect &#x2F; spec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-patch%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%A4%84"><span class="nav-number">7.3.</span> <span class="nav-text">6.3 patch：使用处</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-pytest-mock"><span class="nav-number">7.4.</span> <span class="nav-text">6.4 pytest-mock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-%E8%AF%A5-mock-%E4%B8%8D%E8%AF%A5-mock"><span class="nav-number">7.5.</span> <span class="nav-text">6.5 该 mock &#x2F; 不该 mock</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-Hypothesis"><span class="nav-number">8.</span> <span class="nav-text">7. Hypothesis</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-%E6%9C%80%E5%B0%8F%E7%A4%BA%E4%BE%8B"><span class="nav-number">8.1.</span> <span class="nav-text">7.1 最小示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-%E7%AD%96%E7%95%A5%E4%B8%8E%E6%8E%A7%E5%88%B6"><span class="nav-number">8.2.</span> <span class="nav-text">7.2 策略与控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-%E4%BD%95%E6%97%B6%E7%94%A8-%E4%B8%8D%E7%94%A8"><span class="nav-number">8.3.</span> <span class="nav-text">7.3 何时用 &#x2F; 不用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E5%8F%A0%E7%94%A8%E6%A8%A1%E6%9D%BF"><span class="nav-number">9.</span> <span class="nav-text">8. 叠用模板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E5%81%9A%E4%BB%80%E4%B9%88-%E4%B8%8D%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-number">10.</span> <span class="nav-text">9. 做什么 &#x2F; 不做什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E5%B8%B8%E8%A7%81%E5%9D%91"><span class="nav-number">11.</span> <span class="nav-text">10. 常见坑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">93</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="测试框架学习-Python测试工具链 | 我的记录小站">
+      <meta itemprop="description" content="一篇收齐 pytest、pytest-cov、mock 与 Hypothesis：配置、API、示例、边界与叠用模板。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          测试框架学习-Python测试工具链
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-30 11:00:00" itemprop="dateCreated datePublished" datetime="2026-07-30T11:00:00+08:00">2026-07-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 14:17:18" itemprop="dateModified" datetime="2026-08-20T14:17:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">一篇收齐 pytest、pytest-cov、mock 与 Hypothesis：配置、API、示例、边界与叠用模板。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接 <a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">软件测试基础与工程实践</a>：本篇把 Python 侧推荐栈 <strong>合并为一篇</strong>——<code>pytest</code> + <code>pytest-cov</code> + <code>mock</code> + <code>Hypothesis</code>。用例设计、替身术语见基础篇；此处聚焦 <strong>用法细节与能力边界</strong>。</p>
+<span id="more"></span>
+<h2 id="0-本篇位置与目录"><a href="#0-本篇位置与目录" class="headerlink" title="0. 本篇位置与目录"></a>0. 本篇位置与目录</h2><p>下一步：<a href="/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Python 自检与面试</a>。</p>
+<table>
+<thead>
+<tr>
+<th>节</th>
+<th>主题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§1</td>
+<td>总定位与安装</td>
+</tr>
+<tr>
+<td>§2</td>
+<td>pytest：发现、CLI、配置、断言</td>
+</tr>
+<tr>
+<td>§3</td>
+<td>fixture &#x2F; parametrize &#x2F; mark</td>
+</tr>
+<tr>
+<td>§4</td>
+<td>内置 fixture 与异常断言</td>
+</tr>
+<tr>
+<td>§5</td>
+<td>pytest-cov</td>
+</tr>
+<tr>
+<td>§6</td>
+<td>mock &#x2F; pytest-mock</td>
+</tr>
+<tr>
+<td>§7</td>
+<td>Hypothesis</td>
+</tr>
+<tr>
+<td>§8</td>
+<td>叠用模板</td>
+</tr>
+<tr>
+<td>§9</td>
+<td>每工具「做什么&#x2F;不做什么」</td>
+</tr>
+<tr>
+<td>§10</td>
+<td>常见坑</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="1-一句话定位与安装"><a href="#1-一句话定位与安装" class="headerlink" title="1. 一句话定位与安装"></a>1. 一句话定位与安装</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>pytest</strong></td>
+<td>运行器：发现用例、fixture、参数化、插件宿主</td>
+</tr>
+<tr>
+<td><strong>pytest-cov</strong></td>
+<td>覆盖率：执行痕迹报告与门槛</td>
+</tr>
+<tr>
+<td><strong>unittest.mock &#x2F; pytest-mock</strong></td>
+<td>依赖隔离：替身、patch、调用断言</td>
+</tr>
+<tr>
+<td><strong>Hypothesis</strong></td>
+<td>属性测试：生成输入、缩小反例</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install pytest pytest-cov pytest-mock hypothesis</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-pytest：发现、CLI、配置、断言"><a href="#2-pytest：发现、CLI、配置、断言" class="headerlink" title="2. pytest：发现、CLI、配置、断言"></a>2. pytest：发现、CLI、配置、断言</h2><h3 id="2-1-发现规则"><a href="#2-1-发现规则" class="headerlink" title="2.1 发现规则"></a>2.1 发现规则</h3><table>
+<thead>
+<tr>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文件</td>
+<td>默认 <code>test_*.py</code> 或 <code>*_test.py</code></td>
+</tr>
+<tr>
+<td>函数</td>
+<td><code>test_*</code></td>
+</tr>
+<tr>
+<td>类</td>
+<td><code>Test*</code>（且无 <code>__init__</code>）</td>
+</tr>
+<tr>
+<td>方法</td>
+<td>类内 <code>test_*</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pytest --collect-only          <span class="comment"># 先看收集到了什么</span></span><br><span class="line">pytest tests/test_calc.py::test_add -v</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-最小示例"><a href="#2-2-最小示例" class="headerlink" title="2.2 最小示例"></a>2.2 最小示例</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># calc.py</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">a: <span class="built_in">int</span>, b: <span class="built_in">int</span></span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="keyword">return</span> a + b</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># tests/test_calc.py</span></span><br><span class="line"><span class="keyword">from</span> calc <span class="keyword">import</span> add</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_add_positive</span>():</span><br><span class="line">    <span class="keyword">assert</span> add(<span class="number">2</span>, <span class="number">3</span>) == <span class="number">5</span></span><br></pre></td></tr></table></figure>
+
+<p>pytest 会对 <code>assert</code> 做重写，失败时展示左右值。浮点用 <code>pytest.approx</code>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">assert</span> <span class="number">0.1</span> + <span class="number">0.2</span> == pytest.approx(<span class="number">0.3</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-常用-CLI"><a href="#2-3-常用-CLI" class="headerlink" title="2.3 常用 CLI"></a>2.3 常用 CLI</h3><table>
+<thead>
+<tr>
+<th>旗标</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-q</code> &#x2F; <code>-v</code></td>
+<td>安静 &#x2F; 详细</td>
+</tr>
+<tr>
+<td><code>-x</code></td>
+<td>首次失败即停</td>
+</tr>
+<tr>
+<td><code>--lf</code></td>
+<td>只跑上次失败</td>
+</tr>
+<tr>
+<td><code>--ff</code></td>
+<td>先跑上次失败再跑其余</td>
+</tr>
+<tr>
+<td><code>-k expr</code></td>
+<td>按名称表达式筛选</td>
+</tr>
+<tr>
+<td><code>-m mark</code></td>
+<td>按标记筛选</td>
+</tr>
+<tr>
+<td><code>-s</code></td>
+<td>不截获 print（调试）</td>
+</tr>
+<tr>
+<td><code>--maxfail=N</code></td>
+<td>失败 N 次后停</td>
+</tr>
+<tr>
+<td><code>-n auto</code></td>
+<td>需 pytest-xdist：并行（注意隔离）</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-配置（pyproject-toml-示意）"><a href="#2-4-配置（pyproject-toml-示意）" class="headerlink" title="2.4 配置（pyproject.toml 示意）"></a>2.4 配置（pyproject.toml 示意）</h3><figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[tool.pytest.ini_options]</span></span><br><span class="line"><span class="attr">testpaths</span> = [<span class="string">&quot;tests&quot;</span>]</span><br><span class="line"><span class="attr">python_files</span> = [<span class="string">&quot;test_*.py&quot;</span>]</span><br><span class="line"><span class="attr">python_functions</span> = [<span class="string">&quot;test_*&quot;</span>]</span><br><span class="line"><span class="attr">addopts</span> = <span class="string">&quot;-ra&quot;</span></span><br><span class="line"><span class="attr">markers</span> = [</span><br><span class="line">    <span class="string">&quot;slow: 耗时用例&quot;</span>,</span><br><span class="line">    <span class="string">&quot;integration: 需外部依赖&quot;</span>,</span><br><span class="line">]</span><br><span class="line"><span class="attr">filterwarnings</span> = [<span class="string">&quot;error&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>也可用 <code>pytest.ini</code>。自定义 mark 建议注册，避免 <code>PytestUnknownMarkWarning</code>。</p>
+<h3 id="2-5-布局与-conftest"><a href="#2-5-布局与-conftest" class="headerlink" title="2.5 布局与 conftest"></a>2.5 布局与 conftest</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">project/</span><br><span class="line">  src/mypkg/</span><br><span class="line">  tests/</span><br><span class="line">    conftest.py</span><br><span class="line">    unit/</span><br><span class="line">    integration/</span><br><span class="line">  pyproject.toml</span><br></pre></td></tr></table></figure>
+
+<p><code>conftest.py</code>：同目录及子目录自动加载；可多层。放共享 fixture&#x2F;hook，不放生产业务逻辑。</p>
+<h3 id="2-6-用例独立性"><a href="#2-6-用例独立性" class="headerlink" title="2.6 用例独立性"></a>2.6 用例独立性</h3><p>不要靠执行顺序串业务流程；依赖用 fixture 链。详见<a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">基础篇 §7&#x2F;§9</a>。</p>
+<hr>
+<h2 id="3-Fixture、参数化与-Mark"><a href="#3-Fixture、参数化与-Mark" class="headerlink" title="3. Fixture、参数化与 Mark"></a>3. Fixture、参数化与 Mark</h2><h3 id="3-1-作用域"><a href="#3-1-作用域" class="headerlink" title="3.1 作用域"></a>3.1 作用域</h3><table>
+<thead>
+<tr>
+<th>scope</th>
+<th>生命周期</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>function</code>（默认）</td>
+<td>每用例一次</td>
+<td>临时数据</td>
+</tr>
+<tr>
+<td><code>class</code></td>
+<td>每测试类一次</td>
+<td>类内只读配置</td>
+</tr>
+<tr>
+<td><code>module</code></td>
+<td>每文件一次</td>
+<td>模块级准备</td>
+</tr>
+<tr>
+<td><code>session</code></td>
+<td>全会话一次</td>
+<td>引擎连接</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@pytest.fixture(<span class="params">scope=<span class="string">&quot;module&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">db_url</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;sqlite:///:memory:&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>扩大 scope 时：勿返回未保护的可变共享对象，否则状态污染。</p>
+<h3 id="3-2-yield-teardown"><a href="#3-2-yield-teardown" class="headerlink" title="3.2 yield teardown"></a>3.2 yield teardown</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@pytest.fixture</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tmp_workspace</span>(<span class="params">tmp_path</span>):</span><br><span class="line">    workspace = tmp_path / <span class="string">&quot;ws&quot;</span></span><br><span class="line">    workspace.mkdir()</span><br><span class="line">    <span class="keyword">yield</span> workspace</span><br><span class="line">    <span class="comment"># 失败也会执行</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-autouse、工厂、request"><a href="#3-3-autouse、工厂、request" class="headerlink" title="3.3 autouse、工厂、request"></a>3.3 autouse、工厂、request</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@pytest.fixture(<span class="params">autouse=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_isolate_env</span>(<span class="params">monkeypatch</span>):</span><br><span class="line">    monkeypatch.setenv(<span class="string">&quot;APP_ENV&quot;</span>, <span class="string">&quot;test&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@pytest.fixture</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">make_user</span>():</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_make</span>(<span class="params">**kwargs</span>):</span><br><span class="line">        base = &#123;<span class="string">&quot;id&quot;</span>: <span class="number">1</span>, <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Ada&quot;</span>&#125;</span><br><span class="line">        base.update(kwargs)</span><br><span class="line">        <span class="keyword">return</span> base</span><br><span class="line">    <span class="keyword">return</span> _make</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_factory</span>(<span class="params">make_user</span>):</span><br><span class="line">    <span class="keyword">assert</span> make_user(name=<span class="string">&quot;Bob&quot;</span>)[<span class="string">&quot;name&quot;</span>] == <span class="string">&quot;Bob&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@pytest.fixture(<span class="params">params=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], ids=[<span class="string">&quot;one&quot;</span>, <span class="string">&quot;two&quot;</span>, <span class="string">&quot;three&quot;</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">number</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="keyword">return</span> request.param</span><br></pre></td></tr></table></figure>
+
+<p><code>usefixtures(&quot;fx&quot;)</code>：类或函数需要 fixture 但不想写参数时可用。</p>
+<h3 id="3-4-依赖链"><a href="#3-4-依赖链" class="headerlink" title="3.4 依赖链"></a>3.4 依赖链</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@pytest.fixture</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">token</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;tok-xxx&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@pytest.fixture</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">product</span>(<span class="params">token</span>):</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;id&quot;</span>: <span class="number">1</span>, <span class="string">&quot;token&quot;</span>: token&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_order</span>(<span class="params">product</span>):</span><br><span class="line">    <span class="keyword">assert</span> product[<span class="string">&quot;id&quot;</span>] == <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-parametrize"><a href="#3-5-parametrize" class="headerlink" title="3.5 parametrize"></a>3.5 parametrize</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@pytest.mark.parametrize(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="meta">    <span class="string">&quot;a,b,expected&quot;</span>,</span></span></span><br><span class="line"><span class="params"><span class="meta">    [</span></span></span><br><span class="line"><span class="params"><span class="meta">        (<span class="params"><span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span></span>),</span></span></span><br><span class="line"><span class="params"><span class="meta">        (<span class="params"><span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span></span>),</span></span></span><br><span class="line"><span class="params"><span class="meta">        pytest.param(<span class="params"><span class="number">1</span>, <span class="string">&quot;x&quot;</span>, <span class="literal">None</span>, marks=pytest.mark.xfail(<span class="params">raises=TypeError</span>)</span>),</span></span></span><br><span class="line"><span class="params"><span class="meta">    ],</span></span></span><br><span class="line"><span class="params"><span class="meta">    ids=[<span class="string">&quot;pos&quot;</span>, <span class="string">&quot;zero&quot;</span>, <span class="string">&quot;type-error&quot;</span>],</span></span></span><br><span class="line"><span class="params"><span class="meta"></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_add_cases</span>(<span class="params">a, b, expected</span>):</span><br><span class="line">    <span class="keyword">if</span> expected <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">with</span> pytest.raises(TypeError):</span><br><span class="line">            add(a, b)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">assert</span> add(a, b) == expected</span><br></pre></td></tr></table></figure>
+
+<p>多组 <code>@parametrize</code> 会做笛卡尔积——先等价类边界（基础篇 §4），再控制规模。<br>间接参数化：<code>indirect=[&quot;fixture_name&quot;]</code> 把参数喂给 fixture。</p>
+<h3 id="3-6-Mark"><a href="#3-6-Mark" class="headerlink" title="3.6 Mark"></a>3.6 Mark</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@pytest.mark.slow</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_heavy</span>():</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"><span class="meta">@pytest.mark.skip(<span class="params">reason=<span class="string">&quot;待环境&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_need_vpn</span>():</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"><span class="meta">@pytest.mark.xfail(<span class="params">reason=<span class="string">&quot;已知 #123&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_known_bug</span>():</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pytest -m <span class="string">&quot;not slow and not integration&quot;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-内置-fixture-与异常断言"><a href="#4-内置-fixture-与异常断言" class="headerlink" title="4. 内置 fixture 与异常断言"></a>4. 内置 fixture 与异常断言</h2><table>
+<thead>
+<tr>
+<th>fixture</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>tmp_path</code> &#x2F; <code>tmp_path_factory</code></td>
+<td>临时目录</td>
+</tr>
+<tr>
+<td><code>monkeypatch</code></td>
+<td>改环境变量、字典、属性，自动还原</td>
+</tr>
+<tr>
+<td><code>capsys</code> &#x2F; <code>capfd</code></td>
+<td>捕获 stdout&#x2F;stderr</td>
+</tr>
+<tr>
+<td><code>recwarn</code></td>
+<td>捕获 warning</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">test_print</span>(<span class="params">capsys</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;hi&quot;</span>)</span><br><span class="line">    <span class="keyword">assert</span> <span class="string">&quot;hi&quot;</span> <span class="keyword">in</span> capsys.readouterr().out</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_env</span>(<span class="params">monkeypatch</span>):</span><br><span class="line">    monkeypatch.setenv(<span class="string">&quot;TOKEN&quot;</span>, <span class="string">&quot;x&quot;</span>)</span><br><span class="line">    monkeypatch.delenv(<span class="string">&quot;NOISE&quot;</span>, raising=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+
+<p>异常：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> pytest.raises(ValueError, <span class="keyword">match</span>=<span class="string">&quot;invalid&quot;</span>):</span><br><span class="line">    parse(<span class="string">&quot;&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-pytest-cov"><a href="#5-pytest-cov" class="headerlink" title="5. pytest-cov"></a>5. pytest-cov</h2><h3 id="5-1-用法"><a href="#5-1-用法" class="headerlink" title="5.1 用法"></a>5.1 用法</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pytest --cov=mypkg --cov-report=term-missing</span><br><span class="line">pytest --cov=mypkg --cov-report=html</span><br><span class="line">pytest --cov=mypkg --cov-fail-under=80</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[tool.coverage.run]</span></span><br><span class="line"><span class="attr">source</span> = [<span class="string">&quot;mypkg&quot;</span>]</span><br><span class="line"><span class="attr">branch</span> = <span class="literal">true</span></span><br><span class="line"><span class="attr">omit</span> = [<span class="string">&quot;*/tests/*&quot;</span>, <span class="string">&quot;*/migrations/*&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="section">[tool.coverage.report]</span></span><br><span class="line"><span class="attr">fail_under</span> = <span class="number">80</span></span><br><span class="line"><span class="attr">show_missing</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p><code>branch = true</code> 打开分支覆盖，比单纯行覆盖更能发现「只走一侧 if」。</p>
+<h3 id="5-2-能说明-不能说明"><a href="#5-2-能说明-不能说明" class="headerlink" title="5.2 能说明 &#x2F; 不能说明"></a>5.2 能说明 &#x2F; 不能说明</h3><table>
+<thead>
+<tr>
+<th>能说明</th>
+<th>不能说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>行&#x2F;分支是否执行</td>
+<td>断言是否有意义</td>
+</tr>
+<tr>
+<td>哪些路径未走进</td>
+<td>并发与真实依赖正确性</td>
+</tr>
+</tbody></table>
+<p>并行（xdist）时注意 coverage 合并配置，避免报告失真。本地与 CI 的 <code>source</code>&#x2F;<code>omit</code>&#x2F;<code>fail_under</code> 应一致。</p>
+<h3 id="5-3-工程口径"><a href="#5-3-工程口径" class="headerlink" title="5.3 工程口径"></a>5.3 工程口径</h3><p>防回退，不追求虚荣 100%；优先补业务与错误分支；生成代码 omit。</p>
+<hr>
+<h2 id="6-Mock（依赖隔离）"><a href="#6-Mock（依赖隔离）" class="headerlink" title="6. Mock（依赖隔离）"></a>6. Mock（依赖隔离）</h2><p>术语对齐：<a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">基础篇 §6 替身谱系</a>。</p>
+<h3 id="6-1-优先依赖注入"><a href="#6-1-优先依赖注入" class="headerlink" title="6.1 优先依赖注入"></a>6.1 优先依赖注入</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> unittest.mock <span class="keyword">import</span> MagicMock</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_get_user_name</span>():</span><br><span class="line">    fake_client = MagicMock()</span><br><span class="line">    fake_client.fetch.return_value = &#123;<span class="string">&quot;id&quot;</span>: <span class="number">1</span>, <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Ada&quot;</span>&#125;</span><br><span class="line">    svc = UserService(client=fake_client)</span><br><span class="line">    <span class="keyword">assert</span> svc.get_name(<span class="number">1</span>) == <span class="string">&quot;Ada&quot;</span></span><br><span class="line">    fake_client.fetch.assert_called_once_with(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-return-value-side-effect-spec"><a href="#6-2-return-value-side-effect-spec" class="headerlink" title="6.2 return_value &#x2F; side_effect &#x2F; spec"></a>6.2 return_value &#x2F; side_effect &#x2F; spec</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">m = MagicMock(spec=RealClient)          <span class="comment"># 限制属性，防拼写错</span></span><br><span class="line">m.fetch.return_value = &#123;<span class="string">&quot;ok&quot;</span>: <span class="literal">True</span>&#125;</span><br><span class="line">m.fetch.side_effect = [TimeoutError(), &#123;<span class="string">&quot;ok&quot;</span>: <span class="literal">True</span>&#125;]  <span class="comment"># 第一次失败第二次成功</span></span><br><span class="line">m.fetch.side_effect = TimeoutError(<span class="string">&quot;boom&quot;</span>)            <span class="comment"># 直接抛</span></span><br></pre></td></tr></table></figure>
+
+<p>常用断言：<code>assert_called_once_with</code>、<code>assert_has_calls</code>、<code>call_args</code>、<code>call_count</code>。</p>
+<h3 id="6-3-patch：使用处"><a href="#6-3-patch：使用处" class="headerlink" title="6.3 patch：使用处"></a>6.3 patch：使用处</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># service 内：from mypkg.api import fetch_user</span></span><br><span class="line"><span class="meta">@patch(<span class="params"><span class="string">&quot;mypkg.service.fetch_user&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_with_patch</span>(<span class="params">mock_fetch</span>):</span><br><span class="line">    mock_fetch.return_value = &#123;<span class="string">&quot;name&quot;</span>: <span class="string">&quot;Ada&quot;</span>&#125;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>还可用 <code>patch.object(obj, &quot;attr&quot;)</code>、<code>patch.dict(os.environ, &#123;...&#125;)</code>。<br>异步代码可用 <code>AsyncMock</code>（点到：<code>await mock_coro()</code>）。</p>
+<p>口诀：<strong>patch 导入后绑定名所在的命名空间。</strong></p>
+<h3 id="6-4-pytest-mock"><a href="#6-4-pytest-mock" class="headerlink" title="6.4 pytest-mock"></a>6.4 pytest-mock</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">test_with_mocker</span>(<span class="params">mocker</span>):</span><br><span class="line">    mock_fetch = mocker.patch(<span class="string">&quot;mypkg.service.fetch_user&quot;</span>)</span><br><span class="line">    mock_fetch.return_value = &#123;<span class="string">&quot;name&quot;</span>: <span class="string">&quot;Ada&quot;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>用例结束自动还原。简单改环境优先 <code>monkeypatch</code>；复杂调用断言用 mock。</p>
+<h3 id="6-5-该-mock-不该-mock"><a href="#6-5-该-mock-不该-mock" class="headerlink" title="6.5 该 mock &#x2F; 不该 mock"></a>6.5 该 mock &#x2F; 不该 mock</h3><table>
+<thead>
+<tr>
+<th>倾向 mock</th>
+<th>倾向真实</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第三方 HTTP &#x2F; 付费 API</td>
+<td>纯函数</td>
+</tr>
+<tr>
+<td>慢脆 DB（单元层）</td>
+<td><strong>正在测的那一层</strong></td>
+</tr>
+<tr>
+<td>时间、随机</td>
+<td>简单值对象</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-Hypothesis"><a href="#7-Hypothesis" class="headerlink" title="7. Hypothesis"></a>7. Hypothesis</h2><h3 id="7-1-最小示例"><a href="#7-1-最小示例" class="headerlink" title="7.1 最小示例"></a>7.1 最小示例</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> hypothesis <span class="keyword">import</span> given, strategies <span class="keyword">as</span> st, example, settings, assume</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@given(<span class="params">st.integers(<span class="params"></span>), st.integers(<span class="params"></span>)</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_add_commutative</span>(<span class="params">a, b</span>):</span><br><span class="line">    <span class="keyword">assert</span> add(a, b) == add(b, a)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@given(<span class="params">st.text(<span class="params">min_size=<span class="number">0</span>, max_size=<span class="number">50</span></span>)</span>)</span></span><br><span class="line"><span class="meta">@example(<span class="params"><span class="string">&quot;&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_roundtrip</span>(<span class="params">s</span>):</span><br><span class="line">    <span class="keyword">assert</span> decode(encode(s)) == s</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-策略与控制"><a href="#7-2-策略与控制" class="headerlink" title="7.2 策略与控制"></a>7.2 策略与控制</h3><ul>
+<li>常用：<code>integers</code>、<code>text</code>、<code>lists</code>、<code>dictionaries</code>、<code>sampled_from</code>、<code>builds</code>、<code>composite</code>  </li>
+<li>组合：<code>|</code>、<code>.filter()</code>、<code>flatmap</code>；用 <code>max_size</code> 控成本  </li>
+<li><code>assume(cond)</code>：过滤不满足前提的生成值（勿滥用导致有效例过少）  </li>
+<li><code>@settings(max_examples=200, deadline=None)</code>：调次数与超时</li>
+</ul>
+<p>失败会 <strong>shrink</strong>；用 <code>@example</code> 钉死反例。报告中的种子可协助复现。</p>
+<h3 id="7-3-何时用-不用"><a href="#7-3-何时用-不用" class="headerlink" title="7.3 何时用 &#x2F; 不用"></a>7.3 何时用 &#x2F; 不用</h3><table>
+<thead>
+<tr>
+<th>适合</th>
+<th>不适合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>纯函数、编解码、不变量</td>
+<td>未隔离外网</td>
+</tr>
+<tr>
+<td>脏输入探索</td>
+<td>替代全部示例测试</td>
+</tr>
+</tbody></table>
+<p>与 <code>parametrize</code>：<strong>示例讲故事，Hypothesis 搜空间。</strong></p>
+<p>Stateful testing（规则状态机）本系列点到即可，见官方文档。</p>
+<hr>
+<h2 id="8-叠用模板"><a href="#8-叠用模板" class="headerlink" title="8. 叠用模板"></a>8. 叠用模板</h2><ol>
+<li><strong>纯逻辑：</strong> 等价类&#x2F;边界 → <code>parametrize</code>；可选 <code>@given</code>。  </li>
+<li><strong>服务编排：</strong> 注入 client → <code>mocker</code> 覆盖成功&#x2F;超时&#x2F;4xx。  </li>
+<li><strong>覆盖率：</strong> <code>--cov</code> + <code>term-missing</code>，补错误分支。  </li>
+<li><strong>集成：</strong> <code>mark.integration</code>，默认 PR 不跑。</li>
+</ol>
+<hr>
+<h2 id="9-做什么-不做什么"><a href="#9-做什么-不做什么" class="headerlink" title="9. 做什么 &#x2F; 不做什么"></a>9. 做什么 &#x2F; 不做什么</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>做</th>
+<th>不做</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pytest</td>
+<td>发现、组织、断言、插件</td>
+<td>替代用例设计思维</td>
+</tr>
+<tr>
+<td>fixture</td>
+<td>生命周期与注入</td>
+<td>塞业务断言</td>
+</tr>
+<tr>
+<td>cov</td>
+<td>执行痕迹与防回退</td>
+<td>证明正确性</td>
+</tr>
+<tr>
+<td>mock</td>
+<td>隔离外部依赖</td>
+<td>mock 被测逻辑本身</td>
+</tr>
+<tr>
+<td>Hypothesis</td>
+<td>性质与边界搜索</td>
+<td>未隔离的端到端</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="10-常见坑"><a href="#10-常见坑" class="headerlink" title="10. 常见坑"></a>10. 常见坑</h2><ol>
+<li>命名&#x2F;<code>__init__</code> 导致用例消失。  </li>
+<li>大 scope + 可变共享 → 污染。  </li>
+<li>顺序耦合；patch 路径错误。  </li>
+<li>弱断言 + 假高覆盖率。  </li>
+<li>Hypothesis 性质过弱&#x2F;过强；未 <code>@example</code>。  </li>
+<li>xdist 并行未隔离。</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>pytest 管发现与资源；cov 管痕迹；mock 管隔离；Hypothesis 管输入空间。设计方法回链<a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">基础篇</a>。</p>
+<p><strong>下一步：</strong> <a href="/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Python 自检与面试</a></p>
+<p><strong>前置：</strong> <a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">软件测试基础与工程实践</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B5%8B%E8%AF%95/" rel="tag"># 测试</a>
+              <a href="/tags/pytest/" rel="tag"># pytest</a>
+              <a href="/tags/mock/" rel="tag"># mock</a>
+              <a href="/tags/Hypothesis/" rel="tag"># Hypothesis</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/" rel="prev" title="测试框架学习-软件测试基础与工程实践">
+                  <i class="fa fa-angle-left"></i> 测试框架学习-软件测试基础与工程实践
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/" rel="next" title="测试框架学习-Python自检与面试">
+                  测试框架学习-Python自检与面试 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"sdu-pjliu.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"github","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Python 测试工具链自检与面试导向问答；覆盖 pytest、覆盖率、mock 与 Hypothesis。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="测试框架学习-Python自检与面试">
+<meta property="og:url" content="https://sdu-pjliu.github.io/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/index.html">
+<meta property="og:site_name" content="我的记录小站">
+<meta property="og:description" content="Python 测试工具链自检与面试导向问答；覆盖 pytest、覆盖率、mock 与 Hypothesis。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-31T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-20T06:17:18.744Z">
+<meta property="article:author" content="Sdu-pjLiu">
+<meta property="article:tag" content="测试">
+<meta property="article:tag" content="pytest">
+<meta property="article:tag" content="面试">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://sdu-pjliu.github.io/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://sdu-pjliu.github.io/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/","path":"/2026/09/15/测试框架学习-Python自检与面试/","title":"测试框架学习-Python自检与面试"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>测试框架学习-Python自检与面试 | 我的记录小站</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">我的记录小站</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">旅途总有一天会走到终点，不必匆忙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-计算机"><a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" rel="section"><i class="fa fa-laptop fa-fw"></i>计算机</a></li><li class="menu-item menu-item-阅读"><a href="/categories/%E9%98%85%E8%AF%BB/" rel="section"><i class="fa fa-book fa-fw"></i>阅读</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">0. 使用说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AD%A6%E4%B9%A0%E8%87%AA%E6%A3%80"><span class="nav-number">2.</span> <span class="nav-text">1. 学习自检</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%8F%91%E7%8E%B0%E8%A7%84%E5%88%99%E3%80%81%E5%B8%83%E5%B1%80%E4%B8%8E%E7%8B%AC%E7%AB%8B%E6%80%A7"><span class="nav-number">2.1.</span> <span class="nav-text">1.1 发现规则、布局与独立性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S1-pytest-%E9%BB%98%E8%AE%A4%E5%A6%82%E4%BD%95%E5%8F%91%E7%8E%B0%E6%B5%8B%E8%AF%95%EF%BC%9F%E7%B1%BB%E4%B8%8A%E5%86%99-init-%E4%BC%9A%E6%80%8E%E6%A0%B7%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">S1. pytest 默认如何发现测试？类上写 __init__ 会怎样？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S2-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BC%BA%E8%B0%83%E7%94%A8%E4%BE%8B%E7%8B%AC%E7%AB%8B%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E9%9D%A0%E5%9B%BA%E5%AE%9A%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%E4%B8%B2%E4%B8%9A%E5%8A%A1%E6%B5%81%E7%A8%8B%EF%BC%9F"><span class="nav-number">2.3.</span> <span class="nav-text">S2. 为什么强调用例独立，而不是靠固定执行顺序串业务流程？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S3-conftest-py-%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%9A%E5%B8%B8%E4%B8%8D%E7%94%A8%E6%98%BE%E5%BC%8F-import%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">S3. conftest.py 解决什么问题？为什么通常不用显式 import？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Fixture%E3%80%81%E5%8F%82%E6%95%B0%E5%8C%96%E4%B8%8E-Mark"><span class="nav-number">2.5.</span> <span class="nav-text">1.2 Fixture、参数化与 Mark</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S4-fixture-%E5%9B%9B%E7%A7%8D%E5%B8%B8%E8%A7%81-scope-%E5%A6%82%E4%BD%95%E9%80%89%E5%9E%8B%EF%BC%9F%E4%B8%BE%E4%B8%80%E6%AD%A3%E4%B8%80%E5%8F%8D%E4%BE%8B%E3%80%82"><span class="nav-number">2.6.</span> <span class="nav-text">S4. fixture 四种常见 scope 如何选型？举一正一反例。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S5-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%8E%A8%E8%8D%90-yield-fixture%EF%BC%9F%E5%A4%B1%E8%B4%A5%E6%97%B6-teardown-%E8%BF%98%E4%BC%9A%E8%B7%91%E5%90%97%EF%BC%9F"><span class="nav-number">2.7.</span> <span class="nav-text">S5. 为什么推荐 yield fixture？失败时 teardown 还会跑吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S6-pytest-mark-parametrize-%E7%9A%84%E5%B7%A5%E7%A8%8B%E4%BB%B7%E5%80%BC%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E7%BB%84%E5%90%88%E7%88%86%E7%82%B8%EF%BC%9F"><span class="nav-number">2.8.</span> <span class="nav-text">S6. @pytest.mark.parametrize 的工程价值是什么？如何避免组合爆炸？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S7-skip%E3%80%81xfail%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89-mark-%E5%90%84%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.9.</span> <span class="nav-text">S7. skip、xfail、自定义 mark 各解决什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E8%A6%86%E7%9B%96%E7%8E%87"><span class="nav-number">2.10.</span> <span class="nav-text">1.3 覆盖率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S8-%E8%A1%8C%E8%A6%86%E7%9B%96%E7%8E%87-90-%E8%83%BD%E5%90%A6%E8%AF%B4%E6%98%8E%E8%B4%A8%E9%87%8F%E5%A4%9F%E5%A5%BD%EF%BC%9F%E4%BD%A0%E4%BC%9A%E6%80%8E%E4%B9%88%E5%90%91%E9%9D%A2%E8%AF%95%E5%AE%98%E8%A7%A3%E9%87%8A%EF%BC%9F"><span class="nav-number">2.11.</span> <span class="nav-text">S8. 行覆盖率 90% 能否说明质量够好？你会怎么向面试官解释？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S9-%E9%85%8D%E7%BD%AE-source-omit-%E7%9A%84%E7%9B%AE%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.12.</span> <span class="nav-text">S9. 配置 source &#x2F; omit 的目的是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-Mock"><span class="nav-number">2.13.</span> <span class="nav-text">1.4 Mock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S10-patch-%E5%BA%94%E8%AF%A5%E6%89%93%E5%9C%A8%E5%AE%9A%E4%B9%89%E5%A4%84%E8%BF%98%E6%98%AF%E4%BD%BF%E7%94%A8%E5%A4%84%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.14.</span> <span class="nav-text">S10. patch 应该打在定义处还是使用处？为什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S11-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E4%B8%8E%E5%88%B0%E5%A4%84-patch%EF%BC%8C%E4%BD%A0%E5%A6%82%E4%BD%95%E5%8F%96%E8%88%8D%EF%BC%9F"><span class="nav-number">2.15.</span> <span class="nav-text">S11. 依赖注入与到处 patch，你如何取舍？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S12-pytest-mock-%E7%9A%84-mocker-%E7%9B%B8%E5%AF%B9%E6%89%8B%E5%86%99-patch-%E5%A4%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.16.</span> <span class="nav-text">S12. pytest-mock 的 mocker 相对手写 patch 多了什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5-Hypothesis"><span class="nav-number">2.17.</span> <span class="nav-text">1.5 Hypothesis</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S13-%E5%B1%9E%E6%80%A7%E6%B5%8B%E8%AF%95%E4%B8%8E-parametrize-%E7%A4%BA%E4%BE%8B%E6%B5%8B%E8%AF%95%E5%A6%82%E4%BD%95%E5%88%86%E5%B7%A5%EF%BC%9F"><span class="nav-number">2.18.</span> <span class="nav-text">S13. 属性测试与 parametrize 示例测试如何分工？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S14-%E5%8F%91%E7%8E%B0%E5%A4%B1%E8%B4%A5%E5%90%8E%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8-example%EF%BC%9F"><span class="nav-number">2.19.</span> <span class="nav-text">S14. 发现失败后为什么要用 @example？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S15-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%B8%8D%E8%AF%A5%E4%B8%8A-Hypothesis%EF%BC%9F"><span class="nav-number">2.20.</span> <span class="nav-text">S15. 什么时候不该上 Hypothesis？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-6-%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5%E4%B8%8E%E5%B7%A5%E5%85%B7%E7%BB%86%E8%8A%82"><span class="nav-number">2.21.</span> <span class="nav-text">1.6 基础概念与工具细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S16-%E3%80%8C%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E3%80%81%E8%BE%B9%E7%95%8C%E6%B5%8B%E8%AF%95%E3%80%81AB-Test%E3%80%8D%E6%98%AF%E4%B8%80%E7%B1%BB%E4%B8%9C%E8%A5%BF%E5%90%97%EF%BC%9F"><span class="nav-number">2.22.</span> <span class="nav-text">S16. 「单元测试、边界测试、AB Test」是一类东西吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S17-%E7%AD%89%E4%BB%B7%E7%B1%BB%E4%B8%8E%E8%BE%B9%E7%95%8C%E5%80%BC%E5%A6%82%E4%BD%95%E8%90%BD%E5%88%B0-parametrize%EF%BC%9F"><span class="nav-number">2.23.</span> <span class="nav-text">S17. 等价类与边界值如何落到 parametrize？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S18-stub%E3%80%81mock%E3%80%81fake-%E5%9C%A8-pytest-%E5%AE%9E%E8%B7%B5%E9%87%8C%E6%80%8E%E4%B9%88%E5%AF%B9%E5%BA%94%EF%BC%9F"><span class="nav-number">2.24.</span> <span class="nav-text">S18. stub、mock、fake 在 pytest 实践里怎么对应？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S19-lf-ff-%E4%B8%8E-x-%E5%90%84%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E5%B7%A5%E7%A8%8B%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">2.25.</span> <span class="nav-text">S19. --lf &#x2F; --ff 与 -x 各解决什么工程问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S20-side-effect-%E9%80%82%E5%90%88%E6%A8%A1%E6%8B%9F%E5%93%AA%E4%BA%9B%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="nav-number">2.26.</span> <span class="nav-text">S20. side_effect 适合模拟哪些场景？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#S21-%E5%88%86%E6%94%AF%E8%A6%86%E7%9B%96%E6%AF%94%E8%A1%8C%E8%A6%86%E7%9B%96%E5%A4%9A%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="nav-number">2.27.</span> <span class="nav-text">S21. 分支覆盖比行覆盖多解决什么问题？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E9%9D%A2%E8%AF%95%E7%9C%9F%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">2. 面试真题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I1-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%9B%A2%E9%98%9F%E7%94%A8-pytest-%E8%80%8C%E4%B8%8D%E6%98%AF%E5%8F%AA%E7%94%A8-unittest%EF%BC%9F"><span class="nav-number">3.1.</span> <span class="nav-text">I1. 为什么团队用 pytest 而不是只用 unittest？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I2-%E8%AF%B7%E8%A7%A3%E9%87%8A-fixture%EF%BC%8C%E5%B9%B6%E8%AF%B4%E6%98%8E-function-%E4%B8%8E-session-%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%80%8E%E4%B9%88%E9%80%89%E3%80%82"><span class="nav-number">3.2.</span> <span class="nav-text">I2. 请解释 fixture，并说明 function 与 session 作用域怎么选。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I3-yield-%E5%89%8D%E5%90%8E%E5%88%86%E5%88%AB%E5%81%9A%E4%BB%80%E4%B9%88%EF%BC%9F%E7%94%A8%E4%BE%8B%E5%A4%B1%E8%B4%A5%E6%97%B6%E6%B8%85%E7%90%86%E8%BF%98%E4%BC%9A%E6%89%A7%E8%A1%8C%E5%90%97%EF%BC%9F"><span class="nav-number">3.3.</span> <span class="nav-text">I3. yield 前后分别做什么？用例失败时清理还会执行吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I4-%E6%8E%A5%E5%8F%A3%E8%87%AA%E5%8A%A8%E5%8C%96%E9%87%8C-Token%E3%80%81%E4%B8%8B%E5%8D%95%E6%9C%89%E4%BE%9D%E8%B5%96%EF%BC%8C%E4%BD%A0%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E3%80%8C%E5%BF%85%E9%A1%BB%E5%85%88%E8%B7%91%E7%99%BB%E5%BD%95%E7%94%A8%E4%BE%8B%E3%80%8D%EF%BC%9F"><span class="nav-number">3.4.</span> <span class="nav-text">I4. 接口自动化里 Token、下单有依赖，你如何避免「必须先跑登录用例」？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I5-parametrize-%E6%80%8E%E4%B9%88%E8%AE%B2%E6%89%8D%E5%83%8F%E7%94%A8%E8%BF%87%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E8%83%8C%E8%A3%85%E9%A5%B0%E5%99%A8%EF%BC%9F"><span class="nav-number">3.5.</span> <span class="nav-text">I5. parametrize 怎么讲才像用过，而不是背装饰器？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I6-conftest-%E6%94%BE%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%8D%E6%94%BE%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.6.</span> <span class="nav-text">I6. conftest 放什么？不放什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I7-%E5%A6%82%E4%BD%95-mock-%E5%A4%96%E9%83%A8-HTTP-DB%EF%BC%8C%E4%BF%9D%E8%AF%81%E5%8F%AF%E9%87%8D%E5%A4%8D%EF%BC%9F"><span class="nav-number">3.7.</span> <span class="nav-text">I7. 如何 mock 外部 HTTP&#x2F;DB，保证可重复？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I8-%E8%A6%86%E7%9B%96%E7%8E%87%E5%9C%A8-CI-%E9%87%8C%E6%80%8E%E4%B9%88%E7%94%A8%E6%89%8D%E5%90%88%E7%90%86%EF%BC%9F"><span class="nav-number">3.8.</span> <span class="nav-text">I8. 覆盖率在 CI 里怎么用才合理？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I9-%E5%A4%A7%E8%A7%84%E6%A8%A1%E7%94%A8%E4%BE%8B%E9%9B%86%E5%A6%82%E4%BD%95%E5%88%86%E5%B1%82%E8%B7%91%EF%BC%9F"><span class="nav-number">3.9.</span> <span class="nav-text">I9. 大规模用例集如何分层跑？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I10-%E4%BB%80%E4%B9%88%E6%98%AF%E5%B1%9E%E6%80%A7%E6%B5%8B%E8%AF%95%EF%BC%9F%E5%92%8C%E6%99%AE%E9%80%9A%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E6%AF%94%E4%BC%98%E5%8A%BF%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="nav-number">3.10.</span> <span class="nav-text">I10. 什么是属性测试？和普通单元测试比优势在哪？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I11-%E7%BC%96%E7%A0%81-%E8%A7%A3%E7%A0%81%E5%87%BD%E6%95%B0%E4%BD%A0%E4%BC%9A%E7%94%A8-Hypothesis-%E6%B5%8B%E5%93%AA%E4%BA%9B%E6%80%A7%E8%B4%A8%EF%BC%9F"><span class="nav-number">3.11.</span> <span class="nav-text">I11. 编码&#x2F;解码函数你会用 Hypothesis 测哪些性质？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I12-mock-%E8%BF%87%E5%A4%9A%E5%AF%BC%E8%87%B4%E9%87%8D%E6%9E%84%E5%85%A8%E7%BA%A2%EF%BC%8C%E4%BD%A0%E6%80%8E%E4%B9%88%E6%94%B9%E8%BF%9B%EF%BC%9F"><span class="nav-number">3.12.</span> <span class="nav-text">I12. mock 过多导致重构全红，你怎么改进？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I13-%E8%AF%B7%E7%94%A8%E4%B8%80%E5%88%86%E9%92%9F%E8%AE%B2%E6%B8%85%E6%B5%8B%E8%AF%95%E9%87%91%E5%AD%97%E5%A1%94%EF%BC%8C%E4%BB%A5%E5%8F%8A%E4%BD%A0%E4%BB%AC%E5%8D%95%E6%B5%8B%E6%94%BE%E5%93%AA%E4%B8%80%E5%B1%82%E3%80%82"><span class="nav-number">3.13.</span> <span class="nav-text">I13. 请用一分钟讲清测试金字塔，以及你们单测放哪一层。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I14-assume-%E5%9C%A8-Hypothesis-%E9%87%8C%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.14.</span> <span class="nav-text">I14. assume 在 Hypothesis 里要注意什么？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E9%9D%A2%E7%BB%8F%E4%B8%8E%E9%A2%98%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">参考面经与题库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%AF%BC%E8%88%AA"><span class="nav-number">5.</span> <span class="nav-text">3. 导航</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Sdu-pjLiu</p>
+  <div class="site-description" itemprop="description">学习小记</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">93</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://sdu-pjliu.github.io/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sdu-pjLiu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我的记录小站">
+      <meta itemprop="description" content="学习小记">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="测试框架学习-Python自检与面试 | 我的记录小站">
+      <meta itemprop="description" content="Python 测试工具链自检与面试导向问答；覆盖 pytest、覆盖率、mock 与 Hypothesis。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          测试框架学习-Python自检与面试
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-31 10:00:00" itemprop="dateCreated datePublished" datetime="2026-07-31T10:00:00+08:00">2026-07-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-20 14:17:18" itemprop="dateModified" datetime="2026-08-20T14:17:18+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA/" itemprop="url" rel="index"><span itemprop="name">计算机</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Python 测试工具链自检与面试导向问答；覆盖 pytest、覆盖率、mock 与 Hypothesis。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>完成 <a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">软件测试基础</a> 与 <a href="/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Python 测试工具链</a> 后，重点不是背装饰器名，而是能讲清用例设计、资源生命周期、隔离边界与覆盖率含义。本篇用自检题查漏补缺，再用公开面经中的高频追问训练工程表达。</p>
+<span id="more"></span>
+<h2 id="0-使用说明"><a href="#0-使用说明" class="headerlink" title="0. 使用说明"></a>0. 使用说明</h2><p>建议先遮住「推荐回答」，在 60～120 秒内口述：</p>
+<ol>
+<li>先给结论，再讲机制（fixture 作用域、patch 路径、性质定义）。</li>
+<li>点出失败模式：状态污染、假高覆盖率、过度 mock。</li>
+<li>补充你会怎么落地（conftest、依赖注入、<code>fail_under</code>、<code>@example</code>）。</li>
+<li>若只能说出 API 名，说不出何时不用，视为尚未掌握。</li>
+</ol>
+<hr>
+<h2 id="1-学习自检"><a href="#1-学习自检" class="headerlink" title="1. 学习自检"></a>1. 学习自检</h2><h3 id="1-1-发现规则、布局与独立性"><a href="#1-1-发现规则、布局与独立性" class="headerlink" title="1.1 发现规则、布局与独立性"></a>1.1 发现规则、布局与独立性</h3><h3 id="S1-pytest-默认如何发现测试？类上写-init-会怎样？"><a href="#S1-pytest-默认如何发现测试？类上写-init-会怎样？" class="headerlink" title="S1. pytest 默认如何发现测试？类上写 __init__ 会怎样？"></a>S1. pytest 默认如何发现测试？类上写 <code>__init__</code> 会怎样？</h3><p><strong>推荐回答：</strong> 默认收集 <code>test_*.py</code> &#x2F; <code>*_test.py</code> 中的 <code>test_*</code> 函数，以及无 <code>__init__</code> 的 <code>Test*</code> 类中的 <code>test_*</code> 方法。测试类若定义 <code>__init__</code>，该类下用例通常不会被收集。命名或布局不符合约定时，表现为「用例消失」而非报错，排障应先看收集列表（如 <code>pytest --collect-only</code>）。</p>
+<h3 id="S2-为什么强调用例独立，而不是靠固定执行顺序串业务流程？"><a href="#S2-为什么强调用例独立，而不是靠固定执行顺序串业务流程？" class="headerlink" title="S2. 为什么强调用例独立，而不是靠固定执行顺序串业务流程？"></a>S2. 为什么强调用例独立，而不是靠固定执行顺序串业务流程？</h3><p><strong>推荐回答：</strong> 收集顺序、并行（xdist）、单测筛选都会打乱顺序；顺序耦合会导致偶发红与不可单独复现。流程依赖应下沉为 fixture 依赖链（如 <code>token</code> → <code>product</code> → <code>order</code>），由 pytest 保证准备顺序，并用 teardown 清理，而不是 <code>test_a</code> 写库、<code>test_b</code> 默认读到同一状态。</p>
+<h3 id="S3-conftest-py-解决什么问题？为什么通常不用显式-import？"><a href="#S3-conftest-py-解决什么问题？为什么通常不用显式-import？" class="headerlink" title="S3. conftest.py 解决什么问题？为什么通常不用显式 import？"></a>S3. <code>conftest.py</code> 解决什么问题？为什么通常不用显式 import？</h3><p><strong>推荐回答：</strong> 放置同目录及子目录共享的 fixture、hook 与本地插件注册；pytest 自动加载，避免每个测试文件重复 import 与循环依赖。它不是业务包的一部分，而是测试支撑面。全局过重的 session 资源仍要谨慎，避免隐式耦合。</p>
+<h3 id="1-2-Fixture、参数化与-Mark"><a href="#1-2-Fixture、参数化与-Mark" class="headerlink" title="1.2 Fixture、参数化与 Mark"></a>1.2 Fixture、参数化与 Mark</h3><h3 id="S4-fixture-四种常见-scope-如何选型？举一正一反例。"><a href="#S4-fixture-四种常见-scope-如何选型？举一正一反例。" class="headerlink" title="S4. fixture 四种常见 scope 如何选型？举一正一反例。"></a>S4. fixture 四种常见 scope 如何选型？举一正一反例。</h3><p><strong>推荐回答：</strong> <code>function</code> 默认，适合临时目录、易变数据；<code>class</code>&#x2F;<code>module</code> 适合昂贵但只读的准备；<code>session</code> 适合进程级连接或全局配置。正例：DB 引擎 <code>session</code> 建一次，每用例用 <code>function</code> 级事务回滚。反例：<code>session</code> 返回可变列表且无重置，导致用例间污染。</p>
+<h3 id="S5-为什么推荐-yield-fixture？失败时-teardown-还会跑吗？"><a href="#S5-为什么推荐-yield-fixture？失败时-teardown-还会跑吗？" class="headerlink" title="S5. 为什么推荐 yield fixture？失败时 teardown 还会跑吗？"></a>S5. 为什么推荐 <code>yield</code> fixture？失败时 teardown 还会跑吗？</h3><p><strong>推荐回答：</strong> <code>yield</code> 前 setup、后 teardown，把生命周期写在同一处；用例失败时 teardown 仍会执行，降低泄漏连接、临时文件的概率。若只在测试末尾手写清理，断言失败可能跳过清理。</p>
+<h3 id="S6-pytest-mark-parametrize-的工程价值是什么？如何避免组合爆炸？"><a href="#S6-pytest-mark-parametrize-的工程价值是什么？如何避免组合爆炸？" class="headerlink" title="S6. @pytest.mark.parametrize 的工程价值是什么？如何避免组合爆炸？"></a>S6. <code>@pytest.mark.parametrize</code> 的工程价值是什么？如何避免组合爆炸？</h3><p><strong>推荐回答：</strong> 同一断言逻辑覆盖多组输入，数据与逻辑分离，报告中可按参数行定位。应先覆盖等价类与边界（空、零、负数、非法），再用 <code>pytest.param(..., marks=...)</code> 处理个别跳过；不要无脑笛卡尔积。可读性可用 <code>ids=</code> 改善。</p>
+<h3 id="S7-skip、xfail、自定义-mark-各解决什么？"><a href="#S7-skip、xfail、自定义-mark-各解决什么？" class="headerlink" title="S7. skip、xfail、自定义 mark 各解决什么？"></a>S7. <code>skip</code>、<code>xfail</code>、自定义 mark 各解决什么？</h3><p><strong>推荐回答：</strong> <code>skip</code> 明确不跑（缺环境）；<code>xfail</code> 记录已知失败，修复后应变绿或调整；自定义 mark（如 <code>slow</code>）配合 <code>-m</code> 做分层回归。mark 应在配置中注册，避免拼写静默失效。</p>
+<h3 id="1-3-覆盖率"><a href="#1-3-覆盖率" class="headerlink" title="1.3 覆盖率"></a>1.3 覆盖率</h3><h3 id="S8-行覆盖率-90-能否说明质量够好？你会怎么向面试官解释？"><a href="#S8-行覆盖率-90-能否说明质量够好？你会怎么向面试官解释？" class="headerlink" title="S8. 行覆盖率 90% 能否说明质量够好？你会怎么向面试官解释？"></a>S8. 行覆盖率 90% 能否说明质量够好？你会怎么向面试官解释？</h3><p><strong>推荐回答：</strong> 不能。覆盖率只说明代码被执行过，不说明断言有效、并发正确或真实依赖行为正确。假高覆盖常见于「调用但不断言」或只测 happy path。工程上用 <code>term-missing</code> 补关键分支，设合理 <code>fail_under</code> 防回退，并强调错误路径与合同断言。</p>
+<h3 id="S9-配置-source-omit-的目的是什么？"><a href="#S9-配置-source-omit-的目的是什么？" class="headerlink" title="S9. 配置 source &#x2F; omit 的目的是什么？"></a>S9. 配置 <code>source</code> &#x2F; <code>omit</code> 的目的是什么？</h3><p><strong>推荐回答：</strong> 把统计收窄到业务包，排除测试、venv、生成代码，避免数字被噪音稀释或虚高。本地与 CI 配置应一致，否则门槛行为不一致。</p>
+<h3 id="1-4-Mock"><a href="#1-4-Mock" class="headerlink" title="1.4 Mock"></a>1.4 Mock</h3><h3 id="S10-patch-应该打在定义处还是使用处？为什么？"><a href="#S10-patch-应该打在定义处还是使用处？为什么？" class="headerlink" title="S10. patch 应该打在定义处还是使用处？为什么？"></a>S10. patch 应该打在定义处还是使用处？为什么？</h3><p><strong>推荐回答：</strong> 通常打在 <strong>被测模块已绑定的名字</strong>（使用处导入后的命名空间）。若 <code>service.py</code> 写了 <code>from api import fetch</code>，应 patch <code>service.fetch</code>。打错路径会导致真实调用仍发生或补丁无效，这是高频踩坑。</p>
+<h3 id="S11-依赖注入与到处-patch，你如何取舍？"><a href="#S11-依赖注入与到处-patch，你如何取舍？" class="headerlink" title="S11. 依赖注入与到处 patch，你如何取舍？"></a>S11. 依赖注入与到处 patch，你如何取舍？</h3><p><strong>推荐回答：</strong> 可测设计优先构造注入（传入 client&#x2F;repo），测试塞 fake&#x2F;mock，重构更稳。遗留代码或模块级单例不得已再用 patch&#x2F;<code>mocker</code>。过度 mock 实现细节会使测试脆、与行为脱节。</p>
+<h3 id="S12-pytest-mock-的-mocker-相对手写-patch-多了什么？"><a href="#S12-pytest-mock-的-mocker-相对手写-patch-多了什么？" class="headerlink" title="S12. pytest-mock 的 mocker 相对手写 patch 多了什么？"></a>S12. <code>pytest-mock</code> 的 <code>mocker</code> 相对手写 <code>patch</code> 多了什么？</h3><p><strong>推荐回答：</strong> 提供统一 fixture，用例结束自动撤销补丁，减少漏还原；API 与 <code>unittest.mock</code> 一致，学习成本低。简单改环境变量也可用内置 <code>monkeypatch</code>。</p>
+<h3 id="1-5-Hypothesis"><a href="#1-5-Hypothesis" class="headerlink" title="1.5 Hypothesis"></a>1.5 Hypothesis</h3><h3 id="S13-属性测试与-parametrize-示例测试如何分工？"><a href="#S13-属性测试与-parametrize-示例测试如何分工？" class="headerlink" title="S13. 属性测试与 parametrize 示例测试如何分工？"></a>S13. 属性测试与 <code>parametrize</code> 示例测试如何分工？</h3><p><strong>推荐回答：</strong> 示例测试表达明确业务故事与回归钉死；Hypothesis 用性质（交换律、round-trip、不变量）在输入空间搜索并 shrink 反例。二者互补：不删掉可读用例，也不指望性质测试单独讲清产品需求。</p>
+<h3 id="S14-发现失败后为什么要用-example？"><a href="#S14-发现失败后为什么要用-example？" class="headerlink" title="S14. 发现失败后为什么要用 @example？"></a>S14. 发现失败后为什么要用 <code>@example</code>？</h3><p><strong>推荐回答：</strong> 把已缩小的反例钉进仓库，保证回归稳定复现，不依赖生成器运气。同时应修正性质或实现，避免「偶发红」。</p>
+<h3 id="S15-什么时候不该上-Hypothesis？"><a href="#S15-什么时候不该上-Hypothesis？" class="headerlink" title="S15. 什么时候不该上 Hypothesis？"></a>S15. 什么时候不该上 Hypothesis？</h3><p><strong>推荐回答：</strong> 性质说不清、强依赖未隔离的外部世界、或主要验证交互时序时，成本高且不稳定。应先把逻辑纯化为可测函数，再对纯层做属性测试。</p>
+<h3 id="1-6-基础概念与工具细节"><a href="#1-6-基础概念与工具细节" class="headerlink" title="1.6 基础概念与工具细节"></a>1.6 基础概念与工具细节</h3><h3 id="S16-「单元测试、边界测试、AB-Test」是一类东西吗？"><a href="#S16-「单元测试、边界测试、AB-Test」是一类东西吗？" class="headerlink" title="S16. 「单元测试、边界测试、AB Test」是一类东西吗？"></a>S16. 「单元测试、边界测试、AB Test」是一类东西吗？</h3><p><strong>推荐回答：</strong> 不是。单元是 <strong>分层</strong>；边界（边界值）是 <strong>用例设计方法</strong>，常写在单元&#x2F;接口层执行；AB 是 <strong>线上产品实验</strong>（分流比指标），不是 pytest 质量单测主线。详见<a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">基础篇 §1 三维对照</a>。</p>
+<h3 id="S17-等价类与边界值如何落到-parametrize？"><a href="#S17-等价类与边界值如何落到-parametrize？" class="headerlink" title="S17. 等价类与边界值如何落到 parametrize？"></a>S17. 等价类与边界值如何落到 <code>parametrize</code>？</h3><p><strong>推荐回答：</strong> 先划分等价类并取代表，再对边界（空、0、上下限±1）各补用例，最后写成 <code>parametrize</code> 的行；不要无脑笛卡尔积。框架只负责跑表，设计在<a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">基础篇 §5</a>。</p>
+<h3 id="S18-stub、mock、fake-在-pytest-实践里怎么对应？"><a href="#S18-stub、mock、fake-在-pytest-实践里怎么对应？" class="headerlink" title="S18. stub、mock、fake 在 pytest 实践里怎么对应？"></a>S18. stub、mock、fake 在 pytest 实践里怎么对应？</h3><p><strong>推荐回答：</strong> 固定 <code>return_value</code> 偏 stub；再断言 <code>assert_called_with</code> 则带 spy&#x2F;mock 色彩；手写内存实现是 fake。面试能按<a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">基础篇 §6</a>澄清即可，不必纠结商标。</p>
+<h3 id="S19-lf-ff-与-x-各解决什么工程问题？"><a href="#S19-lf-ff-与-x-各解决什么工程问题？" class="headerlink" title="S19. --lf &#x2F; --ff 与 -x 各解决什么工程问题？"></a>S19. <code>--lf</code> &#x2F; <code>--ff</code> 与 <code>-x</code> 各解决什么工程问题？</h3><p><strong>推荐回答：</strong> <code>-x</code> 首次失败即停，缩短反馈；<code>--lf</code> 只重跑上次失败，修 bug 时聚焦；<code>--ff</code> 先失败再全量，兼顾回归。本地调试常用组合，不替代绿灯全量。</p>
+<h3 id="S20-side-effect-适合模拟哪些场景？"><a href="#S20-side-effect-适合模拟哪些场景？" class="headerlink" title="S20. side_effect 适合模拟哪些场景？"></a>S20. <code>side_effect</code> 适合模拟哪些场景？</h3><p><strong>推荐回答：</strong> 依次返回多值、直接抛异常、或按调用动态计算。适合「第一次超时第二次成功」等重试路径，比多次改 <code>return_value</code> 清晰。</p>
+<h3 id="S21-分支覆盖比行覆盖多解决什么问题？"><a href="#S21-分支覆盖比行覆盖多解决什么问题？" class="headerlink" title="S21. 分支覆盖比行覆盖多解决什么问题？"></a>S21. 分支覆盖比行覆盖多解决什么问题？</h3><p><strong>推荐回答：</strong> 行覆盖可能只执行了 <code>if</code> 为真侧；分支覆盖要求各分支走过。打开 <code>branch = true</code> 更能发现假高覆盖。仍不能证明断言有效。</p>
+<hr>
+<h2 id="2-面试真题"><a href="#2-面试真题" class="headerlink" title="2. 面试真题"></a>2. 面试真题</h2><blockquote>
+<p>以下题目按主题归纳、改写自公开面经与题库，用于训练表达，并非逐题对应某一场真实面试；综合参考来源见文末「参考面经与题库」。</p>
+</blockquote>
+<h3 id="I1-为什么团队用-pytest-而不是只用-unittest？"><a href="#I1-为什么团队用-pytest-而不是只用-unittest？" class="headerlink" title="I1. 为什么团队用 pytest 而不是只用 unittest？"></a>I1. 为什么团队用 pytest 而不是只用 unittest？</h3><p><strong>推荐回答：</strong> pytest 用例写法轻（函数级即可）、原生 assert 失败信息可读、fixture 依赖注入与作用域比经典 setup&#x2F;teardown 更灵活，参数化与插件生态（cov、xdist、mock）成熟。unittest 仍可兼容收集，但新项目默认 pytest 能降低样板代码。选型应落到「共享资源怎么管、数据驱动怎么写」，而不是潮流。</p>
+<h3 id="I2-请解释-fixture，并说明-function-与-session-作用域怎么选。"><a href="#I2-请解释-fixture，并说明-function-与-session-作用域怎么选。" class="headerlink" title="I2. 请解释 fixture，并说明 function 与 session 作用域怎么选。"></a>I2. 请解释 fixture，并说明 function 与 session 作用域怎么选。</h3><p><strong>推荐回答：</strong> fixture 负责准备与清理测试资源，并通过参数注入给用例。<code>function</code> 每用例一次，隔离最好，适合临时数据；<code>session</code> 全会话一次，适合昂贵且只读的连接或配置。扩大作用域必须处理可变状态污染：拷贝、重置或缩小 scope，并用 yield teardown 释放。</p>
+<h3 id="I3-yield-前后分别做什么？用例失败时清理还会执行吗？"><a href="#I3-yield-前后分别做什么？用例失败时清理还会执行吗？" class="headerlink" title="I3. yield 前后分别做什么？用例失败时清理还会执行吗？"></a>I3. <code>yield</code> 前后分别做什么？用例失败时清理还会执行吗？</h3><p><strong>推荐回答：</strong> yield 前 setup，yield 后 teardown。pytest 在用例结束后执行 teardown，失败场景仍会走清理，这比把清理只写在测试末尾更安全。面试应能举连接关闭、临时目录、测试账号删除的例子。</p>
+<h3 id="I4-接口自动化里-Token、下单有依赖，你如何避免「必须先跑登录用例」？"><a href="#I4-接口自动化里-Token、下单有依赖，你如何避免「必须先跑登录用例」？" class="headerlink" title="I4. 接口自动化里 Token、下单有依赖，你如何避免「必须先跑登录用例」？"></a>I4. 接口自动化里 Token、下单有依赖，你如何避免「必须先跑登录用例」？</h3><p><strong>推荐回答：</strong> 不靠用例顺序，而靠 fixture 链：<code>token</code> fixture 登录，<code>product</code> 依赖 token 建数据，<code>test_order</code> 只声明需要的 fixture。好处是解耦、可复用、可单独跑，并在 teardown 清理，避免脏数据。若必须端到端长流程，应标明是集成层，而不是单元层硬编码顺序。</p>
+<h3 id="I5-parametrize-怎么讲才像用过，而不是背装饰器？"><a href="#I5-parametrize-怎么讲才像用过，而不是背装饰器？" class="headerlink" title="I5. parametrize 怎么讲才像用过，而不是背装饰器？"></a>I5. <code>parametrize</code> 怎么讲才像用过，而不是背装饰器？</h3><p><strong>推荐回答：</strong> 强调数据与逻辑分离、一组断言覆盖边界与异常、报告可定位到具体参数行；可提 <code>ids</code>、<code>pytest.param</code> 打 skip&#x2F;xfail。补充：先等价类再组合，避免无意义爆炸。这与「提高覆盖率」相关，但覆盖率仍要有有效断言。</p>
+<h3 id="I6-conftest-放什么？不放什么？"><a href="#I6-conftest-放什么？不放什么？" class="headerlink" title="I6. conftest 放什么？不放什么？"></a>I6. conftest 放什么？不放什么？</h3><p><strong>推荐回答：</strong> 放共享 fixture、本地 hook、测试专用配置。不把生产业务逻辑塞进 conftest，也不让 conftest 隐式依赖复杂外部环境导致收集即失败。目录级 conftest 可分层，避免所有东西堆在根上造成加载过慢与耦合。</p>
+<h3 id="I7-如何-mock-外部-HTTP-DB，保证可重复？"><a href="#I7-如何-mock-外部-HTTP-DB，保证可重复？" class="headerlink" title="I7. 如何 mock 外部 HTTP&#x2F;DB，保证可重复？"></a>I7. 如何 mock 外部 HTTP&#x2F;DB，保证可重复？</h3><p><strong>推荐回答：</strong> 单元层用依赖注入或 <code>unittest.mock</code>&#x2F;<code>pytest-mock</code> 固定返回与异常；断言调用参数与次数。数据用样本 JSON&#x2F;夹具文件。集成层另开少量真依赖测试。口诀：单元测逻辑，集成测接线。patch 路径对准使用处。</p>
+<h3 id="I8-覆盖率在-CI-里怎么用才合理？"><a href="#I8-覆盖率在-CI-里怎么用才合理？" class="headerlink" title="I8. 覆盖率在 CI 里怎么用才合理？"></a>I8. 覆盖率在 CI 里怎么用才合理？</h3><p><strong>推荐回答：</strong> 作为防回退仪表盘：<code>fail_under</code> + 缺失行报告，聚焦业务包。不把 100% 当 KPI；结合代码审查看关键分支是否有 intentional 断言。解释清楚覆盖率≠质量，避免只刷数字。</p>
+<h3 id="I9-大规模用例集如何分层跑？"><a href="#I9-大规模用例集如何分层跑？" class="headerlink" title="I9. 大规模用例集如何分层跑？"></a>I9. 大规模用例集如何分层跑？</h3><p><strong>推荐回答：</strong> 用 mark 区分 smoke&#x2F;slow&#x2F;integration；默认 PR 跑快测，夜间跑全量。fixture 按 scope 控成本；必要并行时注意隔离（独立库&#x2F;前缀）。核心是可筛选与可独立，而不是一份巨型脚本。</p>
+<h3 id="I10-什么是属性测试？和普通单元测试比优势在哪？"><a href="#I10-什么是属性测试？和普通单元测试比优势在哪？" class="headerlink" title="I10. 什么是属性测试？和普通单元测试比优势在哪？"></a>I10. 什么是属性测试？和普通单元测试比优势在哪？</h3><p><strong>推荐回答：</strong> 属性测试声明对任意合法输入应成立的不变量，由 Hypothesis 生成并尝试证伪，失败后 shrink 成小反例。优势是覆盖「想不到的脏输入」；劣势是性质写错会假绿或假红。实践上与 <code>parametrize</code> 示例测试互补，并用 <code>@example</code> 钉死回归。</p>
+<h3 id="I11-编码-解码函数你会用-Hypothesis-测哪些性质？"><a href="#I11-编码-解码函数你会用-Hypothesis-测哪些性质？" class="headerlink" title="I11. 编码&#x2F;解码函数你会用 Hypothesis 测哪些性质？"></a>I11. 编码&#x2F;解码函数你会用 Hypothesis 测哪些性质？</h3><p><strong>推荐回答：</strong> 至少 round-trip：<code>decode(encode(x)) == x</code>；可加「非法输入应抛约定异常」的策略过滤或单独示例。策略限制 <code>max_size</code> 控制成本。若实现有意不保持某性质，不要强写进测试。</p>
+<h3 id="I12-mock-过多导致重构全红，你怎么改进？"><a href="#I12-mock-过多导致重构全红，你怎么改进？" class="headerlink" title="I12. mock 过多导致重构全红，你怎么改进？"></a>I12. mock 过多导致重构全红，你怎么改进？</h3><p><strong>推荐回答：</strong> 回顾被测边界：改为测公开行为而非私有调用序列；能注入则注入；对稳定接口用 fake 对象代替细粒度交互断言。保留少量关键交互断言，删除与实现绑死的断言。必要时补一条轻量集成测试托底。</p>
+<h3 id="I13-请用一分钟讲清测试金字塔，以及你们单测放哪一层。"><a href="#I13-请用一分钟讲清测试金字塔，以及你们单测放哪一层。" class="headerlink" title="I13. 请用一分钟讲清测试金字塔，以及你们单测放哪一层。"></a>I13. 请用一分钟讲清测试金字塔，以及你们单测放哪一层。</h3><p><strong>推荐回答：</strong> 底层单元多、快、稳，上层 E2E 少、慢、贵。研发默认把断言放在单元与组件（Handler）层；真依赖集成少而精；浏览器 E2E 不作日常主量。若全靠 UI 测，反馈慢且脆，应下沉。</p>
+<h3 id="I14-assume-在-Hypothesis-里要注意什么？"><a href="#I14-assume-在-Hypothesis-里要注意什么？" class="headerlink" title="I14. assume 在 Hypothesis 里要注意什么？"></a>I14. <code>assume</code> 在 Hypothesis 里要注意什么？</h3><p><strong>推荐回答：</strong> <code>assume</code> 过滤不满足前提的生成值，避免非法输入干扰性质。滥用会导致有效例子过少、测试变慢或几乎不跑。优先在策略里收窄空间（<code>max_size</code>、filter），<code>assume</code> 作补充。</p>
+<hr>
+<h2 id="参考面经与题库"><a href="#参考面经与题库" class="headerlink" title="参考面经与题库"></a>参考面经与题库</h2><p>本篇面试题按主题归纳、改写自以下公开面经与题库，非逐题一一对应原帖，请以各平台原文为准：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ceshiren.com/t/topic/35528">爱测·面试官针对 pytest 会问些啥</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/KnowledgePlanet/p/19225393">博客园·pytest 接口自动化测试面试问题汇总</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_67695717/article/details/160025342">CSDN·Pytest 自动化框架面试题</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.nowcoder.com/questionTerminal/03d8575c20c349919475f64091e99cc0">牛客·pytest 核心特性与大规模用例 fixture 实践</a></li>
+<li><a target="_blank" rel="noopener" href="https://hypothesis.readthedocs.io/en/latest/">Hypothesis 官方文档</a>（属性测试机制；公开「面试帖」较少，I10&#x2F;I11 综合官方与属性测试实践文归纳）</li>
+<li><a target="_blank" rel="noopener" href="https://semaphore.io/blog/property-based-testing-python-hypothesis-pytest">Semaphore·Hypothesis + pytest 属性测试入门</a></li>
+</ul>
+<hr>
+<h2 id="3-导航"><a href="#3-导航" class="headerlink" title="3. 导航"></a>3. 导航</h2><p><strong>本系列：</strong></p>
+<ul>
+<li><a href="/2026/09/13/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">软件测试基础与工程实践</a></li>
+<li><a href="/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Python 测试工具链</a></li>
+<li><a href="/2026/09/15/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Python 自检与面试</a>（本篇）</li>
+<li><a href="/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Go 测试工具链</a></li>
+<li><a href="/2026/09/17/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E8%87%AA%E6%A3%80%E4%B8%8E%E9%9D%A2%E8%AF%95/">Go 自检与面试</a></li>
+<li><a href="/2026/09/18/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Py%E4%B8%8EGo%E5%AF%B9%E7%85%A7%E4%B8%8E%E5%AE%9E%E8%B7%B5%E6%B8%85%E5%8D%95/">对照与实践清单</a></li>
+</ul>
+<p><strong>下一步：</strong> <a href="/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/">Go 测试工具链</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B5%8B%E8%AF%95/" rel="tag"># 测试</a>
+              <a href="/tags/pytest/" rel="tag"># pytest</a>
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/14/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Python%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/" rel="prev" title="测试框架学习-Python测试工具链">
+                  <i class="fa fa-angle-left"></i> 测试框架学习-Python测试工具链
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/09/16/%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E5%AD%A6%E4%B9%A0-Go%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E9%93%BE/" rel="next" title="测试框架学习-Go测试工具链">
+                  测试框架学习-Go测试工具链 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sdu-pjLiu</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
